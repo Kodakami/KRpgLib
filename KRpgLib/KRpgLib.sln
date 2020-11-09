@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KRpgLib", "KRpgLib.csproj", "{F5FE66B0-9A72-4E22-833A-818915625C91}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KRpgLibTestEnvironment", "..\KRpgLibTestEnvironment\KRpgLibTestEnvironment.csproj", "{7FB04CB1-5DC4-4728-8FA6-3BE1D5986508}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KRpgLibUnitTests", "..\KRpgLibUnitTests\KRpgLibUnitTests.csproj", "{6D49440F-53D0-41A0-8F32-5EFB81B53726}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F5FE66B0-9A72-4E22-833A-818915625C91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5FE66B0-9A72-4E22-833A-818915625C91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5FE66B0-9A72-4E22-833A-818915625C91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5FE66B0-9A72-4E22-833A-818915625C91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FB04CB1-5DC4-4728-8FA6-3BE1D5986508}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FB04CB1-5DC4-4728-8FA6-3BE1D5986508}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FB04CB1-5DC4-4728-8FA6-3BE1D5986508}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FB04CB1-5DC4-4728-8FA6-3BE1D5986508}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D49440F-53D0-41A0-8F32-5EFB81B53726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D49440F-53D0-41A0-8F32-5EFB81B53726}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D49440F-53D0-41A0-8F32-5EFB81B53726}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D49440F-53D0-41A0-8F32-5EFB81B53726}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7B476A9E-8141-4EBE-8C15-CA28C4BA64EF}
+	EndGlobalSection
+EndGlobal
