@@ -12,26 +12,32 @@ namespace KRpgLibUnitTests.Stats.Compound
         [TestMethod]
         public void StatSet_ForCompoundStat_ReturnsCorrectValue()
         {
-            var set = new TestStatSet();    //S1 = 13
+            var set = new TestStatSet();    //S1 = 13, S2 = 43
+            var algo = new CompoundStatAlgorithm<int>(
+                new Operation_Binary<int>(
+                    new StatLiteral<int>(set.TestStat1, false),
+                    CommonInstances.Int.Max,
+                    new StatLiteral<int>(set.TestStat2, false)
+                ));  //Greater value of Stat1 and Stat2 (Stat2 = 43 unlegalized)
 
-            TestAlgorithmStep step = new TestAlgorithmStep();   //+23
-            var algo = new CompoundStatAlgorithm<int>(new StatLiteral<int>(set.TestStat1, false), step);  //13 + 23 = 36
+            TestCompoundStatTemplate cs = new TestCompoundStatTemplate("Test Compound Stat", 0, 100, 2, algo);  //43 (42 legal)
 
-            TestCompoundStat cs = new TestCompoundStat("Test Compound Stat", 0, 100, 1, algo);  //36 (36 legal)
-
-            Assert.AreEqual(36, set.GetCompoundStatValue(cs));
+            Assert.AreEqual(43, set.GetCompoundStatValue(cs));
         }
         [TestMethod]
         public void StatSet_ForCompoundStat_ReturnsCorrectValueLegalized()
         {
-            var set = new TestStatSet();
+            var set = new TestStatSet();    //S1 = 13, S2 = 43
+            var algo = new CompoundStatAlgorithm<int>(
+                new Operation_Binary<int>(
+                    new StatLiteral<int>(set.TestStat1, false),
+                    CommonInstances.Int.Max,
+                    new StatLiteral<int>(set.TestStat2, false)
+                ));  //Greater value of Stat1 and Stat2 (Stat2 = 43 unlegalized)
 
-            TestAlgorithmStep step = new TestAlgorithmStep();
-            var algo = new CompoundStatAlgorithm<int>(new StatLiteral<int>(set.TestStat1, false), step);
+            TestCompoundStatTemplate cs = new TestCompoundStatTemplate("Test Compound Stat", 0, 100, 2, algo);  //43 (42 legal)
 
-            TestCompoundStat cs = new TestCompoundStat("Test Compound Stat", 0, 100, 5, algo);  //36 (35 legal)
-
-            Assert.AreEqual(35, set.GetCompoundStatValueLegalized(cs));
+            Assert.AreEqual(42, set.GetCompoundStatValueLegalized(cs));
         }
     }
 }
