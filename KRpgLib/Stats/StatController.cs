@@ -5,9 +5,9 @@ namespace KRpgLib.Stats
     /// <summary>
     /// Manages the value of a single stat in a stat manager. Tracks stat providers for itself but does not subscribe to stat provider events.
     /// </summary>
-    internal class StatController
+    internal class StatController<TValue> where TValue : struct
     {
-        public IStatTemplate StatTemplate { get; }
+        public IStatTemplate<TValue> StatTemplate { get; }
 
         /// <summary>
         /// True if the stat deltas provided have been changed and internal stat value needs to be recalculated. Starts as true to ensure cache update on next value request.
@@ -15,23 +15,23 @@ namespace KRpgLib.Stats
         public bool IsDirty { get; private set; } = true;
         public void SetDirty() => IsDirty = true;
 
-        private float _cachedValueRaw;
+        private TValue _cachedValueRaw;
 
-        private readonly List<IStatProvider> _providers = new List<IStatProvider>();
+        private readonly List<IStatProvider<TValue>> _providers = new List<IStatProvider<TValue>>();
 
-        public StatController(IStatTemplate statTemplate)
+        public StatController(IStatTemplate<TValue> statTemplate)
         {
             StatTemplate = statTemplate;
 
             // Cache will update before returning first value.
         }
-        public void AddStatProvider(IStatProvider provider)
+        public void AddStatProvider(IStatProvider<TValue> provider)
         {
             _providers.Add(provider);
 
             IsDirty = true;
         }
-        public void RemoveStatProvider(IStatProvider provider)
+        public void RemoveStatProvider(IStatProvider<TValue> provider)
         {
             _providers.Remove(provider);
 
@@ -41,16 +41,16 @@ namespace KRpgLib.Stats
         /// Returns true if there are any stat providers in the internal list. Does not return true if deltas amount to default value (it is intended that the controller is still maintained in that case). If this returns false, the controller can be discarded as it represents a stat with nothing to manage.
         /// </summary>
         public bool HasDeltas() => _providers.Count > 0;
-        private List<StatDelta> GetAllDeltas()
+        private List<StatDelta<TValue>> GetAllDeltas()
         {
-            List<StatDelta> allDeltas = new List<StatDelta>();
+            List<StatDelta<TValue>> allDeltas = new List<StatDelta<TValue>>();
             foreach (var provider in _providers)
             {
                 allDeltas.AddRange(provider.GetStatDeltasForStat(StatTemplate));
             }
             return allDeltas;
         }
-        public float GetValueRaw()
+        public TValue GetValueRaw()
         {
             if (_providers.Count == 0)
             {

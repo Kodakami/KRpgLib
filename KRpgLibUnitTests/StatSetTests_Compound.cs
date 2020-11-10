@@ -12,16 +12,14 @@ namespace KRpgLibUnitTests.Stats.Compound
         [TestMethod]
         public void StatSet_ForCompoundStat_ReturnsCorrectValue()
         {
-            var set = new TestStatSet();    //S1 = 15.1 (15 legal)
+            var set = new TestStatSet();    //S1 = 13
 
-            TestAlgorithmStep step = new TestAlgorithmStep();   //+1
-            var algo = new CompoundStatAlgorithm(new StatLiteral(set.TestStat1, false), step);  //15.1 + 1 = 16.1
+            TestAlgorithmStep step = new TestAlgorithmStep();   //+23
+            var algo = new CompoundStatAlgorithm<int>(new StatLiteral<int>(set.TestStat1, false), step);  //13 + 23 = 36
 
-            TestCompoundStat cs = new TestCompoundStat("Test Compound Stat", 0, 100, 3, algo);  //(16 legal)
+            TestCompoundStat cs = new TestCompoundStat("Test Compound Stat", 0, 100, 1, algo);  //36 (36 legal)
 
-            // TODO: Test fails because of loss of floating-point precision.
-
-            Assert.AreEqual(16.1, set.GetCompoundStatValue(cs, false));
+            Assert.AreEqual(36, set.GetCompoundStatValue(cs));
         }
         [TestMethod]
         public void StatSet_ForCompoundStat_ReturnsCorrectValueLegalized()
@@ -29,11 +27,11 @@ namespace KRpgLibUnitTests.Stats.Compound
             var set = new TestStatSet();
 
             TestAlgorithmStep step = new TestAlgorithmStep();
-            var algo = new CompoundStatAlgorithm(new StatLiteral(set.TestStat1, false), step);
+            var algo = new CompoundStatAlgorithm<int>(new StatLiteral<int>(set.TestStat1, false), step);
 
-            TestCompoundStat cs = new TestCompoundStat("Test Compound Stat", 0, 100, 3, algo);
+            TestCompoundStat cs = new TestCompoundStat("Test Compound Stat", 0, 100, 5, algo);  //36 (35 legal)
 
-            Assert.AreEqual(15, set.GetCompoundStatValue(cs, true));
+            Assert.AreEqual(35, set.GetCompoundStatValueLegalized(cs));
         }
     }
 }

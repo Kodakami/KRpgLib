@@ -2,207 +2,209 @@
 
 namespace KRpgLib.Stats.Compound
 {
-    public interface IExpression
+    public interface IExpression<TValue> where TValue : struct
     {
-        float Evaluate(IStatSet forStatSet);
+        TValue Evaluate(IStatSet<TValue> forStatSet);
     }
-    public class Literal : IExpression
+    public class Literal<TValue> : IExpression<TValue> where TValue : struct
     {
-        private readonly float _literal;
-        public Literal(float literal)
+        private readonly TValue _literal;
+        public Literal(TValue literal)
         {
             _literal = literal;
         }
-        public float Evaluate(IStatSet _)
+        public TValue Evaluate(IStatSet<TValue> _)
         {
             return _literal;
         }
     }
-    public class StatLiteral : IExpression
+    public class StatLiteral<TValue> : IExpression<TValue> where TValue : struct
     {
-        protected readonly IStatTemplate _template;
+        protected readonly IStatTemplate<TValue> _template;
         private readonly bool _useLegalizedValue;
-        public StatLiteral(IStatTemplate template, bool useLegalizedValue)
+        public StatLiteral(IStatTemplate<TValue> template, bool useLegalizedValue)
         {
             _template = template;
             _useLegalizedValue = useLegalizedValue;
         }
-        public float Evaluate(IStatSet forStatSet)
+        public TValue Evaluate(IStatSet<TValue> forStatSet)
         {
-            float rawValue = forStatSet.GetStatValue(_template);
-            
+            TValue rawValue = forStatSet.GetStatValue(_template);
+
             if (_useLegalizedValue)
             {
                 return _template.GetLegalizedValue(rawValue);
             }
-            
+
             return rawValue;
         }
     }
-    public class UnaryOperationType
+    public class UnaryOperationType<TValue> where TValue : struct
     {
-        private readonly System.Func<float, float> _unaryFunc;
-        public UnaryOperationType(System.Func<float, float> unaryMathFunc)
+        private readonly System.Func<TValue, TValue> _unaryFunc;
+        public UnaryOperationType(System.Func<TValue, TValue> unaryFunc)
         {
-            _unaryFunc = unaryMathFunc;
+            _unaryFunc = unaryFunc;
         }
-        public float Evaluate(float input)
+        public TValue Evaluate(TValue input)
         {
             return _unaryFunc(input);
         }
     }
-    public class BinaryOperationType
+    public class BinaryOperationType<TValue> where TValue : struct
     {
-        private readonly System.Func<float, float, float> _binaryFunc;
-        public BinaryOperationType(System.Func<float, float, float> binaryMathFunc)
+        private readonly System.Func<TValue, TValue, TValue> _binaryFunc;
+        public BinaryOperationType(System.Func<TValue, TValue, TValue> binaryMathFunc)
         {
             _binaryFunc = binaryMathFunc;
         }
-        public float Evaluate(float left, float right)
+        public TValue Evaluate(TValue left, TValue right)
         {
             return _binaryFunc(left, right);
         }
     }
-    public class Operation_Unary : IExpression
+    public class Operation_Unary<TValue> : IExpression<TValue> where TValue : struct
     {
-        private readonly IExpression _expression;
-        private readonly UnaryOperationType _operationType;
+        private readonly IExpression<TValue> _expression;
+        private readonly UnaryOperationType<TValue> _operationType;
 
-        public Operation_Unary(UnaryOperationType operationType, IExpression expression)
+        public Operation_Unary(UnaryOperationType<TValue> operationType, IExpression<TValue> expression)
         {
             _operationType = operationType;
             _expression = expression;
         }
-        public float Evaluate(IStatSet forStatSet)
+        public TValue Evaluate(IStatSet<TValue> forStatSet)
         {
-            float expResult = _expression.Evaluate(forStatSet);
+            TValue expResult = _expression.Evaluate(forStatSet);
             return _operationType.Evaluate(expResult);
         }
     }
-    public class Operation_Binary : IExpression
+    public class Operation_Binary<TValue> : IExpression<TValue> where TValue : struct
     {
-        private readonly IExpression _lh, _rh;
-        private readonly BinaryOperationType _operationType;
+        private readonly IExpression<TValue> _lh, _rh;
+        private readonly BinaryOperationType<TValue> _operationType;
 
-        public Operation_Binary(BinaryOperationType operationType, IExpression leftHandExpression, IExpression rightHandExpression)
+        public Operation_Binary(BinaryOperationType<TValue> operationType, IExpression<TValue> leftHandExpression, IExpression<TValue> rightHandExpression)
         {
             _operationType = operationType;
             _lh = leftHandExpression;
             _rh = rightHandExpression;
         }
-        public float Evaluate(IStatSet forStatSet)
+        public TValue Evaluate(IStatSet<TValue> forStatSet)
         {
-            float exp1Result = _lh.Evaluate(forStatSet);
-            float exp2Result = _rh.Evaluate(forStatSet);
+            TValue exp1Result = _lh.Evaluate(forStatSet);
+            TValue exp2Result = _rh.Evaluate(forStatSet);
 
             return _operationType.Evaluate(exp1Result, exp2Result);
         }
     }
-    public class Comparison
+    public class Comparison<TValue> where TValue : struct
     {
-        private readonly IExpression _lh, _rh;
-        private readonly ComparisonType _type;
+        private readonly IExpression<TValue> _lh, _rh;
+        private readonly ComparisonType<TValue> _type;
 
-        public Comparison(IExpression leftHandExpression, ComparisonType comparisonType, IExpression rightHandExpression)
+        public Comparison(IExpression<TValue> leftHandExpression, ComparisonType<TValue> comparisonType, IExpression<TValue> rightHandExpression)
         {
             _lh = leftHandExpression;
             _type = comparisonType;
             _rh = rightHandExpression;
         }
-        public bool Evaluate(IStatSet forStatSet)
+        public bool Evaluate(IStatSet<TValue> forStatSet)
         {
-            float exp1Result = _lh.Evaluate(forStatSet);
-            float exp2Result = _rh.Evaluate(forStatSet);
+            TValue exp1Result = _lh.Evaluate(forStatSet);
+            TValue exp2Result = _rh.Evaluate(forStatSet);
 
             return _type.Evaluate(exp1Result, exp2Result);
         }
     }
-    public class ComparisonType
+    public class ComparisonType<TValue> where TValue : struct
     {
-        private readonly System.Func<float, float, bool> _func;
-        public ComparisonType(System.Func<float, float, bool> comparisonFunc)
+        private readonly System.Func<TValue, TValue, bool> _func;
+        public ComparisonType(System.Func<TValue, TValue, bool> comparisonFunc)
         {
             _func = comparisonFunc;
         }
-        public bool Evaluate(float value1, float value2)
+        public bool Evaluate(TValue value1, TValue value2)
         {
             return _func(value1, value2);
         }
     }
 
     // a.k.a. Statement.
-    public interface IAlgorithmStep
+    public interface IAlgorithmStep<TValue> where TValue : struct
     {
-        float Apply(IStatSet statSet, float currentValue);
+        TValue Apply(IStatSet<TValue> statSet, TValue currentValue);
     }
-    public class Step_DoNothing : IAlgorithmStep
+    public class Step_DoNothing<TValue> : IAlgorithmStep<TValue> where TValue : struct
     {
-        public float Apply(IStatSet statSet, float currentValue)
+        public TValue Apply(IStatSet<TValue> statSet, TValue currentValue)
         {
             return currentValue;
         }
     }
-    public class Step_UnaryOperation : IAlgorithmStep
+    public class Step_UnaryOperation<TValue> : IAlgorithmStep<TValue> where TValue : struct
     {
-        private readonly UnaryOperationType _operation;
-        public Step_UnaryOperation(UnaryOperationType operation)
+        private readonly UnaryOperationType<TValue> _operation;
+        public Step_UnaryOperation(UnaryOperationType<TValue> operation)
         {
             _operation = operation;
         }
-        public float Apply(IStatSet statSet, float inputValue)
+        public TValue Apply(IStatSet<TValue> statSet, TValue inputValue)
         {
             return _operation.Evaluate(inputValue);
         }
     }
-    public class Step_BinaryOperation : IAlgorithmStep
+    public class Step_BinaryOperation<TValue> : IAlgorithmStep<TValue> where TValue : struct
     {
-        private readonly BinaryOperationType _op;
-        private readonly IExpression _rh;
+        private readonly BinaryOperationType<TValue> _op;
+        private readonly IExpression<TValue> _rh;
 
-        public Step_BinaryOperation(BinaryOperationType operationType, IExpression rightHandExpression)
+        public Step_BinaryOperation(BinaryOperationType<TValue> operationType, IExpression<TValue> rightHandExpression)
         {
             _op = operationType;
             _rh = rightHandExpression;
         }
-        public float Apply(IStatSet statSet, float inputValue)
+        public TValue Apply(IStatSet<TValue> statSet, TValue inputValue)
         {
-            float rightHandExpResult = _rh.Evaluate(statSet);
+            TValue rightHandExpResult = _rh.Evaluate(statSet);
             return _op.Evaluate(inputValue, rightHandExpResult);
         }
     }
     // TODO: Make boolean expressions inside comparisons.
-    public class Step_Conditional : IAlgorithmStep
+    // TODO: Make block statements their own expression type.
+    // TODO: Make Legalize a block.
+    public class Step_Conditional<TValue> : IAlgorithmStep<TValue> where TValue : struct
     {
-        private readonly Comparison _comp;
-        private readonly List<IAlgorithmStep> _t, _f;
-        public Step_Conditional(Comparison comparison, List<IAlgorithmStep> trueCaseBlock, List<IAlgorithmStep> falseCaseBlock)
+        private readonly Comparison<TValue> _comp;
+        private readonly List<IAlgorithmStep<TValue>> _t, _f;
+        public Step_Conditional(Comparison<TValue> comparison, List<IAlgorithmStep<TValue>> trueCaseBlock, List<IAlgorithmStep<TValue>> falseCaseBlock)
         {
             _comp = comparison;
             _t = trueCaseBlock;
             _f = falseCaseBlock;
         }
-        public Step_Conditional(Comparison comparison, IAlgorithmStep trueCase, List<IAlgorithmStep> falseCaseBlock)
+        public Step_Conditional(Comparison<TValue> comparison, IAlgorithmStep<TValue> trueCase, List<IAlgorithmStep<TValue>> falseCaseBlock)
             : this(comparison,
-                 trueCase != null ? new List<IAlgorithmStep>() { trueCase } : null,
+                 trueCase != null ? new List<IAlgorithmStep<TValue>>() { trueCase } : null,
                  falseCaseBlock)
         { }
-        public Step_Conditional(Comparison comparison, List<IAlgorithmStep> trueCaseBlock, IAlgorithmStep falseCase)
+        public Step_Conditional(Comparison<TValue> comparison, List<IAlgorithmStep<TValue>> trueCaseBlock, IAlgorithmStep<TValue> falseCase)
             : this(comparison,
                  trueCaseBlock,
-                 falseCase != null ? new List<IAlgorithmStep>() { falseCase } : null)
+                 falseCase != null ? new List<IAlgorithmStep<TValue>>() { falseCase } : null)
         { }
-        public Step_Conditional(Comparison comparison, IAlgorithmStep trueCase, IAlgorithmStep falseCase)
+        public Step_Conditional(Comparison<TValue> comparison, IAlgorithmStep<TValue> trueCase, IAlgorithmStep<TValue> falseCase)
             :this(comparison,
-                 trueCase != null ? new List<IAlgorithmStep>() { trueCase } : null,
-                 falseCase != null ? new List<IAlgorithmStep>() { falseCase } : null)
+                 trueCase != null ? new List<IAlgorithmStep<TValue>>() { trueCase } : null,
+                 falseCase != null ? new List<IAlgorithmStep<TValue>>() { falseCase } : null)
         { }
-        public float Apply(IStatSet statSet, float inputValue)
+        public TValue Apply(IStatSet<TValue> statSet, TValue inputValue)
         {
             return _comp.Evaluate(statSet) ?
                 ApplyStatementBlock(statSet, inputValue, _t) :
                 ApplyStatementBlock(statSet, inputValue, _f);
         }
-        private float ApplyStatementBlock(IStatSet statSet, float inputValue, List<IAlgorithmStep> statementBlock)
+        private TValue ApplyStatementBlock(IStatSet<TValue> statSet, TValue inputValue, List<IAlgorithmStep<TValue>> statementBlock)
         {
             if (statementBlock != null)
             {

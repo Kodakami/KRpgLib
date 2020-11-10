@@ -7,43 +7,46 @@ namespace KRpgLib.Stats.Compound
     /// <summary>
     /// Build a CompoundStatAlgorithm in similar fashion to .NET's StringBuilder class.
     /// </summary>
-    public class AlgoBuilder
+    public class AlgoBuilder<TValue> where TValue : struct
     {
-        protected readonly List<IAlgorithmStep> _steps = new List<IAlgorithmStep>();
+        protected readonly List<IAlgorithmStep<TValue>> _steps = new List<IAlgorithmStep<TValue>>();
 
         protected readonly ConditionalScopeManager _conditionalScopeManager = new ConditionalScopeManager();
 
         // Most start with a blank builder.
         public AlgoBuilder() { }
-        public AlgoBuilder(IExpression initialValue)
-        {
-            if (initialValue != null)
-            {
-                SetTo(initialValue);
-            }
-        }
-        public AlgoBuilder(float initialValue)
-            :this(new Literal(initialValue)) { }
-        public AlgoBuilder(IStatTemplate initialValue, bool useLegalizedValue)
-            :this(new StatLiteral(initialValue, useLegalizedValue)) { }
+        
+        // TODO: These are best replaced after statements (IAlgorithmStep) are refactored out.
 
-        public CompoundStatAlgorithm Build()
+        //public AlgoBuilder(IExpression<TValue> initialValue)
+        //{
+        //    if (initialValue != null)
+        //    {
+        //        SetTo(initialValue);
+        //    }
+        //}
+        //public AlgoBuilder(TValue initialValue)
+        //    :this(new Literal<TValue>(initialValue)) { }
+        //public AlgoBuilder(IStatTemplate<TValue> initialValue, bool useLegalizedValue)
+        //    :this(new StatLiteral<TValue>(initialValue, useLegalizedValue)) { }
+
+        public CompoundStatAlgorithm<TValue> Build()
         {
-            return new CompoundStatAlgorithm(_steps.ToArray());
+            return new CompoundStatAlgorithm<TValue>(_steps.ToArray());
         }
 
         // Raw statement injection for slightly more fluent folks (who should probably be making algorithms directly).
-        public void Inject(IAlgorithmStep algorithmStep)
+        public void Inject(IAlgorithmStep<TValue> algorithmStep)
         {
             if (algorithmStep != null)
             {
-                _steps.Add(algorithmStep);
+                _steps.Add(algorithmStep ?? throw new System.ArgumentNullException(nameof(algorithmStep)));
             }
         }
         // Step generation.
         public void DoNothing()
         {
-            IAlgorithmStep step = new Step_DoNothing();
+            IAlgorithmStep<TValue> step = new Step_DoNothing<TValue>();
 
             if (!_conditionalScopeManager.IsInsideConditional)
             {
@@ -54,87 +57,34 @@ namespace KRpgLib.Stats.Compound
                 _conditionalScopeManager.AddStatementToCurrent(step);
             }
         }
-        protected void BinaryOpStatement(BinaryOperationType opType, IExpression rightHand)
+        protected void BinaryOpStatement(BinaryOperationType<TValue> opType, IExpression<TValue> rightHand)
         {
-            if (rightHand != null && opType != null)
-            {
-                IAlgorithmStep step = new Step_BinaryOperation(opType, rightHand);
+            IAlgorithmStep<TValue> step = new Step_BinaryOperation<TValue>(
+                    opType ?? throw new ArgumentNullException(nameof(opType)),
+                    rightHand ?? throw new ArgumentNullException(nameof(rightHand)));
 
-                if (!_conditionalScopeManager.IsInsideConditional)
-                {
-                    _steps.Add(step);
-                }
-                else
-                {
-                    _conditionalScopeManager.AddStatementToCurrent(step);
-                }
+            if (!_conditionalScopeManager.IsInsideConditional)
+            {
+                _steps.Add(step);
+            }
+            else
+            {
+                _conditionalScopeManager.AddStatementToCurrent(step);
             }
         }
-        protected void UnaryOpStatement(UnaryOperationType opType)
+        protected void UnaryOpStatement(UnaryOperationType<TValue> opType)
         {
-            if (opType != null)
-            {
-                IAlgorithmStep step = new Step_UnaryOperation(opType);
+            IAlgorithmStep<TValue> step = new Step_UnaryOperation<TValue>(opType ?? throw new ArgumentNullException(nameof(opType)));
 
-                if (!_conditionalScopeManager.IsInsideConditional)
-                {
-                    _steps.Add(step);
-                }
-                else
-                {
-                    _conditionalScopeManager.AddStatementToCurrent(step);
-                }
+            if (!_conditionalScopeManager.IsInsideConditional)
+            {
+                _steps.Add(step);
+            }
+            else
+            {
+                _conditionalScopeManager.AddStatementToCurrent(step);
             }
         }
-
-        //Addition
-        public void Add(IExpression expression) => BinaryOpStatement(CommonInstances.Add, expression);
-        public void Add(float literal) => Add(new Literal(literal));
-        public void Add(IStatTemplate stat, bool useLegalizedValue = true) => Add(ValueOf(stat, useLegalizedValue));
-
-        //Subtraction
-        public void Subtract(IExpression expression) => BinaryOpStatement(CommonInstances.Subtract, expression);
-        public void Subtract(float literal) => Subtract(new Literal(literal));
-        public void Subtract(IStatTemplate stat, bool useLegalizedValue = true) => Subtract(ValueOf(stat, useLegalizedValue));
-
-        //Multiplication
-        public void MultiplyBy(IExpression expression) => BinaryOpStatement(CommonInstances.Multiply, expression);
-        public void MultiplyBy(float literal) => Add(new Literal(literal));
-        public void MultiplyBy(IStatTemplate stat, bool useLegalizedValue = true) => MultiplyBy(ValueOf(stat, useLegalizedValue));
-
-        //Division
-        public void DivideBy(IExpression expression) => BinaryOpStatement(CommonInstances.Divide, expression);
-        public void DivideBy(float literal) => DivideBy(new Literal(literal));
-        public void DivideBy(IStatTemplate stat, bool useLegalizedValue = true) => DivideBy(ValueOf(stat, useLegalizedValue));
-
-        //Powers
-        public void PowerOf(IExpression expression) => BinaryOpStatement(CommonInstances.PowerOf, expression);
-        public void PowerOf(float literal) => PowerOf(new Literal(literal));
-        public void PowerOf(IStatTemplate stat, bool useLegalizedValue = true) => PowerOf(ValueOf(stat, useLegalizedValue));
-
-        //Min
-        public void SmallerOf(IExpression expression) => BinaryOpStatement(CommonInstances.Min, expression);
-        public void SmallerOf(float literal) => SmallerOf(new Literal(literal));
-        public void SmallerOf(IStatTemplate stat, bool useLegalizedValue = true) => SmallerOf(ValueOf(stat, useLegalizedValue));
-
-        //Max
-        public void LargerOf(IExpression expression) => BinaryOpStatement(CommonInstances.Max, expression);
-        public void LargerOf(float literal) => LargerOf(new Literal(literal));
-        public void LargerOf(IStatTemplate stat, bool useLegalizedValue = true) => LargerOf(ValueOf(stat, useLegalizedValue));
-
-        //Modulo
-        public void Modulo(IExpression expression) => BinaryOpStatement(CommonInstances.Modulo, expression);
-        public void Modulo(float literal) => Modulo(new Literal(literal));
-        public void Modulo(IStatTemplate stat, bool useLegalizedValue = true) => Modulo(ValueOf(stat, useLegalizedValue));
-
-        //Set
-        public void SetTo(IExpression expression) => BinaryOpStatement(CommonInstances.SetTo, expression);
-        public void SetTo(float literal) => SetTo(new Literal(literal));
-        public void SetTo(IStatTemplate stat, bool useLegalizedValue = true) => SetTo(ValueOf(stat, useLegalizedValue));
-
-        //Negation (two methods that do the same thing)
-        public void FlipValue() => UnaryOpStatement(CommonInstances.Negative);
-        public void Negative() => UnaryOpStatement(CommonInstances.Negative);
 
         // Conditional branching.
         public void If()
@@ -167,9 +117,9 @@ namespace KRpgLib.Stats.Compound
 
         // Comparison generation.
         //Exp + Exp
-        public void Compare(IExpression leftHand, ComparisonType comparisonType, IExpression rightHand)
+        public void Compare(IExpression<TValue> leftHand, ComparisonType<TValue> comparisonType, IExpression<TValue> rightHand)
         {
-            var newComparison = new Comparison(
+            var newComparison = new Comparison<TValue>(
                 leftHand ?? throw new ArgumentNullException(nameof(leftHand)),
                 comparisonType ?? throw new ArgumentNullException(nameof(comparisonType)),
                 rightHand ?? throw new ArgumentNullException(nameof(rightHand))
@@ -185,46 +135,38 @@ namespace KRpgLib.Stats.Compound
             }
         }
         //Stat + Stat
-        public void Compare(IStatTemplate leftHandValue, ComparisonType comparisonType, IStatTemplate rightHandValue) =>
+        public void Compare(IStatTemplate<TValue> leftHandValue, ComparisonType<TValue> comparisonType, IStatTemplate<TValue> rightHandValue) =>
             Compare(ValueOf(leftHandValue), comparisonType, ValueOf(rightHandValue));
         //We skip Num + Num because it's useless.
 
         //Num + Exp
-        public void Compare(float lefthandNumber, ComparisonType comparisonType, IExpression rightHand) =>
+        public void Compare(TValue lefthandNumber, ComparisonType<TValue> comparisonType, IExpression<TValue> rightHand) =>
             Compare(Number(lefthandNumber), comparisonType, rightHand);
         //Exp + Num
-        public void Compare(IExpression leftHand, ComparisonType comparisonType, float rightHandNumber) =>
+        public void Compare(IExpression<TValue> leftHand, ComparisonType<TValue> comparisonType, TValue rightHandNumber) =>
             Compare(leftHand, comparisonType, Number(rightHandNumber));
 
         //Stat + Exp
-        public void Compare(IStatTemplate leftHandValue, ComparisonType comparisonType, IExpression rightHand) =>
+        public void Compare(IStatTemplate<TValue> leftHandValue, ComparisonType<TValue> comparisonType, IExpression<TValue> rightHand) =>
             Compare(ValueOf(leftHandValue), comparisonType, rightHand);
         //Exp + Stat
-        public void Compare(IExpression leftHand, ComparisonType comparisonType, IStatTemplate rightHandValue) =>
+        public void Compare(IExpression<TValue> leftHand, ComparisonType<TValue> comparisonType, IStatTemplate<TValue> rightHandValue) =>
             Compare(leftHand, comparisonType, ValueOf(rightHandValue));
 
         //Num + Stat
-        public void Compare(float leftHandNumber, ComparisonType comparisonType, IStatTemplate rightHandValue) =>
+        public void Compare(TValue leftHandNumber, ComparisonType<TValue> comparisonType, IStatTemplate<TValue> rightHandValue) =>
             Compare(Number(leftHandNumber), comparisonType, ValueOf(rightHandValue));
         //Stat + Num
-        public void Compare(IStatTemplate leftHandValue, ComparisonType comparisonType, float rightHandNumber) =>
+        public void Compare(IStatTemplate<TValue> leftHandValue, ComparisonType<TValue> comparisonType, TValue rightHandNumber) =>
             Compare(ValueOf(leftHandValue), comparisonType, Number(rightHandNumber));
 
-        //Comparison type shortcuts.
-        public ComparisonType EqualTo => CommonInstances.EqualTo;
-        public ComparisonType NotEqualTo => CommonInstances.NotEqualTo;
-        public ComparisonType GreaterThan => CommonInstances.GreaterThan;
-        public ComparisonType GreaterThanOrEqualTo => CommonInstances.GreaterThanOrEqualTo;
-        public ComparisonType LessThan => CommonInstances.LessThan;
-        public ComparisonType LessThanOrEqualTo => CommonInstances.LessThanOrEqualTo;
-
         // Literal generation.
-        public Literal Number(float number) => new Literal(number);
-        public StatLiteral ValueOf(IStatTemplate stat, bool useLegalizedValue = true)
+        public Literal<TValue> Number(TValue number) => new Literal<TValue>(number);
+        public StatLiteral<TValue> ValueOf(IStatTemplate<TValue> stat, bool useLegalizedValue = true)
         {
             if (stat != null)
             {
-                return new StatLiteral(stat, useLegalizedValue);
+                return new StatLiteral<TValue>(stat, useLegalizedValue);
             }
             throw new ArgumentNullException(nameof(stat));
         }
@@ -243,7 +185,7 @@ namespace KRpgLib.Stats.Compound
             {
                 _stack.Push(new ConditionalScope());
             }
-            public void AddComparisonToCurrent(Comparison comparison)
+            public void AddComparisonToCurrent(Comparison<TValue> comparison)
             {
                 if (IsInsideConditional)
                 {
@@ -251,7 +193,7 @@ namespace KRpgLib.Stats.Compound
                     current.AddComparison(comparison);
                 }
             }
-            public void AddStatementToCurrent(IAlgorithmStep statement)
+            public void AddStatementToCurrent(IAlgorithmStep<TValue> statement)
             {
                 if (IsInsideConditional)
                 {
@@ -281,7 +223,7 @@ namespace KRpgLib.Stats.Compound
             /// <summary>
             /// May return null if conditional was invalid or had two empty branches.
             /// </summary>
-            public IAlgorithmStep ConcludeAndGetCurrentStep()
+            public IAlgorithmStep<TValue> ConcludeAndGetCurrentStep()
             {
                 if (IsInsideConditional)
                 {
@@ -300,9 +242,9 @@ namespace KRpgLib.Stats.Compound
                 FALSE_CASE = 2,
             }
 
-            private Comparison _comparison;
-            private List<IAlgorithmStep> _trueCaseBlock;
-            private List<IAlgorithmStep> _falseCaseBlock;
+            private Comparison<TValue> _comparison;
+            private List<IAlgorithmStep<TValue>> _trueCaseBlock;
+            private List<IAlgorithmStep<TValue>> _falseCaseBlock;
 
             public bool IsValid => _comparison != null;
             public ConditionalScopeState State;
@@ -328,7 +270,7 @@ namespace KRpgLib.Stats.Compound
                 }
                 throw new InvalidOperationException("Unexpected use of Else(). Expected: new algorithm step or EndIf().");
             }
-            public void AddComparison(Comparison comparison)
+            public void AddComparison(Comparison<TValue> comparison)
             {
                 if (State == ConditionalScopeState.COMPARISON)
                 {
@@ -344,7 +286,7 @@ namespace KRpgLib.Stats.Compound
                 }
                 throw new InvalidOperationException("Unable to add comparison. Expected: Then(), or Else().");
             }
-            public void AddStatement(IAlgorithmStep statement)
+            public void AddStatement(IAlgorithmStep<TValue> statement)
             {
                 if (statement == null)
                 {
@@ -364,16 +306,16 @@ namespace KRpgLib.Stats.Compound
                     throw new InvalidOperationException("Unable to add new algorithm step. Expected: Comparison.");
                 }
             }
-            private void AddStatementToBlock(IAlgorithmStep statement, ref List<IAlgorithmStep> block)
+            private void AddStatementToBlock(IAlgorithmStep<TValue> statement, ref List<IAlgorithmStep<TValue>> block)
             {
                 if (block == null)
                 {
-                    block = new List<IAlgorithmStep>();
+                    block = new List<IAlgorithmStep<TValue>>();
                 }
 
                 block.Add(statement);
             }
-            public IAlgorithmStep GetCompleteStep()
+            public IAlgorithmStep<TValue> GetCompleteStep()
             {
                 if (!IsValid)
                 {
@@ -385,18 +327,137 @@ namespace KRpgLib.Stats.Compound
                     return null;
                 }
 
-                List<IAlgorithmStep> sanitizedTrueCase =
+                List<IAlgorithmStep<TValue>> sanitizedTrueCase =
                     _trueCaseBlock != null && _trueCaseBlock.Count > 0 ?
                     _trueCaseBlock :
-                    new List<IAlgorithmStep>() { new Step_DoNothing() };
+                    new List<IAlgorithmStep<TValue>>() { new Step_DoNothing<TValue>() };
 
-                List<IAlgorithmStep> sanitizedFalseCase =
+                List<IAlgorithmStep<TValue>> sanitizedFalseCase =
                     _falseCaseBlock != null && _falseCaseBlock.Count > 0 ?
                     _falseCaseBlock :
-                    new List<IAlgorithmStep>() { new Step_DoNothing() };
+                    new List<IAlgorithmStep<TValue>>() { new Step_DoNothing<TValue>() };
 
-                return new Step_Conditional(_comparison, sanitizedTrueCase, sanitizedFalseCase);
+                return new Step_Conditional<TValue>(_comparison, sanitizedTrueCase, sanitizedFalseCase);
             }
         }
+    }
+    public class AlgoBuilder_Float : AlgoBuilder<float>
+    {
+        //Addition
+        public void Add(IExpression<float> expression) => BinaryOpStatement(CommonInstances.Float.Add, expression);
+        public void Add(float literal) => Add(new Literal<float>(literal));
+        public void Add(IStatTemplate<float> stat, bool useLegalizedValue = true) => Add(ValueOf(stat, useLegalizedValue));
+
+        //Subtraction
+        public void Subtract(IExpression<float> expression) => BinaryOpStatement(CommonInstances.Float.Subtract, expression);
+        public void Subtract(float literal) => Subtract(new Literal<float>(literal));
+        public void Subtract(IStatTemplate<float> stat, bool useLegalizedValue = true) => Subtract(ValueOf(stat, useLegalizedValue));
+
+        //Multiplication
+        public void MultiplyBy(IExpression<float> expression) => BinaryOpStatement(CommonInstances.Float.Multiply, expression);
+        public void MultiplyBy(float literal) => Add(new Literal<float>(literal));
+        public void MultiplyBy(IStatTemplate<float> stat, bool useLegalizedValue = true) => MultiplyBy(ValueOf(stat, useLegalizedValue));
+
+        //Division
+        public void DivideBy(IExpression<float> expression) => BinaryOpStatement(CommonInstances.Float.Divide, expression);
+        public void DivideBy(float literal) => DivideBy(new Literal<float>(literal));
+        public void DivideBy(IStatTemplate<float> stat, bool useLegalizedValue = true) => DivideBy(ValueOf(stat, useLegalizedValue));
+
+        //Powers
+        public void PowerOf(IExpression<float> expression) => BinaryOpStatement(CommonInstances.Float.PowerOf, expression);
+        public void PowerOf(float literal) => PowerOf(new Literal<float>(literal));
+        public void PowerOf(IStatTemplate<float> stat, bool useLegalizedValue = true) => PowerOf(ValueOf(stat, useLegalizedValue));
+
+        //Min
+        public void SmallerOf(IExpression<float> expression) => BinaryOpStatement(CommonInstances.Float.Min, expression);
+        public void SmallerOf(float literal) => SmallerOf(new Literal<float>(literal));
+        public void SmallerOf(IStatTemplate<float> stat, bool useLegalizedValue = true) => SmallerOf(ValueOf(stat, useLegalizedValue));
+
+        //Max
+        public void LargerOf(IExpression<float> expression) => BinaryOpStatement(CommonInstances.Float.Max, expression);
+        public void LargerOf(float literal) => LargerOf(new Literal<float>(literal));
+        public void LargerOf(IStatTemplate<float> stat, bool useLegalizedValue = true) => LargerOf(ValueOf(stat, useLegalizedValue));
+
+        //Modulo
+        public void Modulo(IExpression<float> expression) => BinaryOpStatement(CommonInstances.Float.Modulo, expression);
+        public void Modulo(float literal) => Modulo(new Literal<float>(literal));
+        public void Modulo(IStatTemplate<float> stat, bool useLegalizedValue = true) => Modulo(ValueOf(stat, useLegalizedValue));
+
+        //Set
+        public void SetTo(IExpression<float> expression) => BinaryOpStatement(CommonInstances.Float.SetTo, expression);
+        public void SetTo(float literal) => SetTo(new Literal<float>(literal));
+        public void SetTo(IStatTemplate<float> stat, bool useLegalizedValue = true) => SetTo(ValueOf(stat, useLegalizedValue));
+
+        //Negation (two methods that do the same thing)
+        public void FlipValue() => UnaryOpStatement(CommonInstances.Float.Negative);
+        public void Negative() => UnaryOpStatement(CommonInstances.Float.Negative);
+
+        //Comparison type shortcuts.
+        public ComparisonType<float> EqualTo => CommonInstances.Float.EqualTo;
+        public ComparisonType<float> NotEqualTo => CommonInstances.Float.NotEqualTo;
+        public ComparisonType<float> GreaterThan => CommonInstances.Float.GreaterThan;
+        public ComparisonType<float> GreaterThanOrEqualTo => CommonInstances.Float.GreaterThanOrEqualTo;
+        public ComparisonType<float> LessThan => CommonInstances.Float.LessThan;
+        public ComparisonType<float> LessThanOrEqualTo => CommonInstances.Float.LessThanOrEqualTo;
+    }
+    // Copy-pasting is ugly.
+    public class AlgoBuilder_Int : AlgoBuilder<int>
+    {
+        //Addition
+        public void Add(IExpression<int> expression) => BinaryOpStatement(CommonInstances.Int.Add, expression);
+        public void Add(int literal) => Add(new Literal<int>(literal));
+        public void Add(IStatTemplate<int> stat, bool useLegalizedValue = true) => Add(ValueOf(stat, useLegalizedValue));
+
+        //Subtraction
+        public void Subtract(IExpression<int> expression) => BinaryOpStatement(CommonInstances.Int.Subtract, expression);
+        public void Subtract(int literal) => Subtract(new Literal<int>(literal));
+        public void Subtract(IStatTemplate<int> stat, bool useLegalizedValue = true) => Subtract(ValueOf(stat, useLegalizedValue));
+
+        //Multiplication
+        public void MultiplyBy(IExpression<int> expression) => BinaryOpStatement(CommonInstances.Int.Multiply, expression);
+        public void MultiplyBy(int literal) => Add(new Literal<int>(literal));
+        public void MultiplyBy(IStatTemplate<int> stat, bool useLegalizedValue = true) => MultiplyBy(ValueOf(stat, useLegalizedValue));
+
+        //Division
+        public void DivideBy(IExpression<int> expression) => BinaryOpStatement(CommonInstances.Int.Divide, expression);
+        public void DivideBy(int literal) => DivideBy(new Literal<int>(literal));
+        public void DivideBy(IStatTemplate<int> stat, bool useLegalizedValue = true) => DivideBy(ValueOf(stat, useLegalizedValue));
+
+        //Powers
+        public void PowerOf(IExpression<int> expression) => BinaryOpStatement(CommonInstances.Int.PowerOf, expression);
+        public void PowerOf(int literal) => PowerOf(new Literal<int>(literal));
+        public void PowerOf(IStatTemplate<int> stat, bool useLegalizedValue = true) => PowerOf(ValueOf(stat, useLegalizedValue));
+
+        //Min
+        public void SmallerOf(IExpression<int> expression) => BinaryOpStatement(CommonInstances.Int.Min, expression);
+        public void SmallerOf(int literal) => SmallerOf(new Literal<int>(literal));
+        public void SmallerOf(IStatTemplate<int> stat, bool useLegalizedValue = true) => SmallerOf(ValueOf(stat, useLegalizedValue));
+
+        //Max
+        public void LargerOf(IExpression<int> expression) => BinaryOpStatement(CommonInstances.Int.Max, expression);
+        public void LargerOf(int literal) => LargerOf(new Literal<int>(literal));
+        public void LargerOf(IStatTemplate<int> stat, bool useLegalizedValue = true) => LargerOf(ValueOf(stat, useLegalizedValue));
+
+        //Modulo
+        public void Modulo(IExpression<int> expression) => BinaryOpStatement(CommonInstances.Int.Modulo, expression);
+        public void Modulo(int literal) => Modulo(new Literal<int>(literal));
+        public void Modulo(IStatTemplate<int> stat, bool useLegalizedValue = true) => Modulo(ValueOf(stat, useLegalizedValue));
+
+        //Set
+        public void SetTo(IExpression<int> expression) => BinaryOpStatement(CommonInstances.Int.SetTo, expression);
+        public void SetTo(int literal) => SetTo(new Literal<int>(literal));
+        public void SetTo(IStatTemplate<int> stat, bool useLegalizedValue = true) => SetTo(ValueOf(stat, useLegalizedValue));
+
+        //Negation (two methods that do the same thing)
+        public void FlipValue() => UnaryOpStatement(CommonInstances.Int.Negative);
+        public void Negative() => UnaryOpStatement(CommonInstances.Int.Negative);
+
+        //Comparison type shortcuts.
+        public ComparisonType<int> EqualTo => CommonInstances.Int.EqualTo;
+        public ComparisonType<int> NotEqualTo => CommonInstances.Int.NotEqualTo;
+        public ComparisonType<int> GreaterThan => CommonInstances.Int.GreaterThan;
+        public ComparisonType<int> GreaterThanOrEqualTo => CommonInstances.Int.GreaterThanOrEqualTo;
+        public ComparisonType<int> LessThan => CommonInstances.Int.LessThan;
+        public ComparisonType<int> LessThanOrEqualTo => CommonInstances.Int.LessThanOrEqualTo;
     }
 }

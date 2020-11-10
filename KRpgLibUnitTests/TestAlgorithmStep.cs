@@ -3,12 +3,12 @@ using KRpgLib.Stats;
 
 namespace KRpgLibUnitTests.Stats.Compound
 {
-    public class TestAlgorithmStep : IAlgorithmStep
+    public class TestAlgorithmStep : IAlgorithmStep<int>
     {
         // Increment.
-        public float Apply(IStatSet statSet, float currentValue)
+        public int Apply(IStatSet<int> statSet, int currentValue)
         {
-            return currentValue + 1;
+            return currentValue + 23;
         }
     }
 }
