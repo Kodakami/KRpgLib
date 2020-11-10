@@ -6,14 +6,14 @@ namespace KRpgLib.Stats
     /// <summary>
     /// Base class for an object the manages the stats for something. This may be owned by an RPG character, an enemy, etc... Your implementation should take a series of components in the constructor and apply them as initial stat providers.
     /// </summary>
-    public class StatManager : AbstractStatSet
+    public class StatManager<TValue> : AbstractStatSet<TValue> where TValue : struct
     {
-        private readonly Dictionary<IStatTemplate, StatController> _controllerDict =
-            new Dictionary<IStatTemplate, StatController>();
+        private readonly Dictionary<IStatTemplate<TValue>, StatController<TValue>> _controllerDict =
+            new Dictionary<IStatTemplate<TValue>, StatController<TValue>>();
 
-        private readonly List<IStatProvider> _statProviders = new List<IStatProvider>();
+        private readonly List<IStatProvider<TValue>> _statProviders = new List<IStatProvider<TValue>>();
 
-        private Dictionary<IStatTemplate, float> _cachedSnapshotValues;     //Assigned and converted to StatSet before returning value.
+        private Dictionary<IStatTemplate<TValue>, TValue> _cachedSnapshotValues;     //Assigned and converted to StatSet before returning value.
         private bool _isCachedSetDirty = true;
 
         //ctor
@@ -22,7 +22,7 @@ namespace KRpgLib.Stats
             // Nothing. :D
             // Pass in other components that are stat providers such as class/race managers, arpg-style modifier managers, status effect managers, and passive ability managers.
         }
-        public StatManager(IEnumerable<IStatProvider> initStatProviders)
+        public StatManager(IEnumerable<IStatProvider<TValue>> initStatProviders)
         {
             // Initialize with stat providers.
             foreach (var provider in initStatProviders)
@@ -35,45 +35,46 @@ namespace KRpgLib.Stats
         /// Add a stat provider to the stat manager.
         /// </summary>
         /// <param name="statProvider">an IStatProvider</param>
-        public void AddStatProvider(IStatProvider statProvider)
+        public void AddStatProvider(IStatProvider<TValue> statProvider)
         {
             // Null check.
-            if (statProvider != null)
-            {
-                AddStatProvider_Internal(statProvider);
-            }
+            AddStatProvider_Internal(statProvider ?? throw new System.ArgumentNullException(nameof(statProvider)));
         }
         /// <summary>
         /// Add a list of stat providers to the stat manager.
         /// </summary>
         /// <param name="statProviders">an IStatProvider list</param>
-        public void AddStatProviders(List<IStatProvider> statProviders)
+        public void AddStatProviders(List<IStatProvider<TValue>> statProviders)
         {
             // Null check.
-            if (statProviders == null)
+            foreach (var provider in statProviders ?? throw new System.ArgumentNullException(nameof(statProviders)))
             {
-                return;
+                // Further null check after the jump.
+                AddStatProvider(provider);
             }
-
-            foreach (var provider in statProviders)
+        }
+        public void AddDynamicStatProvider(IStatProvider_Dynamic<TValue> dynamicStatProvider)
+        {
+            AddStatProvider(dynamicStatProvider ?? throw new System.ArgumentNullException(nameof(dynamicStatProvider)));
+            SubscribeToDynamicStatProvider(dynamicStatProvider);
+        }
+        public void AddDynamicStatProviders(List<IStatProvider_Dynamic<TValue>> dynamicStatProviders)
+        {
+            // Null check.
+            foreach (var dsp in dynamicStatProviders ?? throw new System.ArgumentNullException(nameof(dynamicStatProviders)))
             {
-                if (provider != null)
-                {
-                    AddStatProvider_Internal(provider);
-                }
+                // Further null check after the jump.
+                AddDynamicStatProvider(dsp);
             }
         }
 
         // Internal provider addition method.
-        private void AddStatProvider_Internal(IStatProvider statProvider)
+        private void AddStatProvider_Internal(IStatProvider<TValue> safeStatProvider)
         {
             // Checks done in public accessor methods.
 
-            // Subscribe to event.
-            statProvider.OnStatDeltasChanged += SetDirty;
-
             // Get dirty (get all stats that have deltas from provider).
-            var dirtyList = statProvider.GetStatsWithDeltas();
+            var dirtyList = safeStatProvider.GetStatsWithDeltas();
 
             // For each stat modified by provider...
             foreach (var dirtyStat in dirtyList)
@@ -82,20 +83,27 @@ namespace KRpgLib.Stats
                 var controller = GetOrCreateController(dirtyStat);
 
                 // And add this stat provider to its list (this will flag the controller as dirty).
-                controller.AddStatProvider(statProvider);
+                controller.AddStatProvider(safeStatProvider);
             }
 
             // All clear.
-            _statProviders.Add(statProvider);
+            _statProviders.Add(safeStatProvider);
+        }
+        private void SubscribeToDynamicStatProvider(IStatProvider_Dynamic<TValue> statProvider)
+        {
+            // Checks done in public accessor methods.
+
+            // Subscribe to event.
+            statProvider.OnStatDeltasChanged += SetDirty;
         }
         /// <summary>
         /// Remove a stat provider from the stat manager (will no longer be queried for stat deltas when updating stat cache).
         /// </summary>
         /// <param name="statProvider">an IStatProvider</param>
-        public void RemoveStatProvider(IStatProvider statProvider)
+        public void RemoveStatProvider(IStatProvider<TValue> statProvider)
         {
-            // Null check, not in list check.
-            if (statProvider != null && _statProviders.Contains(statProvider))
+            // Null check.
+            if (_statProviders.Contains(statProvider ?? throw new System.ArgumentNullException(nameof(statProvider))))
             {
                 // Removal process.
                 RemoveStatProvider_Internal(statProvider);
@@ -103,22 +111,29 @@ namespace KRpgLib.Stats
                 // Clean up controller dictionary.
                 CleanUpUnusedControllers();
             }
+            // If we got here, then the provider was removed by some other means. Strange.
         }
         /// <summary>
         /// Remove a list of stat providers from the stat manager (will no longer be queried for stat deltas when updating stat cache).
         /// </summary>
         /// <param name="statProviders">an IStatProvider list</param>
-        public void RemoveStatProviders(List<IStatProvider> statProviders)
+        public void RemoveStatProviders(List<IStatProvider<TValue>> statProviders)
         {
-            // Null check, empty list check.
-            if (statProviders == null || statProviders.Count == 0)
+            // Null check.
+            if (statProviders == null)
+            {
+                throw new System.ArgumentNullException(nameof(statProviders));
+            }
+
+            // Empty list check.
+            if (statProviders.Count == 0)
             {
                 return;
             }
 
             foreach (var provider in statProviders)
             {
-                // Null check, not in list check.
+                // Null check and not in list check are here (we don't call the other method) in order to call clean up less often.
                 if (provider != null && _statProviders.Contains(provider))
                 {
                     RemoveStatProvider_Internal(provider);
@@ -128,14 +143,23 @@ namespace KRpgLib.Stats
             // Clean up controller dictionary.
             CleanUpUnusedControllers();
         }
+        public void RemoveDynamicStatProvider(IStatProvider_Dynamic<TValue> dynamicStatProvider)
+        {
+            RemoveStatProvider(dynamicStatProvider ?? throw new System.ArgumentNullException(nameof(dynamicStatProvider)));
+            UnsubscribeFromDynamicStatProvider(dynamicStatProvider);
+        }
+        public void RemoveDynamicStatProviders(List<IStatProvider_Dynamic<TValue>> dynamicStatProviders)
+        {
+            foreach (var dsp in dynamicStatProviders ?? throw new System.ArgumentNullException(nameof(dynamicStatProviders)))
+            {
+                RemoveDynamicStatProvider(dsp);
+            }
+        }
 
         // Internal provider removal method.
-        private void RemoveStatProvider_Internal(IStatProvider statProvider)
+        private void RemoveStatProvider_Internal(IStatProvider<TValue> statProvider)
         {
             // Checks in public accessor methods.
-
-            // Unsubscribe from event.
-            statProvider.OnStatDeltasChanged -= SetDirty;
 
             // Get dirty (get all stats that have deltas from provider).
             var dirtyList = statProvider.GetStatsWithDeltas();
@@ -152,7 +176,15 @@ namespace KRpgLib.Stats
 
             // All clear.
         }
-        protected override float GetStatValue_Internal(IStatTemplate safeStatTemplate)
+        private void UnsubscribeFromDynamicStatProvider(IStatProvider_Dynamic<TValue> statProvider)
+        {
+            // Checks done in public accessor methods.
+
+            // Unsubscribe from event.
+            statProvider.OnStatDeltasChanged -= SetDirty;
+        }
+
+        protected override TValue GetStatValue_Internal(IStatTemplate<TValue> safeStatTemplate)
         {
             // Null checks unnecessary at this point.
 
@@ -163,49 +195,53 @@ namespace KRpgLib.Stats
 
             return _controllerDict[safeStatTemplate].GetValueRaw();
         }
-        protected override float GetCompoundStatValue_Internal(ICompoundStatTemplate safeCompoundStatTemplate)
+        protected override TValue GetCompoundStatValue_Internal(ICompoundStatTemplate<TValue> safeCompoundStatTemplate)
         {
             // Null checks unnecessary at this point.
 
-            return safeCompoundStatTemplate.Algorithm.CalculateValue(this);
+            return safeCompoundStatTemplate.CalculateValue(this);
         }
 
         /// <summary>
         /// Gets a snapshot of all current stat values. Will utilize cached values where possible.
         /// </summary>
         /// <returns>new StatSnapshot</returns>
-        public StatSnapshot GetStatSnapshot()
+        public StatSnapshot<TValue> GetStatSnapshot()
         {
             if (_isCachedSetDirty)
             {
                 UpdateCachedStatSet();
             }
 
-            return new StatSnapshot(_cachedSnapshotValues);
+            return new StatSnapshot<TValue>(_cachedSnapshotValues);
         }
 
-        private StatController GetOrCreateController(IStatTemplate statTemplate)
+        private StatController<TValue> GetOrCreateController(IStatTemplate<TValue> statTemplate)
         {
+            // Null checks should be in calling code.
+
             if (_controllerDict.ContainsKey(statTemplate))
             {
                 return _controllerDict[statTemplate];
             }
 
-            var newController = new StatController(statTemplate);
+            var newController = new StatController<TValue>(statTemplate);
             _controllerDict.Add(statTemplate, newController);
             return newController;
         }
 
-        // Mark a stat controller as in need of recalculation (or add the controller if a provider update added a stat). Stat controllers whose providers were all removed in this way will be removed from the dictionary on the next provider removal or hard update.
-        private void SetDirty(IStatProvider provider, IStatTemplate template)
+        // Mark a stat controller as in need of recalculation (or add the controller if a dynamic stat provider's update added a new stat). Stat controllers whose providers were all removed in this way will be removed from the dictionary on the next provider removal or hard update.
+        private void SetDirty(IStatProvider<TValue> provider, IStatTemplate<TValue> template)
         {
+            // Null checks should be in calling code.
+            
             if (_controllerDict.ContainsKey(template))
             {
                 _controllerDict[template].SetDirty();
             }
             else
             {
-                var newController = new StatController(template);
+                var newController = new StatController<TValue>(template);
                 newController.AddStatProvider(provider);
                 _controllerDict.Add(template, newController);
             }
@@ -256,7 +292,7 @@ namespace KRpgLib.Stats
 
         private void UpdateCachedStatSet()
         {
-            _cachedSnapshotValues = new Dictionary<IStatTemplate, float>();
+            _cachedSnapshotValues = new Dictionary<IStatTemplate<TValue>, TValue>();
             foreach (var kvp in _controllerDict)
             {
                 var statTemplate = kvp.Key;

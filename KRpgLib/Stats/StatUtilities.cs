@@ -14,8 +14,13 @@ namespace KRpgLib.Stats
         /// <returns>a raw stat value as a float</returns>
         // Start with the default value, take each type of delta in order of priority, combine the values of that type and apply them to the output.
         // TODO: The speed of this process could be improved by keeping all deltas as separate collections.
-        public static float ApplyStatDeltasByType(IStatTemplate statTemplate, List<StatDelta> statDeltas)
+        public static TValue ApplyStatDeltasByType<TValue>(IStatTemplate<TValue> statTemplate, List<StatDelta<TValue>> statDeltas) where TValue : struct
         {
+            if (statTemplate == null)
+            {
+                throw new ArgumentNullException(nameof(statTemplate));
+            }
+
             // Shortcut for empty delta list.
             if (statDeltas == null || statDeltas.Count == 0)
             {
@@ -23,22 +28,22 @@ namespace KRpgLib.Stats
             }
 
             // Start with the default value.
-            float output = statTemplate.DefaultValue;
+            TValue output = statTemplate.DefaultValue;
 
             // For each type of stat delta (addition, multiplication)...
-            foreach (StatDeltaType deltaType in StatDeltaType.AllByPriority)
+            foreach (StatDeltaType<TValue> deltaType in StatDeltaType<TValue>.GetAllByPriority())
             {
                 // Track the total delta value of this type.
-                float totalDelta = deltaType.BaselineValue;
+                TValue totalDelta = deltaType.BaselineValue;
 
                 // For each stat delta provided...
-                foreach (StatDelta delta in statDeltas)
+                foreach (StatDelta<TValue> delta in statDeltas)
                 {
                     // If the delta is of the correct type
                     if (delta.Type == deltaType)
                     {
-                        // Add the value to the current total delta value.
-                        totalDelta += delta.Value;
+                        // Combine the value to the current total delta value (method by which is defined in the delta type).
+                        totalDelta = delta.Type.Combine(totalDelta, delta.Value);
                     }
                 }
 

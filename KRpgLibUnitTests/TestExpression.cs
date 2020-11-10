@@ -3,9 +3,9 @@ using KRpgLib.Stats;
 
 namespace KRpgLibUnitTests.Stats.Compound
 {
-    public class TestExpression : IExpression
+    public class TestExpression : IExpression<int>
     {
-        public float Evaluate(IStatSet forStatSet)
+        public int Evaluate(IStatSet<int> forStatSet)
         {
             return 33;
         }

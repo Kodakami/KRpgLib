@@ -9,19 +9,19 @@ namespace KRpgLibUnitTests.Stats
         [TestMethod]
         public void StatLegalizer_HasMinValue_LegalizesByMinValue()
         {
-            LegalizationTest(new StatLegalizer(-15.4f, null, null), -15.4f, -15.5f);
+            LegalizationTest(new StatLegalizer_Int(-15, null, null), -15, -16);
         }
         [TestMethod]
         public void StatLegalizer_HasMaxValue_LegalizesByMaxValue()
         {
-            LegalizationTest(new StatLegalizer(null, 99, null), 99, 99.9f);
+            LegalizationTest(new StatLegalizer_Int(null, 99, null), 99, 100);
         }
         [TestMethod]
         public void StatLegalizer_HasPrecision_LegalizesByPrecision()
         {
-            LegalizationTest(new StatLegalizer(null, null, 0.5f), 3.5f, 3.59f);
+            LegalizationTest(new StatLegalizer_Int(null, null, 3), 3, 5);
         }
-        private void LegalizationTest(StatLegalizer statLegalizer, float expected, float inputValue)
+        private void LegalizationTest<TValue>(AbstractStatLegalizer<TValue> statLegalizer, TValue expected, TValue inputValue) where TValue : struct
         {
             Assert.AreEqual(expected, statLegalizer.GetLegalizedValue(inputValue));
         }

@@ -19,36 +19,74 @@
         //    public static readonly ComparisonType<bool> NotEqualTo = new ComparisonType<bool>((l, r) => l != r);
         //}
 
-        // Unary numeric operations.
-        public static readonly UnaryOperationType Negative = new UnaryOperationType(n => -n);
+        public static class Int
+        {
+            // Unary numeric operations.
+            public static readonly UnaryOperationType<int> Negative = new UnaryOperationType<int>(n => -n);
 
-        // Binary numeric operations.
-        public static readonly BinaryOperationType Add = new BinaryOperationType((l, r) => l + r);
-        public static readonly BinaryOperationType Subtract = new BinaryOperationType((l, r) => l - r);
-        public static readonly BinaryOperationType Multiply = new BinaryOperationType((l, r) => l * r);
-        public static readonly BinaryOperationType Divide = new BinaryOperationType(
-            (l, r) =>
-            {
-                if (r == 0)
+            // Binary numeric operations.
+            public static readonly BinaryOperationType<int> Add = new BinaryOperationType<int>((l, r) => l + r);
+            public static readonly BinaryOperationType<int> Subtract = new BinaryOperationType<int>((l, r) => l - r);
+            public static readonly BinaryOperationType<int> Multiply = new BinaryOperationType<int>((l, r) => l * r);
+            public static readonly BinaryOperationType<int> Divide = new BinaryOperationType<int>(
+                (l, r) =>
                 {
+                    if (r == 0)
+                    {
+                        // Division By Zero avoidance.
+                        return 0;
+                    }
+                    return l / r;
+                });
+            public static readonly BinaryOperationType<int> PowerOf = new BinaryOperationType<int>((l, r) => (int)System.Math.Pow(l, r));
+            public static readonly BinaryOperationType<int> Min = new BinaryOperationType<int>((l, r) => System.Math.Min(l, r));
+            public static readonly BinaryOperationType<int> Max = new BinaryOperationType<int>((l, r) => System.Math.Max(l, r));
+            public static readonly BinaryOperationType<int> Modulo = new BinaryOperationType<int>((l, r) => l % r);
+
+            public static readonly BinaryOperationType<int> SetTo = new BinaryOperationType<int>((_, r) => r);
+
+            // Numeric comparisons.
+            public static readonly ComparisonType<int> EqualTo = new ComparisonType<int>((l, r) => l == r);
+            public static readonly ComparisonType<int> NotEqualTo = new ComparisonType<int>((l, r) => l != r);  // Exists for convenience.
+            public static readonly ComparisonType<int> GreaterThan = new ComparisonType<int>((l, r) => l > r);
+            public static readonly ComparisonType<int> LessThan = new ComparisonType<int>((l, r) => l < r);
+            public static readonly ComparisonType<int> GreaterThanOrEqualTo = new ComparisonType<int>((l, r) => l >= r);
+            public static readonly ComparisonType<int> LessThanOrEqualTo = new ComparisonType<int>((l, r) => l <= r);
+        }
+        // I hate to copy-paste, but...
+        public static class Float
+        {
+            // Unary numeric operations.
+            public static readonly UnaryOperationType<float> Negative = new UnaryOperationType<float>(n => -n);
+
+            // Binary numeric operations.
+            public static readonly BinaryOperationType<float> Add = new BinaryOperationType<float>((l, r) => l + r);
+            public static readonly BinaryOperationType<float> Subtract = new BinaryOperationType<float>((l, r) => l - r);
+            public static readonly BinaryOperationType<float> Multiply = new BinaryOperationType<float>((l, r) => l * r);
+            public static readonly BinaryOperationType<float> Divide = new BinaryOperationType<float>(
+                (l, r) =>
+                {
+                    if (r == 0)
+                    {
                     // Division By Zero avoidance.
                     return 0;
-                }
-                return l / r;
-            });
-        public static readonly BinaryOperationType PowerOf = new BinaryOperationType((l, r) => (float)System.Math.Pow(l, r));
-        public static readonly BinaryOperationType Min = new BinaryOperationType((l, r) => (float)System.Math.Min(l, r));
-        public static readonly BinaryOperationType Max = new BinaryOperationType((l, r) => (float)System.Math.Max(l, r));
-        public static readonly BinaryOperationType Modulo = new BinaryOperationType((l, r) => l % r);
-        
-        public static readonly BinaryOperationType SetTo = new BinaryOperationType((_, r) => r);
+                    }
+                    return l / r;
+                });
+            public static readonly BinaryOperationType<float> PowerOf = new BinaryOperationType<float>((l, r) => (float)System.Math.Pow(l, r));
+            public static readonly BinaryOperationType<float> Min = new BinaryOperationType<float>((l, r) => (float)System.Math.Min(l, r));
+            public static readonly BinaryOperationType<float> Max = new BinaryOperationType<float>((l, r) => (float)System.Math.Max(l, r));
+            public static readonly BinaryOperationType<float> Modulo = new BinaryOperationType<float>((l, r) => l % r);
 
-        // Numeric comparisons.
-        public static readonly ComparisonType EqualTo = new ComparisonType((l, r) => l == r);
-        public static readonly ComparisonType NotEqualTo = new ComparisonType((l, r) => l != r);  // Exists for convenience.
-        public static readonly ComparisonType GreaterThan = new ComparisonType((l, r) => l > r);
-        public static readonly ComparisonType LessThan = new ComparisonType((l, r) => l < r);
-        public static readonly ComparisonType GreaterThanOrEqualTo = new ComparisonType((l, r) => l >= r);
-        public static readonly ComparisonType LessThanOrEqualTo = new ComparisonType((l, r) => l <= r);
+            public static readonly BinaryOperationType<float> SetTo = new BinaryOperationType<float>((_, r) => r);
+
+            // Numeric comparisons.
+            public static readonly ComparisonType<float> EqualTo = new ComparisonType<float>((l, r) => l == r);
+            public static readonly ComparisonType<float> NotEqualTo = new ComparisonType<float>((l, r) => l != r);  // Exists for convenience.
+            public static readonly ComparisonType<float> GreaterThan = new ComparisonType<float>((l, r) => l > r);
+            public static readonly ComparisonType<float> LessThan = new ComparisonType<float>((l, r) => l < r);
+            public static readonly ComparisonType<float> GreaterThanOrEqualTo = new ComparisonType<float>((l, r) => l >= r);
+            public static readonly ComparisonType<float> LessThanOrEqualTo = new ComparisonType<float>((l, r) => l <= r);
+        }
     }
 }
