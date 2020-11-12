@@ -14,9 +14,9 @@ namespace KRpgLibUnitTests.Stats.Compound
         {
             var set = new TestStatSet();    //S1 = 13, S2 = 43
             var algo = new CompoundStatAlgorithm<int>(
-                new Operation_Binary<int>(
-                    new StatLiteral<int>(set.TestStat1, false),
+                new Operation_BinaryAssociative<int>(
                     CommonInstances.Int.Max,
+                    new StatLiteral<int>(set.TestStat1, false),
                     new StatLiteral<int>(set.TestStat2, false)
                 ));  //Greater value of Stat1 and Stat2 (Stat2 = 43 unlegalized)
 
@@ -29,9 +29,9 @@ namespace KRpgLibUnitTests.Stats.Compound
         {
             var set = new TestStatSet();    //S1 = 13, S2 = 43
             var algo = new CompoundStatAlgorithm<int>(
-                new Operation_Binary<int>(
-                    new StatLiteral<int>(set.TestStat1, false),
+                new Operation_BinaryAssociative<int>(
                     CommonInstances.Int.Max,
+                    new StatLiteral<int>(set.TestStat1, false),
                     new StatLiteral<int>(set.TestStat2, false)
                 ));  //Greater value of Stat1 and Stat2 (Stat2 = 43 unlegalized)
 
