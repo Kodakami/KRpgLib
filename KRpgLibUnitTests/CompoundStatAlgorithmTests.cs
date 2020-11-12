@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using KRpgLib.Stats.Compound;
+using KRpgLib.Stats;
 
 namespace KRpgLibUnitTests.Stats.Compound
 {
@@ -12,42 +13,21 @@ namespace KRpgLibUnitTests.Stats.Compound
         [TestMethod]
         public void CompoundStatAlgorithm_WhenConstructing_ReturnsFunctionalAlgorithm()
         {
-            TestAlgorithmStep step = new TestAlgorithmStep();
-
-            var algo = new CompoundStatAlgorithm<int>(step);
             var set = new TestStatSet();
+            var algo = new CompoundStatAlgorithm<int>(new TestExpression());    //33
 
-            Assert.AreEqual(23, algo.CalculateValue(set));
+            Assert.AreEqual(33, algo.CalculateValue(set));
         }
         [TestMethod]
-        public void CompoundStatAlgorithm_WhenConstructingWithInitialExpression_ReturnsFunctionalAlgorithm()
-        {
-            TestExpression exp = new TestExpression();          //33
-            TestAlgorithmStep step = new TestAlgorithmStep();   //+23
-            var set = new TestStatSet();
-
-            Assert.AreEqual(56, new CompoundStatAlgorithm<int>(exp, step).CalculateValue(set));
-        }
-        [TestMethod]
-        public void CompoundStatAlgorithm_WhenConstructingWithNullInitializer_ThrowsArgNullEx()
+        public void CompoundStatAlgorithm_WhenConstructingWithNullExpression_ThrowsArgNullEx()
         {
             TestExpression exp = null;                          //null
-            TestAlgorithmStep step = new TestAlgorithmStep();   //+23
-
-            Assert.ThrowsException<ArgumentNullException>(() => new CompoundStatAlgorithm<int>(exp, step));
-        }
-        [TestMethod]
-        public void CompoundStatAlgorithm_WhenConstructingWithNullStep_ThrowsArgNullEx()
-        {
-            TestAlgorithmStep nullStep = null;
-            Assert.ThrowsException<ArgumentNullException>(() => new CompoundStatAlgorithm<int>(nullStep));
+            Assert.ThrowsException<ArgumentNullException>(() => new CompoundStatAlgorithm<int>(exp));
         }
         [TestMethod]
         public void CompoundStatAlgorithm_WhenCalculatingValueWithNullStatSet_ThrowsArgNullEx()
         {
-            TestAlgorithmStep step = new TestAlgorithmStep();
-
-            var algo = new CompoundStatAlgorithm<int>(step);
+            var algo = new CompoundStatAlgorithm<int>(new TestExpression());    //33
             TestStatSet set = null;
 
             Assert.ThrowsException<ArgumentNullException>(() => algo.CalculateValue(set));

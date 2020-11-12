@@ -78,8 +78,6 @@
             public static readonly BinaryOperationType<float> Max = new BinaryOperationType<float>((l, r) => (float)System.Math.Max(l, r));
             public static readonly BinaryOperationType<float> Modulo = new BinaryOperationType<float>((l, r) => l % r);
 
-            public static readonly BinaryOperationType<float> SetTo = new BinaryOperationType<float>((_, r) => r);
-
             // Numeric comparisons.
             public static readonly ComparisonType<float> EqualTo = new ComparisonType<float>((l, r) => l == r);
             public static readonly ComparisonType<float> NotEqualTo = new ComparisonType<float>((l, r) => l != r);  // Exists for convenience.
@@ -87,6 +85,12 @@
             public static readonly ComparisonType<float> LessThan = new ComparisonType<float>((l, r) => l < r);
             public static readonly ComparisonType<float> GreaterThanOrEqualTo = new ComparisonType<float>((l, r) => l >= r);
             public static readonly ComparisonType<float> LessThanOrEqualTo = new ComparisonType<float>((l, r) => l <= r);
+        }
+        public static class Logical<TValue> where TValue : struct
+        {
+            public static readonly LogicalOperationType<TValue> And = new LogicalOperationType<TValue>((l, r, set) => l.Evaluate(set) && r.Evaluate(set));
+            public static readonly LogicalOperationType<TValue> Or = new LogicalOperationType<TValue>((l, r, set) => l.Evaluate(set) || r.Evaluate(set));
+            public static readonly LogicalOperationType<TValue> Xor = new LogicalOperationType<TValue>((l, r, set) => l.Evaluate(set) ^ r.Evaluate(set));
         }
     }
 }

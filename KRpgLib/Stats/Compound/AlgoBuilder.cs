@@ -119,7 +119,7 @@ namespace KRpgLib.Stats.Compound
         //Exp + Exp
         public void Compare(IExpression<TValue> leftHand, ComparisonType<TValue> comparisonType, IExpression<TValue> rightHand)
         {
-            var newComparison = new Comparison<TValue>(
+            var newComparison = new Condition<TValue>(
                 leftHand ?? throw new ArgumentNullException(nameof(leftHand)),
                 comparisonType ?? throw new ArgumentNullException(nameof(comparisonType)),
                 rightHand ?? throw new ArgumentNullException(nameof(rightHand))
@@ -185,7 +185,7 @@ namespace KRpgLib.Stats.Compound
             {
                 _stack.Push(new ConditionalScope());
             }
-            public void AddComparisonToCurrent(Comparison<TValue> comparison)
+            public void AddComparisonToCurrent(Condition<TValue> comparison)
             {
                 if (IsInsideConditional)
                 {
@@ -242,7 +242,7 @@ namespace KRpgLib.Stats.Compound
                 FALSE_CASE = 2,
             }
 
-            private Comparison<TValue> _comparison;
+            private Condition<TValue> _comparison;
             private List<IAlgorithmStep<TValue>> _trueCaseBlock;
             private List<IAlgorithmStep<TValue>> _falseCaseBlock;
 
@@ -270,7 +270,7 @@ namespace KRpgLib.Stats.Compound
                 }
                 throw new InvalidOperationException("Unexpected use of Else(). Expected: new algorithm step or EndIf().");
             }
-            public void AddComparison(Comparison<TValue> comparison)
+            public void AddComparison(Condition<TValue> comparison)
             {
                 if (State == ConditionalScopeState.COMPARISON)
                 {
@@ -337,7 +337,7 @@ namespace KRpgLib.Stats.Compound
                     _falseCaseBlock :
                     new List<IAlgorithmStep<TValue>>() { new Step_DoNothing<TValue>() };
 
-                return new Step_Conditional<TValue>(_comparison, sanitizedTrueCase, sanitizedFalseCase);
+                return new ConditionalExpression<TValue>(_comparison, sanitizedTrueCase, sanitizedFalseCase);
             }
         }
     }
