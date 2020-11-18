@@ -1,8 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using KRpgLib.Stats.Compound;
+﻿using KRpgLib.Stats.Compound;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace KRpgLibUnitTests.Stats.Compound
 {
@@ -14,7 +11,7 @@ namespace KRpgLibUnitTests.Stats.Compound
         {
             var set = new TestStatSet();    //S1 = 13, S2 = 43
             var algo = new CompoundStatAlgorithm<int>(
-                new Operation_BinaryAssociative<int>(
+                new ValueOperation_Multiary<int>(
                     CommonInstances.Int.Max,
                     new StatLiteral<int>(set.TestStat1, false),
                     new StatLiteral<int>(set.TestStat2, false)
@@ -29,7 +26,7 @@ namespace KRpgLibUnitTests.Stats.Compound
         {
             var set = new TestStatSet();    //S1 = 13, S2 = 43
             var algo = new CompoundStatAlgorithm<int>(
-                new Operation_BinaryAssociative<int>(
+                new ValueOperation_Multiary<int>(
                     CommonInstances.Int.Max,
                     new StatLiteral<int>(set.TestStat1, false),
                     new StatLiteral<int>(set.TestStat2, false)

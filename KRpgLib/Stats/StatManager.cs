@@ -234,7 +234,7 @@ namespace KRpgLib.Stats
         private void SetDirty(IStatProvider<TValue> provider, IStatTemplate<TValue> template)
         {
             // Null checks should be in calling code.
-            
+
             if (_controllerDict.ContainsKey(template))
             {
                 _controllerDict[template].SetDirty();

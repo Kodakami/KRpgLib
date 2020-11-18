@@ -1,5 +1,4 @@
-﻿using KRpgLib.Stats.Compound;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace KRpgLib.Stats

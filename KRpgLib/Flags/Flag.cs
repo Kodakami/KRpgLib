@@ -32,7 +32,7 @@
                 newFlag = default;
                 return false;
             }
-            
+
             if (template.VariantCount >= 0)
             {
                 if (variantIndex < template.VariantCount)

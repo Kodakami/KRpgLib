@@ -6,7 +6,7 @@ namespace KRpgLibUnitTests.Stats.Compound
     {
         public string ExternalName { get; }
         public TestCompoundStatTemplate(string externalName, int? min, int? max, int? precision, CompoundStatAlgorithm<int> algorithm)
-            :base(min, max, precision, algorithm)
+            : base(min, max, precision, algorithm)
         {
             ExternalName = externalName;
         }
