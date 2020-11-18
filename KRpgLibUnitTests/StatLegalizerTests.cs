@@ -1,5 +1,5 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using KRpgLib.Stats;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace KRpgLibUnitTests.Stats
 {

@@ -2,7 +2,6 @@
 
 namespace KRpgLib.Stats
 {
-    // This one floors values outside of precision. One could make a version that rounds.
     public abstract class AbstractStatLegalizer<TValue> where TValue : struct
     {
         public TValue? MinValue { get; }
@@ -21,7 +20,7 @@ namespace KRpgLib.Stats
     public sealed class StatLegalizer_Int : AbstractStatLegalizer<int>
     {
         public StatLegalizer_Int(int? min, int? max, int? precision)
-            :base(min, max, precision) { }
+            : base(min, max, precision) { }
 
         public override int GetLegalizedValue(int rawValue)
         {

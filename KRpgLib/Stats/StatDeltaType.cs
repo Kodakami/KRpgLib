@@ -53,7 +53,7 @@ namespace KRpgLib.Stats
 
         // The actual mathematical function this delta type performs on a stat.
         private readonly DeltaTypeFunc _func;
-        
+
         // The function for combining deltas of the type. (addition for numerical types, not sure about others.)
         private readonly DeltaTypeFunc _combine;
 

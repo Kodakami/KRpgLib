@@ -2,17 +2,9 @@
 
 namespace KRpgLib.Stats.Compound
 {
-    public interface IExpression<TValue> where TValue : struct
+    public abstract class Expression<TValue, TReturn> where TValue : struct //where TReturn : anything
     {
-        TValue Evaluate(IStatSet<TValue> forStatSet);
-    }
-    public interface ILogicalExpression<TValue> where TValue : struct
-    {
-        bool Evaluate(IStatSet<TValue> forStatSet);
-    }
-    public abstract class AbstractExpression<TValue> : IExpression<TValue> where TValue : struct
-    {
-        public TValue Evaluate(IStatSet<TValue> forStatSet)
+        public TReturn Evaluate(IStatSet<TValue> forStatSet)
         {
             if (forStatSet == null)
             {
@@ -20,9 +12,11 @@ namespace KRpgLib.Stats.Compound
             }
             return Evaluate_Internal(forStatSet);
         }
-        protected abstract TValue Evaluate_Internal(IStatSet<TValue> safeStatSet);
+        protected abstract TReturn Evaluate_Internal(IStatSet<TValue> safeStatSet);
     }
-    public class Literal<TValue> : AbstractExpression<TValue> where TValue : struct
+    public abstract class ValueExpression<TValue> : Expression<TValue, TValue> where TValue : struct { }
+    public abstract class LogicExpression<TValue> : Expression<TValue, bool> where TValue : struct { }
+    public sealed class Literal<TValue> : ValueExpression<TValue> where TValue : struct
     {
         private readonly TValue _literal;
         public Literal(TValue literal)
@@ -34,10 +28,10 @@ namespace KRpgLib.Stats.Compound
             return _literal;
         }
     }
-    public class StatLiteral<TValue> : AbstractExpression<TValue> where TValue : struct
+    public sealed class StatLiteral<TValue> : ValueExpression<TValue> where TValue : struct
     {
-        protected readonly IStatTemplate<TValue> _template;
-        protected readonly bool _useLegalizedValue;
+        private readonly IStatTemplate<TValue> _template;
+        private readonly bool _useLegalizedValue;
         public StatLiteral(IStatTemplate<TValue> template, bool useLegalizedValue)
         {
             _template = template ?? throw new System.ArgumentNullException(nameof(template));
@@ -49,10 +43,11 @@ namespace KRpgLib.Stats.Compound
             return _useLegalizedValue ? _template.GetLegalizedValue(raw) : raw;
         }
     }
-    public class UnaryOperationType<TValue> where TValue : struct
+    public delegate TValue UnaryFunc<TValue>(TValue input) where TValue : struct;
+    public sealed class UnaryOperationType<TValue> where TValue : struct
     {
-        private readonly System.Func<TValue, TValue> _unaryFunc;
-        public UnaryOperationType(System.Func<TValue, TValue> unaryFunc)
+        private readonly UnaryFunc<TValue> _unaryFunc;
+        public UnaryOperationType(UnaryFunc<TValue> unaryFunc)
         {
             _unaryFunc = unaryFunc ?? throw new System.ArgumentNullException(nameof(unaryFunc));
         }
@@ -61,10 +56,11 @@ namespace KRpgLib.Stats.Compound
             return _unaryFunc(input);
         }
     }
-    public class BinaryOperationType<TValue> where TValue : struct
+    public delegate TValue BinaryFunc<TValue>(TValue left, TValue right) where TValue : struct;
+    public sealed class BinaryOperationType<TValue> where TValue : struct
     {
-        private readonly System.Func<TValue, TValue, TValue> _binaryFunc;
-        public BinaryOperationType(System.Func<TValue, TValue, TValue> binaryFunc)
+        private readonly BinaryFunc<TValue> _binaryFunc;
+        public BinaryOperationType(BinaryFunc<TValue> binaryFunc)
         {
             _binaryFunc = binaryFunc ?? throw new System.ArgumentNullException(nameof(binaryFunc));
         }
@@ -73,131 +69,25 @@ namespace KRpgLib.Stats.Compound
             return _binaryFunc(left, right);
         }
     }
-    public class Operation_Unary<TValue> : AbstractExpression<TValue> where TValue : struct
+    public delegate TValue MultiaryFunc<TValue>(List<TValue> safeValues) where TValue : struct;
+    public sealed class MultiaryOperationType<TValue> where TValue : struct
     {
-        private readonly UnaryOperationType<TValue> _operationType;
-        private readonly IExpression<TValue> _expression;
+        private readonly MultiaryFunc<TValue> _multiaryFunc;
 
-        public Operation_Unary(UnaryOperationType<TValue> operationType, IExpression<TValue> expression)
+        public MultiaryOperationType(MultiaryFunc<TValue> multiaryFunc)
         {
-            _operationType = operationType ?? throw new System.ArgumentNullException(nameof(operationType));
-            _expression = expression ?? throw new System.ArgumentNullException(nameof(expression));
+            _multiaryFunc = multiaryFunc ?? throw new System.ArgumentNullException(nameof(multiaryFunc));
         }
-        protected override TValue Evaluate_Internal(IStatSet<TValue> safeStatSet)
+        public TValue Evaluate(List<TValue> safeValues)
         {
-            TValue expResult = _expression.Evaluate(safeStatSet);
-            return _operationType.Evaluate(expResult);
+            return _multiaryFunc(safeValues);
         }
     }
-    public abstract class AbstractOperation_Binary<TValue> : AbstractExpression<TValue> where TValue : struct
-    {
-        protected readonly BinaryOperationType<TValue> _operationType;
-
-        protected AbstractOperation_Binary(BinaryOperationType<TValue> operationType)
-        {
-            _operationType = operationType ?? throw new System.ArgumentNullException(nameof(operationType));
-        }
-    }
-    public class Operation_BinaryAssociative<TValue> : AbstractOperation_Binary<TValue> where TValue : struct
-    {
-        private readonly IExpression<TValue>[] _expressions;
-        public Operation_BinaryAssociative(BinaryOperationType<TValue> operationType, params IExpression<TValue>[] expressionParams)
-            :base(operationType)
-        {
-            if (expressionParams == null)
-            {
-                throw new System.ArgumentNullException(nameof(expressionParams));
-            }
-            if (expressionParams.Length == 0)
-            {
-                throw new System.ArgumentException("Argument array must not be empty.", nameof(expressionParams));
-            }
-            foreach (var expression in expressionParams)
-            {
-                if (expression == null)
-                {
-                    throw new System.ArgumentException("Argument array must not contain null items.", nameof(expressionParams));
-                }
-            }
-            _expressions = expressionParams;
-        }
-        protected override TValue Evaluate_Internal(IStatSet<TValue> safeStatSet)
-        {
-            TValue total = default;
-            foreach (var expression in _expressions)
-            {
-                total = _operationType.Evaluate(total, expression.Evaluate(safeStatSet));
-            }
-            return total;
-        }
-    }
-    public class Operation_BinaryNonAssociative<TValue> : AbstractOperation_Binary<TValue> where TValue : struct
-    {
-        private readonly IExpression<TValue> _lh, _rh;
-        public Operation_BinaryNonAssociative(BinaryOperationType<TValue> operationType, IExpression<TValue> leftHandExpression, IExpression<TValue> rightHandExpression)
-            : base(operationType)
-        {
-            _lh = leftHandExpression ?? throw new System.ArgumentNullException(nameof(leftHandExpression));
-            _rh = rightHandExpression ?? throw new System.ArgumentNullException(nameof(rightHandExpression));
-        }
-        protected override TValue Evaluate_Internal(IStatSet<TValue> safeStatSet)
-        {
-            return _operationType.Evaluate(_lh.Evaluate(safeStatSet), _rh.Evaluate(safeStatSet));
-        }
-    }
-    public class Condition<TValue> : ILogicalExpression<TValue> where TValue : struct
-    {
-        private readonly IExpression<TValue> _lh, _rh;
-        private readonly ComparisonType<TValue> _type;
-
-        public Condition(IExpression<TValue> leftHandExpression, ComparisonType<TValue> comparisonType, IExpression<TValue> rightHandExpression)
-        {
-            _lh = leftHandExpression;
-            _type = comparisonType;
-            _rh = rightHandExpression;
-        }
-        public bool Evaluate(IStatSet<TValue> forStatSet)
-        {
-            TValue exp1Result = _lh.Evaluate(forStatSet);
-            TValue exp2Result = _rh.Evaluate(forStatSet);
-
-            return _type.Evaluate(exp1Result, exp2Result);
-        }
-    }
-    public sealed class LogicalOperationType<TValue> where TValue : struct
-    {
-        public delegate bool FunctionDelegate(ILogicalExpression<TValue> left, ILogicalExpression<TValue> right, IStatSet<TValue> forStatSet);
-        private readonly FunctionDelegate _func;
-        public LogicalOperationType(FunctionDelegate func)
-        {
-            _func = func ?? throw new System.ArgumentNullException(nameof(func));
-        }
-        public bool Evaluate(ILogicalExpression<TValue> leftHand, ILogicalExpression<TValue> rightHand, IStatSet<TValue> forStatSet)
-        {
-            // Does not check for null, so you'd better have checked in calling code.
-            return _func(leftHand, rightHand, forStatSet);
-        }
-    }
-    public class LogicalOperation_Binary<TValue> : ILogicalExpression<TValue> where TValue : struct
-    {
-        private readonly LogicalOperationType<TValue> _op;
-        private readonly ILogicalExpression<TValue> _lh, _rh;
-        public LogicalOperation_Binary(ILogicalExpression<TValue> leftHandExpression, LogicalOperationType<TValue> operationType, ILogicalExpression<TValue> rightHandExpression)
-        {
-            _op = operationType ?? throw new System.ArgumentNullException(nameof(operationType));
-            _lh = leftHandExpression ?? throw new System.ArgumentNullException(nameof(leftHandExpression));
-            _rh = rightHandExpression ?? throw new System.ArgumentNullException(nameof(rightHandExpression));
-        }
-
-        public bool Evaluate(IStatSet<TValue> forStatSet)
-        {
-            return _op.Evaluate(_lh, _rh, forStatSet ?? throw new System.ArgumentNullException(nameof(forStatSet)));
-        }
-    }
+    public delegate bool ComparisonFunc<TValue>(TValue leftHand, TValue rightHand);
     public class ComparisonType<TValue> where TValue : struct
     {
-        private readonly System.Func<TValue, TValue, bool> _func;
-        public ComparisonType(System.Func<TValue, TValue, bool> comparisonFunc)
+        private readonly ComparisonFunc<TValue> _func;
+        public ComparisonType(ComparisonFunc<TValue> comparisonFunc)
         {
             _func = comparisonFunc;
         }
@@ -207,12 +97,144 @@ namespace KRpgLib.Stats.Compound
         }
     }
 
-    // TODO: Make Legalize a type of expression.
-    public class ConditionalExpression<TValue> : AbstractExpression<TValue> where TValue : struct
+    public sealed class ValueOperation_Unary<TValue> : ValueExpression<TValue> where TValue : struct
     {
-        private readonly ILogicalExpression<TValue> _condition;
-        private readonly IExpression<TValue> _consequent, _alternative;
-        public ConditionalExpression(ILogicalExpression<TValue> condition, IExpression<TValue> consequentExpression, IExpression<TValue> alternativeExpression)
+        private readonly UnaryOperationType<TValue> _operationType;
+        private readonly ValueExpression<TValue> _input;
+
+        public ValueOperation_Unary(UnaryOperationType<TValue> operationType, ValueExpression<TValue> input)
+        {
+            _operationType = operationType ?? throw new System.ArgumentNullException(nameof(operationType));
+            _input = input ?? throw new System.ArgumentNullException(nameof(input));
+        }
+        protected override TValue Evaluate_Internal(IStatSet<TValue> safeStatSet)
+        {
+            return _operationType.Evaluate(_input.Evaluate(safeStatSet));
+        }
+    }
+    public sealed class ValueOperation_Binary<TValue> : ValueExpression<TValue> where TValue : struct
+    {
+        private readonly BinaryOperationType<TValue> _operationType;
+        private readonly ValueExpression<TValue> _left, _right;
+        public ValueOperation_Binary(BinaryOperationType<TValue> operationType, ValueExpression<TValue> left, ValueExpression<TValue> right)
+        {
+            _operationType = operationType ?? throw new System.ArgumentNullException(nameof(operationType));
+            _left = left ?? throw new System.ArgumentNullException(nameof(left));
+            _right = right ?? throw new System.ArgumentNullException(nameof(right));
+        }
+        protected override TValue Evaluate_Internal(IStatSet<TValue> safeStatSet)
+        {
+            return _operationType.Evaluate(_left.Evaluate(safeStatSet), _right.Evaluate(safeStatSet));
+        }
+    }
+    public sealed class ValueOperation_Multiary<TValue> : ValueExpression<TValue> where TValue : struct
+    {
+        private readonly MultiaryOperationType<TValue> _operationType;
+        private readonly List<ValueExpression<TValue>> _valueExpressions;
+
+        public ValueOperation_Multiary(MultiaryOperationType<TValue> operationType, List<ValueExpression<TValue>> valueExpressions)
+        {
+            _operationType = operationType ?? throw new System.ArgumentNullException(nameof(operationType));
+            if (valueExpressions == null)
+            {
+                throw new System.ArgumentNullException(nameof(valueExpressions));
+            }
+            if (valueExpressions.Count == 0)
+            {
+                throw new System.ArgumentException("Argument may not be an empty array.", nameof(valueExpressions));
+            }
+            foreach (var expression in valueExpressions)
+            {
+                if (expression == null)
+                {
+                    throw new System.ArgumentException("Argument array may not contain null items.", nameof(valueExpressions));
+                }
+            }
+            _valueExpressions = valueExpressions;
+        }
+        public ValueOperation_Multiary(MultiaryOperationType<TValue> operationType, params ValueExpression<TValue>[] valueExpressions)
+            : this(operationType, new List<ValueExpression<TValue>>(valueExpressions)) { }
+
+        protected override TValue Evaluate_Internal(IStatSet<TValue> safeStatSet)
+        {
+            // Avoiding a call to System.Linq's "Select" method, I guess.
+
+            List<TValue> expResults = new List<TValue>();
+            foreach (var expression in _valueExpressions)
+            {
+                expResults.Add(expression.Evaluate(safeStatSet));
+            }
+            return _operationType.Evaluate(expResults);
+        }
+    }
+    public abstract class LogicOperation_Unary<TValue> : LogicExpression<TValue> where TValue : struct
+    {
+        protected readonly LogicExpression<TValue> _input;
+        protected LogicOperation_Unary(LogicExpression<TValue> input)
+        {
+            _input = input ?? throw new System.ArgumentNullException(nameof(input));
+        }
+    }
+    public abstract class LogicOperation_Binary<TValue> : LogicExpression<TValue> where TValue : struct
+    {
+        protected readonly LogicExpression<TValue> _left, _right;
+        protected LogicOperation_Binary(LogicExpression<TValue> left, LogicExpression<TValue> right)
+        {
+            _left = left ?? throw new System.ArgumentNullException(nameof(left));
+            _right = right ?? throw new System.ArgumentNullException(nameof(right));
+        }
+    }
+    public abstract class LogicOperation_Multiary<TValue> : LogicExpression<TValue> where TValue : struct
+    {
+        protected readonly List<LogicExpression<TValue>> _logicExpressions;
+        protected LogicOperation_Multiary(List<LogicExpression<TValue>> logicExpressions)
+        {
+            if (logicExpressions == null)
+            {
+                throw new System.ArgumentNullException(nameof(logicExpressions));
+            }
+            if (logicExpressions.Count == 0)
+            {
+                throw new System.ArgumentException("Argument may not be an empty array.", nameof(logicExpressions));
+            }
+            foreach (var expression in logicExpressions)
+            {
+                if (expression == null)
+                {
+                    throw new System.ArgumentException("Argument array may not contain null items.", nameof(logicExpressions));
+                }
+            }
+            _logicExpressions = logicExpressions;
+        }
+        protected LogicOperation_Multiary(params LogicExpression<TValue>[] logicExpressions)
+            : this(new List<LogicExpression<TValue>>(logicExpressions)) { }
+    }
+
+    public sealed class Comparison<TValue> : LogicExpression<TValue> where TValue : struct
+    {
+        private readonly ComparisonType<TValue> _type;
+        private readonly ValueExpression<TValue> _lh, _rh;
+
+        public Comparison(ValueExpression<TValue> leftHandExpression, ComparisonType<TValue> comparisonType, ValueExpression<TValue> rightHandExpression)
+        {
+            _lh = leftHandExpression ?? throw new System.ArgumentNullException(nameof(leftHandExpression));
+            _type = comparisonType ?? throw new System.ArgumentNullException(nameof(comparisonType));
+            _rh = rightHandExpression ?? throw new System.ArgumentNullException(nameof(rightHandExpression));
+        }
+
+        protected override bool Evaluate_Internal(IStatSet<TValue> safeStatSet)
+        {
+            TValue exp1Result = _lh.Evaluate(safeStatSet);
+            TValue exp2Result = _rh.Evaluate(safeStatSet);
+
+            return _type.Evaluate(exp1Result, exp2Result);
+        }
+    }
+    public class ConditionalExpression<TValue> : ValueExpression<TValue> where TValue : struct
+    {
+        private readonly LogicExpression<TValue> _condition;
+        private readonly ValueExpression<TValue> _consequent, _alternative;
+        public ConditionalExpression(LogicExpression<TValue> condition, ValueExpression<TValue> consequentExpression, ValueExpression<TValue> alternativeExpression)
         {
             _condition = condition ?? throw new System.ArgumentNullException(nameof(condition));
             _consequent = consequentExpression ?? throw new System.ArgumentNullException(nameof(consequentExpression));

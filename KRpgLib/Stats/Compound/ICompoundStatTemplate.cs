@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace KRpgLib.Stats.Compound
+﻿namespace KRpgLib.Stats.Compound
 {
     public interface ICompoundStatTemplate<TValue> : ILegalizeableValue<TValue> where TValue : struct
     {
@@ -22,7 +20,7 @@ namespace KRpgLib.Stats.Compound
     public abstract class AbstractCompoundStatTemplate_Int : AbstractCompoundStatTemplate<int>
     {
         protected AbstractCompoundStatTemplate_Int(int? min, int? max, int? precison, CompoundStatAlgorithm<int> algorithm)
-            :base(new StatLegalizer_Int(min, max, precison), algorithm) { }
+            : base(new StatLegalizer_Int(min, max, precison), algorithm) { }
     }
     public abstract class AbstractCompoundStatTemplate_Float : AbstractCompoundStatTemplate<float>
     {

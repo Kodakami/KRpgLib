@@ -1,11 +1,11 @@
-﻿using KRpgLib.Stats.Compound;
-using KRpgLib.Stats;
+﻿using KRpgLib.Stats;
+using KRpgLib.Stats.Compound;
 
 namespace KRpgLibUnitTests.Stats.Compound
 {
-    public class TestExpression : IExpression<int>
+    public class TestExpression : ValueExpression<int>
     {
-        public int Evaluate(IStatSet<int> forStatSet)
+        protected override int Evaluate_Internal(IStatSet<int> safeStatSet)
         {
             return 33;
         }

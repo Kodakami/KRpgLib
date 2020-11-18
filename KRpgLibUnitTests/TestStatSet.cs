@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using KRpgLib.Stats;
+﻿using KRpgLib.Stats;
 using KRpgLib.Stats.Compound;
+using System.Collections.Generic;
 
 namespace KRpgLibUnitTests.Stats
 {

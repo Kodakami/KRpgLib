@@ -19,7 +19,7 @@
     public class AbstractStatTemplate_Int : AbstractStatTemplate<int>
     {
         protected AbstractStatTemplate_Int(int? min, int? max, int? precision, int defaultValue)
-            :base(new StatLegalizer_Int(min, max, precision), defaultValue) { }
+            : base(new StatLegalizer_Int(min, max, precision), defaultValue) { }
     }
     public class AbstractStatTemplate_Float : AbstractStatTemplate<float>
     {
