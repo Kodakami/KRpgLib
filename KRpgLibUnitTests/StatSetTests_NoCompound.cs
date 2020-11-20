@@ -7,43 +7,65 @@ namespace KRpgLibUnitTests.Stats
     {
         // Values.
         [TestMethod]
-        public void StatSet_ForRepresentedStat_ReturnsStatValue()
+        public void GetStatValue_ForProvidedStat_ReturnsCorrectValue()
         {
-            TestStatSet set = new TestStatSet();
-            Assert.AreEqual(79, set.GetStatValue(set.TestStat3));
+            var mock = new FakeStatSet();
+            const int RAW_VALUE = 3;
+
+            var resultValue = mock.GetStatValue(FakeStatSet.TestStat_Raw3_Legal2_Provided);
+
+            Assert.AreEqual(RAW_VALUE, resultValue);
         }
         [TestMethod]
-        public void StatSet_ForRepresentedStat_ReturnsStatValueLegalized()
+        public void GetStatValueLegalized_ForRepresentedStat_ReturnsCorrectValue()
         {
-            TestStatSet set = new TestStatSet();
-            Assert.AreEqual(78, set.GetStatValueLegalized(set.TestStat3));
+            var mock = new FakeStatSet();
+            const int LEGAL_VALUE = 2;
+
+            var resultValue = mock.GetStatValueLegalized(FakeStatSet.TestStat_Raw3_Legal2_Provided);
+
+            Assert.AreEqual(LEGAL_VALUE, resultValue);
         }
 
         [TestMethod]
-        public void StatSet_ForMissingStat_ReturnsDefaultValue()
+        public void GetStatValue_ForMissingStat_ReturnsDefaultValue()
         {
-            TestStatSet set = new TestStatSet();
-            Assert.AreEqual(1337, set.GetStatValue(new TestStatTemplate("Missing Stat", null, null, 1, 1337)));
+            var mockSet = new FakeStatSet();
+
+            var resultValue = mockSet.GetStatValue(FakeStatSet.TestStat_Default7_Legal6_Missing);
+            const int DEFAULT_VALUE = 7;
+
+            Assert.AreEqual(DEFAULT_VALUE, resultValue);
         }
         [TestMethod]
-        public void StatSet_ForMissingStat_ReturnsDefaultValueLegalized()
+        public void GetStatValueLegalized_ForMissingStat_ReturnsDefaultValue()
         {
-            TestStatSet set = new TestStatSet();
-            Assert.AreEqual(1336, set.GetStatValueLegalized(new TestStatTemplate("Missing Stat", null, null, 2, 1337)));
+            var mockSet = new FakeStatSet();
+
+            var resultValue = mockSet.GetStatValueLegalized(FakeStatSet.TestStat_Default7_Legal6_Missing);
+            const int LEGAL_VALUE = 6;
+
+            Assert.AreEqual(LEGAL_VALUE, resultValue);
         }
 
         // Exceptions.
         [TestMethod]
-        public void StatSet_ForNullStat_ThrowsArgNullEx()
+        public void GetStatValue_ForNullStat_ThrowsArgNullEx()
         {
-            TestStatSet set = new TestStatSet();
-            Assert.ThrowsException<System.ArgumentNullException>(() => set.GetStatValue(null));
+            var mock = new FakeStatSet();
+
+            void exceptionalAction() => mock.GetStatValue(null);
+            
+            Assert.ThrowsException<System.ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
-        public void StatSet_ForNullStatLegalized_ThrowsArgNullEx()
+        public void GetStatValueLegalized_ForNullStat_ThrowsArgNullEx()
         {
-            TestStatSet set = new TestStatSet();
-            Assert.ThrowsException<System.ArgumentNullException>(() => set.GetStatValueLegalized(null));
+            var mock = new FakeStatSet();
+
+            void exceptionalAction() => mock.GetStatValueLegalized(null);
+
+            Assert.ThrowsException<System.ArgumentNullException>(exceptionalAction);
         }
     }
 }

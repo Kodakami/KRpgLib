@@ -49,7 +49,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
                 throw new ArgumentException("Argument may not be null, empty, or consist only of white-space characters.", nameof(script));
             }
 
-            Scanner<TValue> scanner = new Scanner<TValue>(script);
+            Scanner scanner = new Scanner(script);
             if (!scanner.TryScanTokens(out List<Token> tokens))
             {
                 Error(scanner.StatusMessage);

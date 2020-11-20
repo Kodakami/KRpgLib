@@ -6,35 +6,30 @@ namespace KRpgLibUnitTests.Stats.Compound
     [TestClass]
     public class StatSetTests_Compound
     {
-        [TestMethod]
-        public void StatSet_ForCompoundStat_ReturnsCorrectValue()
+        private const int RAW_VALUE = 3;
+        private const int PRECISION = 2;
+        private const int LEGAL_VALUE = 2;
+
+        private void CompoundStatValueTest(System.Func<KRpgLib.Stats.AbstractStatSet<int>, ICompoundStatTemplate<int> , int> testFunc, int expectedValue)
         {
-            var set = new TestStatSet();    //S1 = 13, S2 = 43
-            var algo = new CompoundStatAlgorithm<int>(
-                new ValueOperation_Multiary<int>(
-                    CommonInstances.Int.Max,
-                    new StatLiteral<int>(set.TestStat1, false),
-                    new StatLiteral<int>(set.TestStat2, false)
-                ));  //Greater value of Stat1 and Stat2 (Stat2 = 43 unlegalized)
+            var mockSet = new FakeStatSet();
+            var stubValueExpression = new FakeValueExpression(RAW_VALUE);
+            var algorithm = new CompoundStatAlgorithm<int>(stubValueExpression);
+            var stubCompoundStatTemplate = new FakeCompoundStatTemplate(null, null, PRECISION, algorithm);
 
-            TestCompoundStatTemplate cs = new TestCompoundStatTemplate("Test Compound Stat", 0, 100, 2, algo);  //43 (42 legal)
+            var resultValue = testFunc(mockSet, stubCompoundStatTemplate);
 
-            Assert.AreEqual(43, set.GetCompoundStatValue(cs));
+            Assert.AreEqual(expectedValue, resultValue);
         }
         [TestMethod]
-        public void StatSet_ForCompoundStat_ReturnsCorrectValueLegalized()
+        public void GetCompoundStatValue_WithValidAlgorithm_ReturnsCorrectValue()
         {
-            var set = new TestStatSet();    //S1 = 13, S2 = 43
-            var algo = new CompoundStatAlgorithm<int>(
-                new ValueOperation_Multiary<int>(
-                    CommonInstances.Int.Max,
-                    new StatLiteral<int>(set.TestStat1, false),
-                    new StatLiteral<int>(set.TestStat2, false)
-                ));  //Greater value of Stat1 and Stat2 (Stat2 = 43 unlegalized)
-
-            TestCompoundStatTemplate cs = new TestCompoundStatTemplate("Test Compound Stat", 0, 100, 2, algo);  //43 (42 legal)
-
-            Assert.AreEqual(42, set.GetCompoundStatValueLegalized(cs));
+            CompoundStatValueTest((set, template) => set.GetCompoundStatValue(template), RAW_VALUE);
+        }
+        [TestMethod]
+        public void GetCompoundStatValueLegalized_WithValidAlgorithm_ReturnsCorrectValue()
+        {
+            CompoundStatValueTest((set, template) => set.GetCompoundStatValueLegalized(template), LEGAL_VALUE);
         }
     }
 }

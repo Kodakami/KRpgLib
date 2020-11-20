@@ -8,26 +8,35 @@ namespace KRpgLibUnitTests.Stats.Compound
     public class CompoundStatAlgorithmTests
     {
         [TestMethod]
-        public void CompoundStatAlgorithm_WhenConstructing_ReturnsFunctionalAlgorithm()
+        public void CalculateValue_WithValidAlgorithm_ReturnsCorrectValue()
         {
-            var set = new TestStatSet();
-            var algo = new CompoundStatAlgorithm<int>(new TestExpression());    //33
+            var stubSet = new FakeStatSet();
+            var stubExpression = new FakeValueExpression(0);
+            var mockAlgorithm = new CompoundStatAlgorithm<int>(stubExpression);
 
-            Assert.AreEqual(33, algo.CalculateValue(set));
+            var resultValue = mockAlgorithm.CalculateValue(stubSet);
+
+            Assert.AreEqual(0, resultValue);
         }
         [TestMethod]
-        public void CompoundStatAlgorithm_WhenConstructingWithNullExpression_ThrowsArgNullEx()
+        public void Constructor_WithNullAlgorithm_ThrowsArgNullEx()
         {
-            TestExpression exp = null;                          //null
-            Assert.ThrowsException<ArgumentNullException>(() => new CompoundStatAlgorithm<int>(exp));
+            FakeValueExpression stubNullExpression = null;
+
+            void exceptionalAction() => new CompoundStatAlgorithm<int>(stubNullExpression);
+
+            Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
-        public void CompoundStatAlgorithm_WhenCalculatingValueWithNullStatSet_ThrowsArgNullEx()
+        public void CalculateValue_WithNullStatSet_ThrowsArgNullEx()
         {
-            var algo = new CompoundStatAlgorithm<int>(new TestExpression());    //33
-            TestStatSet set = null;
+            var stubValueExpression = new FakeValueExpression(0);
+            var mockAlgorithm = new CompoundStatAlgorithm<int>(stubValueExpression);
+            FakeStatSet stubNullSet = null;
 
-            Assert.ThrowsException<ArgumentNullException>(() => algo.CalculateValue(set));
+            void exceptionalAction() => mockAlgorithm.CalculateValue(stubNullSet);
+
+            Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
     }
 }

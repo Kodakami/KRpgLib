@@ -84,12 +84,12 @@ namespace KRpgLib.Stats.Compound
         }
     }
     public delegate bool ComparisonFunc<TValue>(TValue leftHand, TValue rightHand);
-    public class ComparisonType<TValue> where TValue : struct
+    public sealed class ComparisonType<TValue> where TValue : struct
     {
         private readonly ComparisonFunc<TValue> _func;
         public ComparisonType(ComparisonFunc<TValue> comparisonFunc)
         {
-            _func = comparisonFunc;
+            _func = comparisonFunc ?? throw new System.ArgumentNullException(nameof(comparisonFunc));
         }
         public bool Evaluate(TValue value1, TValue value2)
         {
@@ -215,7 +215,7 @@ namespace KRpgLib.Stats.Compound
         private readonly ComparisonType<TValue> _type;
         private readonly ValueExpression<TValue> _lh, _rh;
 
-        public Comparison(ValueExpression<TValue> leftHandExpression, ComparisonType<TValue> comparisonType, ValueExpression<TValue> rightHandExpression)
+        public Comparison(ComparisonType<TValue> comparisonType, ValueExpression<TValue> leftHandExpression, ValueExpression<TValue> rightHandExpression)
         {
             _lh = leftHandExpression ?? throw new System.ArgumentNullException(nameof(leftHandExpression));
             _type = comparisonType ?? throw new System.ArgumentNullException(nameof(comparisonType));
@@ -230,7 +230,7 @@ namespace KRpgLib.Stats.Compound
             return _type.Evaluate(exp1Result, exp2Result);
         }
     }
-    public class ConditionalExpression<TValue> : ValueExpression<TValue> where TValue : struct
+    public sealed class ConditionalExpression<TValue> : ValueExpression<TValue> where TValue : struct
     {
         private readonly LogicExpression<TValue> _condition;
         private readonly ValueExpression<TValue> _consequent, _alternative;

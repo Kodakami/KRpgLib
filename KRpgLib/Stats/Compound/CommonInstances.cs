@@ -29,7 +29,16 @@ namespace KRpgLib.Stats.Compound
                 new MultiaryOperationType<int>(values => values.Aggregate((total, curr) => System.Math.Min(total, curr)));
             public static readonly MultiaryOperationType<int> Max =
                 new MultiaryOperationType<int>(values => values.Aggregate((total, curr) => System.Math.Max(total, curr)));
-            public static readonly BinaryOperationType<int> Modulo = new BinaryOperationType<int>((l, r) => l % r);
+            public static readonly BinaryOperationType<int> Modulo = new BinaryOperationType<int>(
+                (l, r) =>
+                {
+                    if (r == 0)
+                    {
+                        // Division By Zero avoidance.
+                        return 0;
+                    }
+                    return l % r;
+                });
 
             // Numeric comparisons.
             public static readonly ComparisonType<int> EqualTo = new ComparisonType<int>((l, r) => l == r);
@@ -63,7 +72,16 @@ namespace KRpgLib.Stats.Compound
             public static readonly BinaryOperationType<float> PowerOf = new BinaryOperationType<float>((l, r) => (float)System.Math.Pow(l, r));
             public static readonly MultiaryOperationType<float> Min = new MultiaryOperationType<float>(values => values.Aggregate((total, curr) => System.Math.Min(total, curr)));
             public static readonly MultiaryOperationType<float> Max = new MultiaryOperationType<float>(values => values.Aggregate((total, curr) => System.Math.Max(total, curr)));
-            public static readonly BinaryOperationType<float> Modulo = new BinaryOperationType<float>((l, r) => l % r);
+            public static readonly BinaryOperationType<float> Modulo = new BinaryOperationType<float>(
+                (l, r) =>
+                {
+                    if (r == 0)
+                    {
+                        // Division By Zero avoidance.
+                        return 0;
+                    }
+                    return l % r;
+                });
 
             // Numeric comparisons.
             public static readonly ComparisonType<float> EqualTo = new ComparisonType<float>((l, r) => l == r);

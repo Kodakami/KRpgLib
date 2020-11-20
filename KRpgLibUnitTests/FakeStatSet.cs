@@ -4,28 +4,16 @@ using System.Collections.Generic;
 
 namespace KRpgLibUnitTests.Stats
 {
-    public class TestStatSet : AbstractStatSet<int>
+    public class FakeStatSet : AbstractStatSet<int>
     {
-        /// <summary>
-        /// 13 (12 legal)
-        /// </summary>
-        public TestStatTemplate TestStat1 = new TestStatTemplate("Test Stat 1", 0, 100, 2, 0);
-        /// <summary>
-        /// 43 (42 legal)
-        /// </summary>
-        public TestStatTemplate TestStat2 = new TestStatTemplate("Test Stat 2", 0, 100, 2, 0);
-        /// <summary>
-        /// 79 (78 legal)
-        /// </summary>
-        public TestStatTemplate TestStat3 = new TestStatTemplate("Test Stat 3", 0, 100, 2, 0);
+        public static readonly FakeStatTemplate TestStat_Raw3_Legal2_Provided = new FakeStatTemplate(null, null, 2, 0);
+        public static readonly FakeStatTemplate TestStat_Default7_Legal6_Missing = new FakeStatTemplate(null, null, 2, 7);
 
         private readonly Dictionary<IStatTemplate<int>, int> _dict = new Dictionary<IStatTemplate<int>, int>();
 
-        public TestStatSet()
+        public FakeStatSet()
         {
-            _dict.Add(TestStat1, 13);
-            _dict.Add(TestStat2, 43);
-            _dict.Add(TestStat3, 79);
+            _dict.Add(TestStat_Raw3_Legal2_Provided, 3);
         }
 
         protected override int GetCompoundStatValue_Internal(ICompoundStatTemplate<int> safeCompoundStatTemplate)

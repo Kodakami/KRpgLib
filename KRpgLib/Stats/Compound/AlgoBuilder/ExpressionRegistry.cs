@@ -12,6 +12,8 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
     {
         public string ExpressionName { get; }
         public List<string> Keywords { get; }
+        // TODO: Fix me after rewriting Compound.cs
+        
         public ExpressionObjectBuildAction<TValue> ExpressionObjectBuildAction { get; }
 
         public ExpressionInfo(string expressionName, List<string> keywords, ExpressionObjectBuildAction<TValue> expressionObjectBuilder)

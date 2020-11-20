@@ -27,7 +27,7 @@
         }
         public override string ToString()
         {
-            return $"TokenType[{TokenType}] Lexeme[{Lexeme}] Literal[{Literal}]";
+            return $"TokenType[{TokenType}] Lexeme[{Lexeme}] Literal[{Literal}] CharIndex[{CharIndex}]";
         }
     }
 }

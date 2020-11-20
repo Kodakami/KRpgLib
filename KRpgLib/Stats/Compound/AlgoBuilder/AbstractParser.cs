@@ -179,6 +179,8 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             // Pop stack for string identifier.
             if (!TryPopAsType("Expression keyword", out string expressionKeyword))
             {
+                // Stack was empty.
+                // Error report is created in TryPopAsType().
                 return false;
             }
             // Expression registry lookup.
@@ -190,11 +192,14 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
 
             // Will pop params and push result.
             expressionInfo.ExpressionObjectBuildAction(this);
+
+            // TODO: When is the null consumed?
+
             return true;
         }
         protected bool DoEndExpression()
         {
-            TheStack.Push((byte)0x0);
+            TheStack.Push(null);
             return true;
         }
         protected abstract bool TryParseNumber(string str, out TValue value);
@@ -202,7 +207,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         {
             if (!TryPop(out object obj))
             {
-                Error("Expected: Expression.");
+                Error($"Expected: {expectedObjName}.");
                 result = default;
                 return false;
             }
@@ -216,30 +221,36 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         }
         protected bool TryPopManyAsType<T>(string expectedObjName, out List<T> args)
         {
+            // Out list.
             args = new List<T>();
-            // Pop until end of expression scope.
+
             while (TheStack.Count != 0)
             {
-                if (!TryPop(out object obj))
+                // Check to see if the next object on the stack is null.
+                if (TheStack.Peek() == null)
                 {
-                    // Expect expression.
-                    break;
-                }
-                if (!TryCastAsType(obj, out T expressionObj) && !TryCastAsType(obj, out byte asByte))
-                {
-                    // Check to see if result is 0 byte, which is end of multiary expression scope.
-                    if (asByte != 0x0)
-                    {
-                        Error($"Expected: {expectedObjName}.");
-                        return false;
-                    }
-                    // If it is 0 byte, return true and our results list.
+                    // If null, then this is the end of the expression (don't consume the null object).
                     return true;
                 }
+
+                // Pop the next object off the stack.
+                // This cannot fail, since the while loop checks the only cause of failure.
+                TryPop(out object obj);
+
+                // Try to cast the popped object as the type we want.
+                if (!TryCastAsType(obj, out T expressionObj))
+                {
+                    // If failed, then there is a syntax error of some kind.
+                    Error($"Expected: {expectedObjName}.");
+                    return false;
+                }
+
+                // The object is of the type we want, so add it to the out list and loop again.
                 args.Add(expressionObj);
             }
 
-            Error("Expected: Expression or closing parenthesis.");
+            // If failed, then stack was empty, meaning there was no end of expression.
+            Error($"Expected: {expectedObjName} or end of expression.");
             return false;
         }
         public bool TryPopLogicExpression(out LogicExpression<TValue> logicExpression) => TryPopAsType("Logic expression", out logicExpression);
@@ -254,5 +265,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         {
             TheStack.Push(valueExpression ?? throw new ArgumentNullException(nameof(valueExpression)));
         }
+        public void DoUnaryExpression(System.Func<Unar>)
+            // TODO: I just realized I need to remake Compound.cs.
     }
 }

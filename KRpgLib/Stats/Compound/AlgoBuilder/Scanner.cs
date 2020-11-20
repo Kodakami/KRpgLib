@@ -2,7 +2,7 @@
 
 namespace KRpgLib.Stats.Compound.AlgoBuilder
 {
-    public sealed class Scanner<TValue> where TValue : struct
+    public sealed class Scanner
     {
         private readonly string _script;
         private readonly List<Token> _tokens = new List<Token>();
@@ -15,22 +15,29 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
 
         public Scanner(string script)
         {
+            if (string.IsNullOrWhiteSpace(script))
+            {
+                throw new System.ArgumentException(nameof(script));
+            }
+
             _script = script;
         }
         private void Error(string message)
         {
-            StatusMessage = $"Scanner error at character index {_currentIndex}. {message}";
+            StatusMessage = $"Scanner error at token: {(_currentIndex < _tokens.Count ? _tokens[_currentIndex].ToString() : "Invalid token index.")}";
             ScanResult = Result.FAIL;
         }
         public bool TryScanTokens(out List<Token> tokens)
         {
+            tokens = _tokens;
+            _currentIndex = 0;
+
             while (!IsAtEnd())
             {
                 _startIndex = _currentIndex;
 
                 if (!ScanNextToken())
                 {
-                    tokens = null;
                     return false;
                 }
             }
@@ -41,7 +48,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         }
         private bool ScanNextToken()
         {
-            _currentIndex++;
+            //_currentIndex++;
             char c = Advance();
             switch (c)
             {
@@ -94,6 +101,10 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             _currentIndex++;
             return _script[_currentIndex - 1];
         }
+        private char Peek()
+        {
+            return _script[_currentIndex];
+        }
         private string GetCurrentSubstring()
         {
             return _script.Substring(_startIndex, _currentIndex - _startIndex);
@@ -104,11 +115,18 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
 
             while (!IsAtEnd())
             {
-                char c = Advance();
+                // Look ahead to the next char.
+                char c = Peek();
+
+                // If it is not a number or decimal point, then it is past the end of the number lexeme.
                 if (!char.IsDigit(c) && c != '.')
                 {
+                    // Break the loop.
                     break;
                 }
+                
+                //If it is a number or decimal point, then it is part of the number lexeme and we need to consume the character.
+                Advance();
             }
 
             AddToken(TokenType.NUMBER, GetCurrentSubstring());
@@ -118,11 +136,12 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             // Something like an expression name, stat name, or macro name.
             while (!IsAtEnd())
             {
-                char c = Advance();
-                if (!char.IsLetter(c) && !char.IsNumber(c))
+                char c = Peek();
+                if (!char.IsLetter(c))
                 {
                     break;
                 }
+                Advance();
             }
 
             AddToken(TokenType.IDENTIFIER, GetCurrentSubstring());

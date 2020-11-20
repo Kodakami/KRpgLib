@@ -9,7 +9,9 @@ namespace KRpgLibUnitTests.Stats.Compound
         [TestMethod]
         public void CompoundStatTemplate_WhenConstructingWithNullAlgorithm_ThrowsArgNullRef()
         {
-            Assert.ThrowsException<ArgumentNullException>(() => new TestCompoundStatTemplate("Error Compound Stat", 0, 100, 1, null));
+            void exceptionalAction() => new FakeCompoundStatTemplate(0, 0, 0, null);
+
+            Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
     }
 }

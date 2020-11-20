@@ -7,23 +7,31 @@ namespace KRpgLibUnitTests.Stats
     public class StatLegalizerTests
     {
         [TestMethod]
-        public void StatLegalizer_HasMinValue_LegalizesByMinValue()
+        public void GetLegalizedValue_RawValueLessThanMin_ReturnsMinValue()
         {
-            LegalizationTest(new StatLegalizer_Int(-15, null, null), -15, -16);
+            var mockLegalizer = new StatLegalizer_Int(1, null, null);
+
+            LegalizationTest(mockLegalizer, 1, 0);
         }
         [TestMethod]
-        public void StatLegalizer_HasMaxValue_LegalizesByMaxValue()
+        public void GetLegalizedValue_RawValueGreaterThanMax_ReturnsMaxValue()
         {
-            LegalizationTest(new StatLegalizer_Int(null, 99, null), 99, 100);
+            var mockLegalizer = new StatLegalizer_Int(null, 0, null);
+
+            LegalizationTest(mockLegalizer, 0, 1);
         }
         [TestMethod]
-        public void StatLegalizer_HasPrecision_LegalizesByPrecision()
+        public void GetLegalizedValue_RawValueOutsideOfPrecision_ReturnsClosestLegalValue()
         {
-            LegalizationTest(new StatLegalizer_Int(null, null, 3), 3, 5);
+            var mockLegalizer = new StatLegalizer_Int(null, null, 2);
+
+            LegalizationTest(mockLegalizer, 2, 3);
         }
         private void LegalizationTest<TValue>(AbstractStatLegalizer<TValue> statLegalizer, TValue expected, TValue inputValue) where TValue : struct
         {
-            Assert.AreEqual(expected, statLegalizer.GetLegalizedValue(inputValue));
+            var resultValue = statLegalizer.GetLegalizedValue(inputValue);
+
+            Assert.AreEqual(expected, resultValue);
         }
     }
 }
