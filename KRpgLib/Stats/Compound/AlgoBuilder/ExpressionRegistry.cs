@@ -40,11 +40,16 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             // Keywords list null or empty check.
             if (keywords == null || keywords.Count == 0)
             {
-                throw new ArgumentException("Argument cannot be null or empty.", nameof(keywords));
+                throw new ArgumentException("Argument may not be null or empty.", nameof(keywords));
             }
             // For each keyword in list...
             foreach (var keyword in keywords)
             {
+                // Null check
+                if (string.IsNullOrEmpty(keyword))
+                {
+                    throw new ArgumentException("Argument may not contain null items.", nameof(keywords));
+                }
                 // Keyword character legality check.
                 if (!KeywordIsLegal(keyword))
                 {
@@ -95,7 +100,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
                     message = null;
                     return true;
                 }
-                message = $"Expression \"{keyword}\" did not process correctly. Check arguments.";
+                message = $"Expression \"{keyword}\" did not process correctly. This is a problem with the expression itself.";
                 return false;
             }
             message = $"\"{keyword}\" is not a registered expression keyword.";

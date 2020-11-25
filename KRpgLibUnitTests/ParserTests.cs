@@ -58,9 +58,9 @@ namespace KRpgLibUnitTests.Stats.Compound.AlgoBuilder
         {
             var stubTokens = GetStubTokenList();
             var stubExpReg = new ExpressionRegistry<int>();
-            stubExpReg.Add("add", new List<string>() { "add" },
-                ExpressionInfoUtilities<int>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
+            stubExpReg.Add(new List<string>() { "add" },
+                ParserUtilities<int>.PopMultiaryValueParams,
+                q => ParserUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
                     q, list => new ValueOperation_Multiary<int>(CommonInstances.Int.Add, list))
                 );
             var stubStatReg = new StatTemplateRegistry<int>();

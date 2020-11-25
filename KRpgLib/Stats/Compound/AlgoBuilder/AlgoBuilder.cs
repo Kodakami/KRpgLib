@@ -38,52 +38,44 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             ExpressionRegistry = new ExpressionRegistry<TValue>();
             StatTemplateRegistry = new StatTemplateRegistry<TValue>();
 
-            ExpressionRegistry.Add(
-                "not", new List<string>() { "not" },
-                ExpressionInfoUtilities<TValue>.PopUnaryLogicParams,
-                q => ExpressionInfoUtilities<TValue>.ConstructUnaryOperation<LogicExpression<TValue>>(
+            ExpressionRegistry.Add(new List<string>() { "not" },
+                ParserUtilities<TValue>.PopUnaryLogicParams,
+                q => ParserUtilities<TValue>.ConstructUnaryOperation<LogicExpression<TValue>>(
                     q, input => new LogicOperations.LogicOperation_Not<TValue>(input)));
 
-            ExpressionRegistry.Add(
-                "and", new List<string>() { "and" },
-                ExpressionInfoUtilities<TValue>.PopBinaryLogicParams,
-                q => ExpressionInfoUtilities<TValue>.ConstructBinaryOperation<LogicExpression<TValue>>(
+            ExpressionRegistry.Add(new List<string>() { "and" },
+                ParserUtilities<TValue>.PopBinaryLogicParams,
+                q => ParserUtilities<TValue>.ConstructBinaryOperation<LogicExpression<TValue>>(
                     q, (l,r) => new LogicOperations.LogicOperation_And<TValue>(l, r)));
 
-            ExpressionRegistry.Add(
-                "or", new List<string>() { "or" },
-                ExpressionInfoUtilities<TValue>.PopBinaryLogicParams,
-                q => ExpressionInfoUtilities<TValue>.ConstructBinaryOperation<LogicExpression<TValue>>(
+            ExpressionRegistry.Add(new List<string>() { "or" },
+                ParserUtilities<TValue>.PopBinaryLogicParams,
+                q => ParserUtilities<TValue>.ConstructBinaryOperation<LogicExpression<TValue>>(
                     q, (l, r) => new LogicOperations.LogicOperation_Or<TValue>(l, r)));
 
-            ExpressionRegistry.Add(
-                "xor", new List<string>() { "xor" },
-                ExpressionInfoUtilities<TValue>.PopBinaryLogicParams,
-                q => ExpressionInfoUtilities<TValue>.ConstructBinaryOperation<LogicExpression<TValue>>(
+            ExpressionRegistry.Add(new List<string>() { "xor" },
+                ParserUtilities<TValue>.PopBinaryLogicParams,
+                q => ParserUtilities<TValue>.ConstructBinaryOperation<LogicExpression<TValue>>(
                     q, (l, r) => new LogicOperations.LogicOperation_Xor<TValue>(l, r)));
 
-            ExpressionRegistry.Add(
-                "all", new List<string>() { "all" },
-                ExpressionInfoUtilities<TValue>.PopMultiaryLogicParams,
-                q => ExpressionInfoUtilities<TValue>.ConstructMultiaryOperation<LogicExpression<TValue>>(
+            ExpressionRegistry.Add(new List<string>() { "all" },
+                ParserUtilities<TValue>.PopMultiaryLogicParams,
+                q => ParserUtilities<TValue>.ConstructMultiaryOperation<LogicExpression<TValue>>(
                     q, list => new LogicOperations.LogicOperation_All<TValue>(list)));
 
-            ExpressionRegistry.Add(
-                "any", new List<string>() { "any" },
-                ExpressionInfoUtilities<TValue>.PopMultiaryLogicParams,
-                q => ExpressionInfoUtilities<TValue>.ConstructMultiaryOperation<LogicExpression<TValue>>(
+            ExpressionRegistry.Add(new List<string>() { "any" },
+                ParserUtilities<TValue>.PopMultiaryLogicParams,
+                q => ParserUtilities<TValue>.ConstructMultiaryOperation<LogicExpression<TValue>>(
                     q, list => new LogicOperations.LogicOperation_Any<TValue>(list)));
 
-            ExpressionRegistry.Add(
-                "one", new List<string>() { "one" },
-                ExpressionInfoUtilities<TValue>.PopMultiaryLogicParams,
-                q => ExpressionInfoUtilities<TValue>.ConstructMultiaryOperation<LogicExpression<TValue>>(
+            ExpressionRegistry.Add(new List<string>() { "one" },
+                ParserUtilities<TValue>.PopMultiaryLogicParams,
+                q => ParserUtilities<TValue>.ConstructMultiaryOperation<LogicExpression<TValue>>(
                     q, list => new LogicOperations.LogicOperation_One<TValue>(list)));
 
-            ExpressionRegistry.Add(
-                "if", new List<string>() { "if", "cond" },
-                ExpressionInfoUtilities<TValue>.PopConditionalParams,
-                q => ExpressionInfoUtilities<TValue>.ConstructConditional(q));
+            ExpressionRegistry.Add(new List<string>() { "if", "cond" },
+                ParserUtilities<TValue>.PopConditionalParams,
+                q => ParserUtilities<TValue>.ConstructConditional(q));
         }
         /// <summary>
         /// Get a new instance of your backing value's own concrete subclass of AbstractParser<YourBackingType>.
@@ -146,78 +138,63 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
     {
         public AlgoBuilder_Int()
         {
-            ExpressionRegistry.Add(
-                "negate", new List<string>() { "neg", "negative", "opposite" },
-                ExpressionInfoUtilities<int>.PopUnaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructUnaryOperation<ValueExpression<int>>(
+            ExpressionRegistry.Add(new List<string>() { "neg", "negative", "opposite" },
+                ParserUtilities<int>.PopUnaryValueParams,
+                q => ParserUtilities<int>.ConstructUnaryOperation<ValueExpression<int>>(
                     q, input => new ValueOperation_Unary<int>(CommonInstances.Int.Negative, input)));
 
-            ExpressionRegistry.Add(
-                "divide", new List<string>() { "div" },
-                ExpressionInfoUtilities<int>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructBinaryOperation<ValueExpression<int>>(
+            ExpressionRegistry.Add(new List<string>() { "div" },
+                ParserUtilities<int>.PopBinaryValueParams,
+                q => ParserUtilities<int>.ConstructBinaryOperation<ValueExpression<int>>(
                     q, (l,r) => new ValueOperation_Binary<int>(CommonInstances.Int.Divide, l, r)));
-            ExpressionRegistry.Add(
-                "power", new List<string>() { "pow", },
-                ExpressionInfoUtilities<int>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructBinaryOperation<ValueExpression<int>>(
+            ExpressionRegistry.Add(new List<string>() { "pow", },
+                ParserUtilities<int>.PopBinaryValueParams,
+                q => ParserUtilities<int>.ConstructBinaryOperation<ValueExpression<int>>(
                     q, (l, r) => new ValueOperation_Binary<int>(CommonInstances.Int.PowerOf, l, r)));
-            ExpressionRegistry.Add(
-                "modulo", new List<string>() { "mod", "modulo", "modulus" },
-                ExpressionInfoUtilities<int>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructBinaryOperation<ValueExpression<int>>(
+            ExpressionRegistry.Add(new List<string>() { "mod", "modulo", "modulus" },
+                ParserUtilities<int>.PopBinaryValueParams,
+                q => ParserUtilities<int>.ConstructBinaryOperation<ValueExpression<int>>(
                     q, (l, r) => new ValueOperation_Binary<int>(CommonInstances.Int.Modulo, l, r)));
 
-            ExpressionRegistry.Add(
-                "add", new List<string>() { "add", "plus" },
-                ExpressionInfoUtilities<int>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
+            ExpressionRegistry.Add(new List<string>() { "add", "plus" },
+                ParserUtilities<int>.PopMultiaryValueParams,
+                q => ParserUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
                     q, list => new ValueOperation_Multiary<int>(CommonInstances.Int.Add, list)));
-            ExpressionRegistry.Add(
-                "subtract", new List<string>() { "sub", "minus" },
-                ExpressionInfoUtilities<int>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
+            ExpressionRegistry.Add(new List<string>() { "sub", "minus" },
+                ParserUtilities<int>.PopMultiaryValueParams,
+                q => ParserUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
                     q, list => new ValueOperation_Multiary<int>(CommonInstances.Int.Subtract, list)));
-            ExpressionRegistry.Add(
-                "multiply", new List<string>() { "mul", "times" },
-                ExpressionInfoUtilities<int>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
+            ExpressionRegistry.Add(new List<string>() { "mul", "times" },
+                ParserUtilities<int>.PopMultiaryValueParams,
+                q => ParserUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
                     q, list => new ValueOperation_Multiary<int>(CommonInstances.Int.Multiply, list)));
-            ExpressionRegistry.Add(
-                "minimum", new List<string>() { "min", "smallest" },
-                ExpressionInfoUtilities<int>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
+            ExpressionRegistry.Add(new List<string>() { "min", "smallest" },
+                ParserUtilities<int>.PopMultiaryValueParams,
+                q => ParserUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
                     q, list => new ValueOperation_Multiary<int>(CommonInstances.Int.Min, list)));
-            ExpressionRegistry.Add(
-                "maximum", new List<string>() { "max", "biggest" },
-                ExpressionInfoUtilities<int>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
+            ExpressionRegistry.Add(new List<string>() { "max", "biggest" },
+                ParserUtilities<int>.PopMultiaryValueParams,
+                q => ParserUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
                     q, list => new ValueOperation_Multiary<int>(CommonInstances.Int.Max, list)));
 
-            ExpressionRegistry.Add(
-                "equalto", new List<string>() { "equ", "eq", "is" },
-                ExpressionInfoUtilities<int>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructComparison(q, CommonInstances.Int.EqualTo));
-            ExpressionRegistry.Add(
-                "notequalto", new List<string>() { "neq", "nequ", "isnt" },
-                ExpressionInfoUtilities<int>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructComparison(q, CommonInstances.Int.NotEqualTo));
-            ExpressionRegistry.Add(
-                "greaterthan", new List<string>() { "gt" },
-                ExpressionInfoUtilities<int>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructComparison(q, CommonInstances.Int.GreaterThan));
-            ExpressionRegistry.Add(
-                "greaterthanorequalto", new List<string>() { "geq", "gequ", "gteq", "gtequ" },
-                ExpressionInfoUtilities<int>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructComparison(q, CommonInstances.Int.GreaterThanOrEqualTo));
-            ExpressionRegistry.Add(
-                "lessthan", new List<string>() { "lt" },
-                ExpressionInfoUtilities<int>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructComparison(q, CommonInstances.Int.LessThan));
-            ExpressionRegistry.Add(
-                "lessthanorequalto", new List<string>() { "leq", "lequ", "lteq", "ltequ" },
-                ExpressionInfoUtilities<int>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<int>.ConstructComparison(q, CommonInstances.Int.LessThanOrEqualTo));
+            ExpressionRegistry.Add(new List<string>() { "equ", "eq", "is" },
+                ParserUtilities<int>.PopBinaryValueParams,
+                q => ParserUtilities<int>.ConstructComparison(q, CommonInstances.Int.EqualTo));
+            ExpressionRegistry.Add(new List<string>() { "neq", "nequ", "isnt" },
+                ParserUtilities<int>.PopBinaryValueParams,
+                q => ParserUtilities<int>.ConstructComparison(q, CommonInstances.Int.NotEqualTo));
+            ExpressionRegistry.Add(new List<string>() { "gt" },
+                ParserUtilities<int>.PopBinaryValueParams,
+                q => ParserUtilities<int>.ConstructComparison(q, CommonInstances.Int.GreaterThan));
+            ExpressionRegistry.Add(new List<string>() { "geq", "gequ", "gteq", "gtequ" },
+                ParserUtilities<int>.PopBinaryValueParams,
+                q => ParserUtilities<int>.ConstructComparison(q, CommonInstances.Int.GreaterThanOrEqualTo));
+            ExpressionRegistry.Add(new List<string>() { "lt" },
+                ParserUtilities<int>.PopBinaryValueParams,
+                q => ParserUtilities<int>.ConstructComparison(q, CommonInstances.Int.LessThan));
+            ExpressionRegistry.Add(new List<string>() { "leq", "lequ", "lteq", "ltequ" },
+                ParserUtilities<int>.PopBinaryValueParams,
+                q => ParserUtilities<int>.ConstructComparison(q, CommonInstances.Int.LessThanOrEqualTo));
         }
         protected override AbstractParser<int> GetParser(List<Token> tokens)
         {
@@ -231,78 +208,63 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
     {
         public AlgoBuilder_Float()
         {
-            ExpressionRegistry.Add(
-                "negate", new List<string>() { "neg", "negative", "opposite" },
-                ExpressionInfoUtilities<float>.PopUnaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructUnaryOperation<ValueExpression<float>>(
+            ExpressionRegistry.Add(new List<string>() { "neg", "negative", "opposite" },
+                ParserUtilities<float>.PopUnaryValueParams,
+                q => ParserUtilities<float>.ConstructUnaryOperation<ValueExpression<float>>(
                     q, input => new ValueOperation_Unary<float>(CommonInstances.Float.Negative, input)));
 
-            ExpressionRegistry.Add(
-                "divide", new List<string>() { "div" },
-                ExpressionInfoUtilities<float>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructBinaryOperation<ValueExpression<float>>(
+            ExpressionRegistry.Add(new List<string>() { "div" },
+                ParserUtilities<float>.PopBinaryValueParams,
+                q => ParserUtilities<float>.ConstructBinaryOperation<ValueExpression<float>>(
                     q, (l, r) => new ValueOperation_Binary<float>(CommonInstances.Float.Divide, l, r)));
-            ExpressionRegistry.Add(
-                "power", new List<string>() { "pow", },
-                ExpressionInfoUtilities<float>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructBinaryOperation<ValueExpression<float>>(
+            ExpressionRegistry.Add(new List<string>() { "pow", },
+                ParserUtilities<float>.PopBinaryValueParams,
+                q => ParserUtilities<float>.ConstructBinaryOperation<ValueExpression<float>>(
                     q, (l, r) => new ValueOperation_Binary<float>(CommonInstances.Float.PowerOf, l, r)));
-            ExpressionRegistry.Add(
-                "modulo", new List<string>() { "mod", "modulo", "modulus" },
-                ExpressionInfoUtilities<float>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructBinaryOperation<ValueExpression<float>>(
+            ExpressionRegistry.Add(new List<string>() { "mod", "modulo", "modulus" },
+                ParserUtilities<float>.PopBinaryValueParams,
+                q => ParserUtilities<float>.ConstructBinaryOperation<ValueExpression<float>>(
                     q, (l, r) => new ValueOperation_Binary<float>(CommonInstances.Float.Modulo, l, r)));
 
-            ExpressionRegistry.Add(
-                "add", new List<string>() { "add", "plus" },
-                ExpressionInfoUtilities<float>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructMultiaryOperation<ValueExpression<float>>(
+            ExpressionRegistry.Add(new List<string>() { "add", "plus" },
+                ParserUtilities<float>.PopMultiaryValueParams,
+                q => ParserUtilities<float>.ConstructMultiaryOperation<ValueExpression<float>>(
                     q, list => new ValueOperation_Multiary<float>(CommonInstances.Float.Add, list)));
-            ExpressionRegistry.Add(
-                "subtract", new List<string>() { "sub", "minus" },
-                ExpressionInfoUtilities<float>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructMultiaryOperation<ValueExpression<float>>(
+            ExpressionRegistry.Add(new List<string>() { "sub", "minus" },
+                ParserUtilities<float>.PopMultiaryValueParams,
+                q => ParserUtilities<float>.ConstructMultiaryOperation<ValueExpression<float>>(
                     q, list => new ValueOperation_Multiary<float>(CommonInstances.Float.Subtract, list)));
-            ExpressionRegistry.Add(
-                "multiply", new List<string>() { "mul", "times" },
-                ExpressionInfoUtilities<float>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructMultiaryOperation<ValueExpression<float>>(
+            ExpressionRegistry.Add(new List<string>() { "mul", "times" },
+                ParserUtilities<float>.PopMultiaryValueParams,
+                q => ParserUtilities<float>.ConstructMultiaryOperation<ValueExpression<float>>(
                     q, list => new ValueOperation_Multiary<float>(CommonInstances.Float.Multiply, list)));
-            ExpressionRegistry.Add(
-                "minimum", new List<string>() { "min", "smallest" },
-                ExpressionInfoUtilities<float>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructMultiaryOperation<ValueExpression<float>>(
+            ExpressionRegistry.Add(new List<string>() { "min", "smallest" },
+                ParserUtilities<float>.PopMultiaryValueParams,
+                q => ParserUtilities<float>.ConstructMultiaryOperation<ValueExpression<float>>(
                     q, list => new ValueOperation_Multiary<float>(CommonInstances.Float.Min, list)));
-            ExpressionRegistry.Add(
-                "maximum", new List<string>() { "max", "biggest" },
-                ExpressionInfoUtilities<float>.PopMultiaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructMultiaryOperation<ValueExpression<float>>(
+            ExpressionRegistry.Add(new List<string>() { "max", "biggest" },
+                ParserUtilities<float>.PopMultiaryValueParams,
+                q => ParserUtilities<float>.ConstructMultiaryOperation<ValueExpression<float>>(
                     q, list => new ValueOperation_Multiary<float>(CommonInstances.Float.Max, list)));
 
-            ExpressionRegistry.Add(
-                "equalto", new List<string>() { "equ", "eq", "is" },
-                ExpressionInfoUtilities<float>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructComparison(q, CommonInstances.Float.EqualTo));
-            ExpressionRegistry.Add(
-                "notequalto", new List<string>() { "neq", "nequ", "isnt" },
-                ExpressionInfoUtilities<float>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructComparison(q, CommonInstances.Float.NotEqualTo));
-            ExpressionRegistry.Add(
-                "greaterthan", new List<string>() { "gt" },
-                ExpressionInfoUtilities<float>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructComparison(q, CommonInstances.Float.GreaterThan));
-            ExpressionRegistry.Add(
-                "greaterthanorequalto", new List<string>() { "geq", "gequ", "gteq", "gtequ" },
-                ExpressionInfoUtilities<float>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructComparison(q, CommonInstances.Float.GreaterThanOrEqualTo));
-            ExpressionRegistry.Add(
-                "lessthan", new List<string>() { "lt" },
-                ExpressionInfoUtilities<float>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructComparison(q, CommonInstances.Float.LessThan));
-            ExpressionRegistry.Add(
-                "lessthanorequalto", new List<string>() { "leq", "lequ", "lteq", "ltequ" },
-                ExpressionInfoUtilities<float>.PopBinaryValueParams,
-                q => ExpressionInfoUtilities<float>.ConstructComparison(q, CommonInstances.Float.LessThanOrEqualTo));
+            ExpressionRegistry.Add(new List<string>() { "equ", "eq", "is" },
+                ParserUtilities<float>.PopBinaryValueParams,
+                q => ParserUtilities<float>.ConstructComparison(q, CommonInstances.Float.EqualTo));
+            ExpressionRegistry.Add(new List<string>() { "neq", "nequ", "isnt" },
+                ParserUtilities<float>.PopBinaryValueParams,
+                q => ParserUtilities<float>.ConstructComparison(q, CommonInstances.Float.NotEqualTo));
+            ExpressionRegistry.Add(new List<string>() { "gt" },
+                ParserUtilities<float>.PopBinaryValueParams,
+                q => ParserUtilities<float>.ConstructComparison(q, CommonInstances.Float.GreaterThan));
+            ExpressionRegistry.Add(new List<string>() { "geq", "gequ", "gteq", "gtequ" },
+                ParserUtilities<float>.PopBinaryValueParams,
+                q => ParserUtilities<float>.ConstructComparison(q, CommonInstances.Float.GreaterThanOrEqualTo));
+            ExpressionRegistry.Add(new List<string>() { "lt" },
+                ParserUtilities<float>.PopBinaryValueParams,
+                q => ParserUtilities<float>.ConstructComparison(q, CommonInstances.Float.LessThan));
+            ExpressionRegistry.Add(new List<string>() { "leq", "lequ", "lteq", "ltequ" },
+                ParserUtilities<float>.PopBinaryValueParams,
+                q => ParserUtilities<float>.ConstructComparison(q, CommonInstances.Float.LessThanOrEqualTo));
         }
         protected override AbstractParser<float> GetParser(List<Token> tokens)
         {

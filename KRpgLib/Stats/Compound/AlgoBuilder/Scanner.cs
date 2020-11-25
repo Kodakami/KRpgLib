@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("KRpgLibUnitTests")]
 namespace KRpgLib.Stats.Compound.AlgoBuilder
 {
     // Scans an Algo script string and emits Tokens.

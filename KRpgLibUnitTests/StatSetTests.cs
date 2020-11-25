@@ -3,7 +3,7 @@
 namespace KRpgLibUnitTests.Stats
 {
     [TestClass]
-    public class StatSetTests_NoCompound
+    public class StatSetTests
     {
         // Values.
         [TestMethod]

@@ -21,10 +21,10 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
     public delegate object ExpressionCtorDelegate<TValue>(Queue<object> queue) where TValue : struct;
 
     /// <summary>
-    /// Methods used by ExpressionInfo and ExpressionRegistry for building Expression objects.
+    /// Methods for building Expression objects inside a parser.
     /// </summary>
     /// <typeparam name="TValue">stat backing type</typeparam>
-    public static class ExpressionInfoUtilities<TValue> where TValue : struct
+    public static class ParserUtilities<TValue> where TValue : struct
     {
         private static bool PopCountedParams_Internal<TExpression>(
             int count,

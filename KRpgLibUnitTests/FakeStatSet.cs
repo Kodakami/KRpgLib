@@ -16,11 +16,6 @@ namespace KRpgLibUnitTests.Stats
             _dict.Add(TestStat_Raw3_Legal2_Provided, 3);
         }
 
-        protected override int GetCompoundStatValue_Internal(ICompoundStatTemplate<int> safeCompoundStatTemplate)
-        {
-            return safeCompoundStatTemplate.CalculateValue(this);
-        }
-
         protected override int GetStatValue_Internal(IStatTemplate<int> safeStatTemplate)
         {
             if (_dict.ContainsKey(safeStatTemplate))
