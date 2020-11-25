@@ -1,5 +1,4 @@
-﻿using KRpgLib.Stats.Compound;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace KRpgLib.Stats
 {
@@ -194,12 +193,6 @@ namespace KRpgLib.Stats
             }
 
             return _controllerDict[safeStatTemplate].GetValueRaw();
-        }
-        protected override TValue GetCompoundStatValue_Internal(ICompoundStatTemplate<TValue> safeCompoundStatTemplate)
-        {
-            // Null checks unnecessary at this point.
-
-            return safeCompoundStatTemplate.CalculateValue(this);
         }
 
         /// <summary>

@@ -1,33 +1,29 @@
-﻿using KRpgLib.Stats.Compound;
-
-namespace KRpgLib.Stats
+﻿namespace KRpgLib.Stats
 {
     /// <summary>
-    /// Interface for a collection of stat values. Implementing this is a guarantee that all returned values are accurate to the represented relative moment in time.
+    /// Interface for a collection of stat values at a single relative moment in time.
     /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public interface IStatSet<TValue> where TValue : struct
     {
         /// <summary>
-        /// Get the raw value of a stat. If the stat has no recorded value, return the stat's default value.
+        /// Get the raw value of a stat. If the stat has no recorded value, returns the stat's default value.
         /// </summary>
-        /// <param name="statTemplate">an IStatTemplate</param>
+        /// <param name="statTemplate">any stat template</param>
         /// <returns>current stat value, accurate to the represented moment in time</returns>
         TValue GetStatValue(IStatTemplate<TValue> statTemplate);
     }
-    public interface ICompoundStatSet<TValue> where TValue : struct
+    /// <summary>
+    /// Abstract base class for objects which represent a collection of stat values at a single relative moment in time. Contains convenience methods and argument checks.
+    /// </summary>
+    /// /// <typeparam name="TValue">stat backing type</typeparam>
+    public abstract class AbstractStatSet<TValue> : IStatSet<TValue> where TValue : struct
     {
         /// <summary>
-        /// Get the raw value of a stat. If the stat has no recorded value, return the stat's default value.
+        /// Returns the raw stat value. Argument has already been null-checked.
         /// </summary>
-        /// <param name="statTemplate">an IStatTemplate</param>
-        /// <returns>current stat value, accurate to the represented moment in time</returns>
-        TValue GetCompoundStatValue(ICompoundStatTemplate<TValue> compoundStatTemplate);
-    }
-    /// <summary>
-    /// Abstract implementation of IStatSet and ICompoundStatSet. Contains extra convenience methods.
-    /// </summary>
-    public abstract class AbstractStatSet<TValue> : IStatSet<TValue>, ICompoundStatSet<TValue> where TValue : struct
-    {
+        /// <param name="safeStatTemplate">null-checked stat template</param>
+        /// <returns>raw stat value</returns>
         protected abstract TValue GetStatValue_Internal(IStatTemplate<TValue> safeStatTemplate);
         public TValue GetStatValue(IStatTemplate<TValue> statTemplate)
         {
@@ -38,6 +34,11 @@ namespace KRpgLib.Stats
 
             return GetStatValue_Internal(statTemplate);
         }
+        /// <summary>
+        /// Get the legalized value of a stat. If the stat has no recorded value, returns the stat's legalized default value.
+        /// </summary>
+        /// <param name="statTemplate">any stat template</param>
+        /// <returns>current legal stat value, accurate to the represented moment in time</returns>
         public TValue GetStatValueLegalized(IStatTemplate<TValue> statTemplate)
         {
             if (statTemplate == null)
@@ -45,25 +46,6 @@ namespace KRpgLib.Stats
                 throw new System.ArgumentNullException(nameof(statTemplate));
             }
             return statTemplate.GetLegalizedValue(GetStatValue_Internal(statTemplate));
-        }
-        protected abstract TValue GetCompoundStatValue_Internal(ICompoundStatTemplate<TValue> safeCompoundStatTemplate);
-        public TValue GetCompoundStatValue(ICompoundStatTemplate<TValue> compoundStatTemplate)
-        {
-            if (compoundStatTemplate == null)
-            {
-                throw new System.ArgumentNullException(nameof(compoundStatTemplate));
-            }
-
-            return compoundStatTemplate.CalculateValue(this);
-        }
-        public TValue GetCompoundStatValueLegalized(ICompoundStatTemplate<TValue> compoundStatTemplate)
-        {
-            if (compoundStatTemplate == null)
-            {
-                throw new System.ArgumentNullException(nameof(compoundStatTemplate));
-            }
-
-            return compoundStatTemplate.GetLegalizedValue(compoundStatTemplate.CalculateValue(this));
         }
     }
 }

@@ -2,6 +2,11 @@
 
 namespace KRpgLib.Stats.Compound
 {
+    /// <summary>
+    /// Base class for expression objects.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
+    /// <typeparam name="TReturn">return type for Evaluate(). "bool" for logic expressions, "TValue" for value expressions.</typeparam>
     public abstract class Expression<TValue, TReturn> where TValue : struct //where TReturn : anything
     {
         public TReturn Evaluate(IStatSet<TValue> forStatSet)
@@ -14,8 +19,20 @@ namespace KRpgLib.Stats.Compound
         }
         protected abstract TReturn Evaluate_Internal(IStatSet<TValue> safeStatSet);
     }
+    /// <summary>
+    /// Abstract expression object representing a value of the stat backing type (usually a number).
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public abstract class ValueExpression<TValue> : Expression<TValue, TValue> where TValue : struct { }
+    /// <summary>
+    /// Abstract expression object representing a logical (boolean) value.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public abstract class LogicExpression<TValue> : Expression<TValue, bool> where TValue : struct { }
+    /// <summary>
+    /// Expression object representing a static value of the stat backing type (usually a number).
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class Literal<TValue> : ValueExpression<TValue> where TValue : struct
     {
         private readonly TValue _literal;
@@ -28,6 +45,10 @@ namespace KRpgLib.Stats.Compound
             return _literal;
         }
     }
+    /// <summary>
+    /// Expression object representing the current value of a stat. May be a raw or legalized value.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class StatLiteral<TValue> : ValueExpression<TValue> where TValue : struct
     {
         private readonly IStatTemplate<TValue> _template;
@@ -43,7 +64,17 @@ namespace KRpgLib.Stats.Compound
             return _useLegalizedValue ? _template.GetLegalizedValue(raw) : raw;
         }
     }
+    /// <summary>
+    /// Delegate function for operations on a value that take only one input.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
+    /// <param name="input">input value</param>
+    /// <returns>the new value after performing the operation</returns>
     public delegate TValue UnaryFunc<TValue>(TValue input) where TValue : struct;
+    /// <summary>
+    /// Encapsulated unary operation function.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class UnaryOperationType<TValue> where TValue : struct
     {
         private readonly UnaryFunc<TValue> _unaryFunc;
@@ -56,7 +87,18 @@ namespace KRpgLib.Stats.Compound
             return _unaryFunc(input);
         }
     }
+    /// <summary>
+    /// Delegate function for operations on a value that take exactly two ordered inputs of the same type.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
+    /// <param name="left">left-hand value</param>
+    /// /// <param name="right">right-hand value</param>
+    /// <returns>the new value after performing the operation</returns>
     public delegate TValue BinaryFunc<TValue>(TValue left, TValue right) where TValue : struct;
+    /// <summary>
+    /// Encapsulated binary operation function.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class BinaryOperationType<TValue> where TValue : struct
     {
         private readonly BinaryFunc<TValue> _binaryFunc;
@@ -69,7 +111,17 @@ namespace KRpgLib.Stats.Compound
             return _binaryFunc(left, right);
         }
     }
-    public delegate TValue MultiaryFunc<TValue>(List<TValue> safeValues) where TValue : struct;
+    /// <summary>
+    /// Delegate function for operations on a value that take an arbitrarily-large list of unordered inputs of the same type.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
+    /// <param name="valueList">list of input values</param>
+    /// <returns>the new value after performing the operation</returns>
+    public delegate TValue MultiaryFunc<TValue>(List<TValue> valueList) where TValue : struct;
+    /// <summary>
+    /// Encapsulated multiary operation function.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class MultiaryOperationType<TValue> where TValue : struct
     {
         private readonly MultiaryFunc<TValue> _multiaryFunc;
@@ -83,7 +135,18 @@ namespace KRpgLib.Stats.Compound
             return _multiaryFunc(safeValues);
         }
     }
+    /// <summary>
+    /// Delegate function for expressions that compare two values of the same type.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
+    /// <param name="leftHand">left-hand value</param>
+    /// <param name="rightHand">right-hand value</param>
+    /// <returns>true if the comparison is true, otherwise false</returns>
     public delegate bool ComparisonFunc<TValue>(TValue leftHand, TValue rightHand);
+    /// <summary>
+    /// Encapsulated comparison expression function.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class ComparisonType<TValue> where TValue : struct
     {
         private readonly ComparisonFunc<TValue> _func;
@@ -97,6 +160,10 @@ namespace KRpgLib.Stats.Compound
         }
     }
 
+    /// <summary>
+    /// Expression object representing a value operation taking only one value as input.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class ValueOperation_Unary<TValue> : ValueExpression<TValue> where TValue : struct
     {
         private readonly UnaryOperationType<TValue> _operationType;
@@ -112,6 +179,10 @@ namespace KRpgLib.Stats.Compound
             return _operationType.Evaluate(_input.Evaluate(safeStatSet));
         }
     }
+    /// <summary>
+    /// Expression object representing a value operation taking exactly two ordered values as input.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class ValueOperation_Binary<TValue> : ValueExpression<TValue> where TValue : struct
     {
         private readonly BinaryOperationType<TValue> _operationType;
@@ -127,6 +198,10 @@ namespace KRpgLib.Stats.Compound
             return _operationType.Evaluate(_left.Evaluate(safeStatSet), _right.Evaluate(safeStatSet));
         }
     }
+    /// <summary>
+    /// Expression object representing a value operation taking an arbitrarily-large list of unordered values as input.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class ValueOperation_Multiary<TValue> : ValueExpression<TValue> where TValue : struct
     {
         private readonly MultiaryOperationType<TValue> _operationType;
@@ -167,6 +242,10 @@ namespace KRpgLib.Stats.Compound
             return _operationType.Evaluate(expResults);
         }
     }
+    /// <summary>
+    /// Expression object representing a logic operation taking only one value as input.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public abstract class LogicOperation_Unary<TValue> : LogicExpression<TValue> where TValue : struct
     {
         protected readonly LogicExpression<TValue> _input;
@@ -175,6 +254,10 @@ namespace KRpgLib.Stats.Compound
             _input = input ?? throw new System.ArgumentNullException(nameof(input));
         }
     }
+    /// <summary>
+    /// Expression object representing a logic operation taking exactly two ordered values as input.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public abstract class LogicOperation_Binary<TValue> : LogicExpression<TValue> where TValue : struct
     {
         protected readonly LogicExpression<TValue> _left, _right;
@@ -184,6 +267,10 @@ namespace KRpgLib.Stats.Compound
             _right = right ?? throw new System.ArgumentNullException(nameof(right));
         }
     }
+    /// <summary>
+    /// Expression object representing a logic operation taking an arbitrarily-large list of unordered values as input.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public abstract class LogicOperation_Multiary<TValue> : LogicExpression<TValue> where TValue : struct
     {
         protected readonly List<LogicExpression<TValue>> _logicExpressions;
@@ -210,6 +297,10 @@ namespace KRpgLib.Stats.Compound
             : this(new List<LogicExpression<TValue>>(logicExpressions)) { }
     }
 
+    /// <summary>
+    /// Expression object representing a logical comparison with two ordered values as input.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class Comparison<TValue> : LogicExpression<TValue> where TValue : struct
     {
         private readonly ComparisonType<TValue> _type;
@@ -230,6 +321,10 @@ namespace KRpgLib.Stats.Compound
             return _type.Evaluate(exp1Result, exp2Result);
         }
     }
+    /// <summary>
+    /// Expression object representing a conditional expression. Inputs are a logical (boolean) value as a condition, a value if true, and an alternative value if false.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class ConditionalExpression<TValue> : ValueExpression<TValue> where TValue : struct
     {
         private readonly LogicExpression<TValue> _condition;

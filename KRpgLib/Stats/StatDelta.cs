@@ -3,10 +3,11 @@
     /// <summary>
     /// A change to a stat such as an addition or multiplication. Stat template in question is not included in this object.
     /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public struct StatDelta<TValue> where TValue : struct
     {
         /// <summary>
-        /// The value to change the stat by (leave subtraction negative).
+        /// The value to change the stat by (leave reductions negative).
         /// </summary>
         public TValue Value { get; }
 
@@ -19,7 +20,7 @@
         public StatDelta(TValue value, StatDeltaType<TValue> type)
         {
             Value = value;
-            Type = type;
+            Type = type ?? throw new System.ArgumentNullException(nameof(type));
         }
     }
 }

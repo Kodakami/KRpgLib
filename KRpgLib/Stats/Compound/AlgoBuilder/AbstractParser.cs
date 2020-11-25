@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 namespace KRpgLib.Stats.Compound.AlgoBuilder
 {
+    /// <summary>
+    /// Base class for Algo parsers. Make a new subclass of this if your stat system uses non-int, non-float backing values. Override TryParserNumber() with your backing value's string-to-number parsing function.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing value</typeparam>
     public abstract class AbstractParser<TValue> where TValue : struct
     {
         protected List<Token> Tokens { get; }
@@ -11,18 +15,26 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         protected StatTemplateRegistry<TValue> StatTemplateRegistry { get; }
         protected Stack<object> TheStack { get; } = new Stack<object>();
 
+        /// <summary>
+        /// The state of the parser after the last call to TryParseTokens().
+        /// </summary>
         public Result ParseResult { get; private set; } = Result.UNDEFINED;
+        /// <summary>
+        /// The status message from the parser after the last call to TryParseTokens().
+        /// </summary>
         public string StatusMessage { get; private set; } = "Incomplete.";
 
         protected AbstractParser(List<Token> tokens, ExpressionRegistry<TValue> expressionRegistry, StatTemplateRegistry<TValue> statTemplateRegistry)
         {
-            Tokens = tokens;
-            ExpressionRegistry = expressionRegistry;
-            StatTemplateRegistry = statTemplateRegistry;
+            Tokens = tokens ?? throw new ArgumentNullException(nameof(tokens));
+            ExpressionRegistry = expressionRegistry ?? throw new ArgumentNullException(nameof(expressionRegistry));
+            StatTemplateRegistry = statTemplateRegistry ?? throw new ArgumentNullException(nameof(statTemplateRegistry));
         }
         public bool TryParseTokens(out ValueExpression<TValue> algo)
         {
             algo = null;
+            ParseResult = Result.UNDEFINED;
+            StatusMessage = "Incomplete.";
 
             // Reset to end.
             CurrentTokenIndex = Tokens.Count - 1;
@@ -37,7 +49,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
                 switch (current.TokenType)
                 {
                     case TokenType.NUMBER:
-                        if (!DoPushLiteral(current))
+                        if (!DoPushNumber(current))
                         {
                             return false;
                         }
@@ -78,14 +90,15 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
                 }
             }
 
-            if (TheStack.Count > 1)
+            if (!TryPopAsType("Value expression", out ValueExpression<TValue> finalValueExpression))
             {
-                Error("Expression tree ended with leftover objects on the stack. Check for extraneous characters at end of script.");
+                Error("Expression tree does not resolve to a value expression.");
                 return false;
             }
-            if (!TryPopValueExpression(out ValueExpression<TValue> finalValueExpression))
+
+            if (TheStack.Count > 1)
             {
-                Error("Expression tree is not a value expression.");
+                Error("Script ended with leftover objects on the stack. Check for extraneous characters at end.");
                 return false;
             }
 
@@ -94,13 +107,17 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             algo = finalValueExpression;
             return true;
         }
-        public void Error(string message)
+        /// <summary>
+        /// Call this when your custom parser functions encounter an unrecoverable error, then return false from the function if applicable.
+        /// </summary>
+        /// <param name="message">error message</param>
+        protected void Error(string message)
         {
-            Token current = Tokens[CurrentTokenIndex];
-            StatusMessage = $"Parse error at index {current.CharIndex}. {message}";
+            string currentIndexStr = CurrentTokenIndex >= 0 && CurrentTokenIndex < Tokens.Count ? Tokens[CurrentTokenIndex].CharIndex.ToString() : "[Invalid index]";
+            StatusMessage = $"Parse error at index {currentIndexStr}. {message}";
             ParseResult = Result.FAIL;
         }
-        protected bool TryPop(out object obj)
+        private bool TryPop(out object obj)
         {
             try
             {
@@ -114,7 +131,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
                 return false;
             }
         }
-        protected bool TryCastAsType<T>(object obj, out T value)
+        private bool TryCastAsType<T>(object obj, out T value)
         {
             try
             {
@@ -130,7 +147,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
 
             return true;
         }
-        protected bool DoPushLiteral(Token token)
+        private bool DoPushNumber(Token token)
         {
             string literalString;
             try
@@ -153,7 +170,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             TheStack.Push(new Literal<TValue>(value));
             return true;
         }
-        protected bool DoPushStatLiteral(bool useLegalizedValue)
+        private bool DoPushStatLiteral(bool useLegalizedValue)
         {
             if (!TryPopAsType("Stat template identifier", out string identifier))
             {
@@ -169,12 +186,12 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             TheStack.Push(new StatLiteral<TValue>(statTemplate, useLegalizedValue));
             return true;
         }
-        protected bool DoPushIdentifier(Token token)
+        private bool DoPushIdentifier(Token token)
         {
             TheStack.Push(token.Literal);
             return true;
         }
-        protected bool DoBeginExpression()
+        private bool DoBeginExpression()
         {
             // Pop stack for string identifier.
             if (!TryPopAsType("Expression keyword", out string expressionKeyword))
@@ -183,27 +200,41 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
                 // Error report is created in TryPopAsType().
                 return false;
             }
-            // Expression registry lookup.
-            if (!ExpressionRegistry.TryGetExpressionInfo(expressionKeyword, out ExpressionInfo<TValue> expressionInfo))
+
+            // Expression processing and end-of-expression consumption.
+            if (!ExpressionRegistry.TryBuildAndPushExpression(expressionKeyword, this, out string message))
             {
-                Error($"\"{expressionKeyword}\" is not a registered expression keyword.");
+                if (message != null)
+                {
+                    Error(message);
+                }
+
+                // Otherwise the message was already set by something else.
                 return false;
             }
 
-            // Will pop params and push result.
-            expressionInfo.ExpressionObjectBuildAction(this);
-
-            // TODO: When is the null consumed?
-
             return true;
         }
-        protected bool DoEndExpression()
+        private bool DoEndExpression()
         {
             TheStack.Push(null);
             return true;
         }
+        /// <summary>
+        /// Override this with your backing value's own string-to-number function.
+        /// </summary>
+        /// <param name="str">the number string (numerals and decimal points)</param>
+        /// <param name="value">the parsed value</param>
+        /// <returns>true if parse was successful</returns>
         protected abstract bool TryParseNumber(string str, out TValue value);
-        protected bool TryPopAsType<T>(string expectedObjName, out T result)
+        /// <summary>
+        /// Tries to pop the top object off the stack and cast to provided type. Calls to Error() beforehand if returning false.
+        /// </summary>
+        /// <typeparam name="T">casting type</typeparam>
+        /// <param name="expectedObjName">expected object name for status message</param>
+        /// <param name="result">popped and casted value</param>
+        /// <returns>true if both pop and cast were successful</returns>
+        public bool TryPopAsType<T>(string expectedObjName, out T result)
         {
             if (!TryPop(out object obj))
             {
@@ -219,7 +250,14 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
 
             return true;
         }
-        protected bool TryPopManyAsType<T>(string expectedObjName, out List<T> args)
+        /// <summary>
+        /// Tries to pop the top object off the stack and cast to provided type until NULL object is the next item (does not consume the NULL object). Calls to Error() beforehand if returning false.
+        /// </summary>
+        /// <typeparam name="T">casting type</typeparam>
+        /// <param name="expectedObjName">expected object name for status message</param>
+        /// <param name="args">new list of popped and casted values</param>
+        /// <returns>true if all pops and casts were successful, and null object terminator was correctly encountered</returns>
+        public bool TryPopManyAsType<T>(string expectedObjName, out List<T> args)
         {
             // Out list.
             args = new List<T>();
@@ -253,19 +291,59 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             Error($"Expected: {expectedObjName} or end of expression.");
             return false;
         }
-        public bool TryPopLogicExpression(out LogicExpression<TValue> logicExpression) => TryPopAsType("Logic expression", out logicExpression);
-        public bool TryPopValueExpression(out ValueExpression<TValue> valueExpression) => TryPopAsType("Value expression", out valueExpression);
-        public bool TryPopManyLogicExpressions(out List<LogicExpression<TValue>> logicExpressions) => TryPopManyAsType("Logic expression", out logicExpressions);
-        public bool TryPopManyValueExpressions(out List<ValueExpression<TValue>> valueExpressions) => TryPopManyAsType("Value expression", out valueExpressions);
-        public void DoPushLogicExpression(LogicExpression<TValue> logicExpression)
+        /// <summary>
+        /// Tries to pop a NULL object off the top of the stack (the object is consumed). Calls to Error() beforehand if returning false.
+        /// </summary>
+        /// <returns>true if the popped object was NULL</returns>
+        public bool TryConsumeEndExpression()
         {
-            TheStack.Push(logicExpression ?? throw new ArgumentNullException(nameof(logicExpression)));
+            if (!TryPop(out object obj))
+            {
+                Error("Expected: End of expression.");
+                return false;
+            }
+
+            if (obj != null)
+            {
+                Error("Expected: End of expression. Top of stack was not null.");
+                return false;
+            }
+
+            return true;
         }
-        public void DoPushValueExpression(ValueExpression<TValue> valueExpression)
+        /// <summary>
+        /// Push an object onto the stack.
+        /// </summary>
+        /// <param name="obj">any object</param>
+        public void DoPushObject(object obj)
         {
-            TheStack.Push(valueExpression ?? throw new ArgumentNullException(nameof(valueExpression)));
+            TheStack.Push(obj);
         }
-        public void DoUnaryExpression(System.Func<Unar>)
-            // TODO: I just realized I need to remake Compound.cs.
+    }
+    /// <summary>
+    /// Concrete parser class for stats with int (System.Int32) backing values.
+    /// </summary>
+    public sealed class Parser_Int : AbstractParser<int>
+    {
+        public Parser_Int(List<Token> tokens, ExpressionRegistry<int> expressionRegistry, StatTemplateRegistry<int> statTemplateRegistry)
+            :base(tokens, expressionRegistry, statTemplateRegistry) { }
+
+        protected override bool TryParseNumber(string str, out int value)
+        {
+            return int.TryParse(str, out value);
+        }
+    }
+    /// <summary>
+    /// Concrete parser class for stats with float (System.Single) backing values.
+    /// </summary>
+    public sealed class Parser_Float : AbstractParser<float>
+    {
+        public Parser_Float(List<Token> tokens, ExpressionRegistry<float> expressionRegistry, StatTemplateRegistry<float> statTemplateRegistry)
+            : base(tokens, expressionRegistry, statTemplateRegistry) { }
+
+        protected override bool TryParseNumber(string str, out float value)
+        {
+            return float.TryParse(str, out value);
+        }
     }
 }

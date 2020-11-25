@@ -2,7 +2,8 @@
 
 namespace KRpgLib.Stats.Compound.AlgoBuilder
 {
-    public sealed class Scanner
+    // Scans an Algo script string and emits Tokens.
+    internal sealed class Scanner
     {
         private readonly string _script;
         private readonly List<Token> _tokens = new List<Token>();
@@ -24,7 +25,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         }
         private void Error(string message)
         {
-            StatusMessage = $"Scanner error at token: {(_currentIndex < _tokens.Count ? _tokens[_currentIndex].ToString() : "Invalid token index.")}";
+            StatusMessage = $"Scanner error at token: {(_currentIndex < _tokens.Count ? _tokens[_currentIndex].ToString() : "Invalid token index.")}. {message}";
             ScanResult = Result.FAIL;
         }
         public bool TryScanTokens(out List<Token> tokens)

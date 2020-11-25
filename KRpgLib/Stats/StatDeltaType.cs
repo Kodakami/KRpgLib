@@ -3,16 +3,25 @@ using System.Collections.Generic;
 
 namespace KRpgLib.Stats
 {
+    /// <summary>
+    /// A type of change to a stat value, such as addition vs. multiplication.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class StatDeltaType<TValue> where TValue : struct
     {
-        // A binary function signature.
-        public delegate TValue DeltaTypeFunc(TValue input, TValue operand);
-
-        //// Static instances (may be registered if desired in project)
-        //public static StatDeltaType<int> Addition = new StatDeltaType<int>((input, operand) => input + operand, 0);
-        //public static StatDeltaType<float> Multiplication = new StatDeltaType<float>((input, operand) => (int)(input * operand), 1);
+        /// <summary>
+        /// A math operation taking two inputs and returning an output. Input values are passed as the left-hand operand.
+        /// </summary>
+        /// <param name="leftHand">the input value</param>
+        /// <param name="rightHand">the new operand</param>
+        /// <returns>result of operation on leftHand by rightHand</returns>
+        public delegate TValue DeltaTypeFunc(TValue leftHand, TValue rightHand);
 
         // This static method exists in each compiler-generated concrete type.
+        /// <summary>
+        /// Get all registered stat delta types in order of priority.
+        /// </summary>
+        /// <returns>new list of stat delta types</returns>
         public static List<StatDeltaType<TValue>> GetAllByPriority()
         {
             if (_cacheIsDirty)
@@ -38,10 +47,17 @@ namespace KRpgLib.Stats
         private static readonly Dictionary<StatDeltaType<TValue>, int> _registry = new Dictionary<StatDeltaType<TValue>, int>();
 
         // This static method without a type parameter is intended.
-        public static void RegisterStatDeltaType(DeltaTypeFunc applyFunction, TValue baselineValue, DeltaTypeFunc combineFunction, int priority)
+        /// <summary>
+        /// Register a new type of stat delta.
+        /// </summary>
+        /// <param name="function">the operation applied by the delta type</param>
+        /// <param name="baselineValue">the neutral value of the delta (ex. 0 for additive, 1 for multiplicative)</param>
+        /// <param name="combineFunction">the operation used to combine deltas of the same type (usually deltas are added together)</param>
+        /// <param name="priority">the priority value of the delta type. delta types are evaluated in numerical order of priority (lower is sooner).</param>
+        public static void RegisterStatDeltaType(DeltaTypeFunc function, TValue baselineValue, DeltaTypeFunc combineFunction, int priority)
         {
             var newInstance = new StatDeltaType<TValue>(
-                applyFunction ?? throw new ArgumentNullException(nameof(applyFunction)),
+                function ?? throw new ArgumentNullException(nameof(function)),
                 baselineValue,
                 combineFunction ?? throw new ArgumentNullException(nameof(combineFunction)));
 
@@ -70,11 +86,12 @@ namespace KRpgLib.Stats
         }
 
         /// <summary>
-        /// Apply the effect of the StatDeltaType, such as adding or multiplying the values.
+        /// Apply the effect of the stat delta type, such as adding or multiplying the values.
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="operand"></param>
         public TValue Apply(TValue input, TValue operand) => _func(input, operand);
+        /// <summary>
+        /// Combine the effect of two instances of the stat delta type.
+        /// </summary>
         public TValue Combine(TValue deltaValue1, TValue deltaValue2) => _combine(deltaValue1, deltaValue2);
     }
 }

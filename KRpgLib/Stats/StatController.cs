@@ -2,9 +2,7 @@
 
 namespace KRpgLib.Stats
 {
-    /// <summary>
-    /// Manages the value of a single stat in a stat manager. Tracks stat providers for itself but does not subscribe to stat provider events.
-    /// </summary>
+    // Manages the value of a single stat in a stat manager. Tracks stat providers for itself but does not subscribe to stat provider events.
     internal class StatController<TValue> where TValue : struct
     {
         public IStatTemplate<TValue> StatTemplate { get; }

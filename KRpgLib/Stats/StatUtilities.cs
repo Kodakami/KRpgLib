@@ -3,13 +3,16 @@ using System.Collections.Generic;
 
 namespace KRpgLib.Stats
 {
+    /// <summary>
+    /// Static class with utility functions for the stat system.
+    /// </summary>
     public static class StatUtilities
     {
         /// <summary>
         /// The core game math for calculating a stat.
         /// </summary>
-        /// <param name="statTemplate"></param>
-        /// <param name="statDeltas"></param>
+        /// <param name="statTemplate">any stat template</param>
+        /// <param name="statDeltas">a list of stat deltas</param>
         /// <returns>a raw stat value as a float</returns>
         // Start with the default value, take each type of delta in order of priority, combine the values of that type and apply them to the output.
         // TODO: The speed of this process could be improved by keeping all deltas as separate collections.

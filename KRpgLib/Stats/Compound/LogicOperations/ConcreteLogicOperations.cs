@@ -2,6 +2,10 @@
 
 namespace KRpgLib.Stats.Compound.LogicOperations
 {
+    /// <summary>
+    /// An expression object representing a unary logical NOT operation.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class LogicOperation_Not<TValue> : LogicOperation_Unary<TValue> where TValue : struct
     {
         public LogicOperation_Not(LogicExpression<TValue> input)
@@ -13,6 +17,10 @@ namespace KRpgLib.Stats.Compound.LogicOperations
             return !_input.Evaluate(safeStatSet);
         }
     }
+    /// <summary>
+    /// An expression object representing a binary logical AND operation. Performs short-circuit calculations.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class LogicOperation_And<TValue> : LogicOperation_Binary<TValue> where TValue : struct
     {
         public LogicOperation_And(LogicExpression<TValue> left, LogicExpression<TValue> right)
@@ -24,6 +32,10 @@ namespace KRpgLib.Stats.Compound.LogicOperations
             return _left.Evaluate(safeStatSet) && _right.Evaluate(safeStatSet);
         }
     }
+    /// <summary>
+    /// An expression object representing a binary logical OR operation. Performs short-circuit calculations.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class LogicOperation_Or<TValue> : LogicOperation_Binary<TValue> where TValue : struct
     {
         public LogicOperation_Or(LogicExpression<TValue> left, LogicExpression<TValue> right)
@@ -35,6 +47,10 @@ namespace KRpgLib.Stats.Compound.LogicOperations
             return _left.Evaluate(safeStatSet) || _right.Evaluate(safeStatSet);
         }
     }
+    /// <summary>
+    /// An expression object representing a binary logical XOR operation.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class LogicOperation_Xor<TValue> : LogicOperation_Binary<TValue> where TValue : struct
     {
         public LogicOperation_Xor(LogicExpression<TValue> left, LogicExpression<TValue> right)
@@ -46,6 +62,10 @@ namespace KRpgLib.Stats.Compound.LogicOperations
             return _left.Evaluate(safeStatSet) ^ _right.Evaluate(safeStatSet);
         }
     }
+    /// <summary>
+    /// An expression object representing a multiary logical ALL operation. Returns true if all values are true. Performs short-circuit calculations.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class LogicOperation_All<TValue> : LogicOperation_Multiary<TValue> where TValue : struct
     {
         public LogicOperation_All(List<LogicExpression<TValue>> logicExpressions)
@@ -70,6 +90,10 @@ namespace KRpgLib.Stats.Compound.LogicOperations
             return true;
         }
     }
+    /// <summary>
+    /// An expression object representing a multiary logical ANY operation. Returns true if any of the values are true. Performs short-circuit calculations.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class LogicOperation_Any<TValue> : LogicOperation_Multiary<TValue> where TValue : struct
     {
         public LogicOperation_Any(List<LogicExpression<TValue>> logicExpressions)
@@ -94,6 +118,10 @@ namespace KRpgLib.Stats.Compound.LogicOperations
             return false;
         }
     }
+    /// <summary>
+    /// An expression object representing a multiary logical ONE operation. Returns true if one and only one value is true. Performs short-circuit calculations.
+    /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class LogicOperation_One<TValue> : LogicOperation_Multiary<TValue> where TValue : struct
     {
         public LogicOperation_One(List<LogicExpression<TValue>> logicExpressions)

@@ -1,11 +1,11 @@
-﻿using KRpgLib.Stats.Compound;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace KRpgLib.Stats
 {
     /// <summary>
-    /// A frozen collection of stat values from a single moment. Missing stat templates are considered to be at default value. Created by calculating with stat deltas. Set should not be modified after instantiation.
+    /// A frozen collection of stat values from a single moment. Missing stat templates are considered to be at default value. Created by calculating with stat deltas. Set is not modifiable after instantiation.
     /// </summary>
+    /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class StatSnapshot<TValue> : AbstractStatSet<TValue> where TValue : struct
     {
         private readonly Dictionary<IStatTemplate<TValue>, TValue> _statDict = new Dictionary<IStatTemplate<TValue>, TValue>();
@@ -35,10 +35,6 @@ namespace KRpgLib.Stats
 
             // If no value, return default value.
             return safeStatTemplate.DefaultValue;
-        }
-        protected override TValue GetCompoundStatValue_Internal(ICompoundStatTemplate<TValue> safeCompoundStatTemplate)
-        {
-            return safeCompoundStatTemplate.CalculateValue(this);
         }
 
         /// <summary>
