@@ -5,7 +5,7 @@ using KRpgLib.Stats.Compound;
 using KRpgLib.Stats.Compound.LogicOperations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace KRpgLibUnitTests.Stats.Compound
+namespace StatsUnitTests.Compound
 {
     [TestClass]
     public class LogicExpressionTests_Evaluate

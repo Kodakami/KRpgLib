@@ -3,9 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KRpgLib", "KRpgLib.csproj", "{F5FE66B0-9A72-4E22-833A-818915625C91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stats", "Stats.csproj", "{F5FE66B0-9A72-4E22-833A-818915625C91}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KRpgLibUnitTests", "..\KRpgLibUnitTests\KRpgLibUnitTests.csproj", "{6D49440F-53D0-41A0-8F32-5EFB81B53726}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StatsUnitTests", "..\KRpgLibUnitTests\StatsUnitTests.csproj", "{6D49440F-53D0-41A0-8F32-5EFB81B53726}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flags", "..\Flags\Flags.csproj", "{F10823F7-2884-4E27-9C12-DA2323F6F28E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlagsUnitTests", "..\FlagsUnitTests\FlagsUnitTests.csproj", "{55199C1E-A8D1-40D5-B171-DF97635C89C7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{6D49440F-53D0-41A0-8F32-5EFB81B53726}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D49440F-53D0-41A0-8F32-5EFB81B53726}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D49440F-53D0-41A0-8F32-5EFB81B53726}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F10823F7-2884-4E27-9C12-DA2323F6F28E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F10823F7-2884-4E27-9C12-DA2323F6F28E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F10823F7-2884-4E27-9C12-DA2323F6F28E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F10823F7-2884-4E27-9C12-DA2323F6F28E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55199C1E-A8D1-40D5-B171-DF97635C89C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55199C1E-A8D1-40D5-B171-DF97635C89C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55199C1E-A8D1-40D5-B171-DF97635C89C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55199C1E-A8D1-40D5-B171-DF97635C89C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,7 @@
 using KRpgLib.Stats.Compound;
 using System.Collections.Generic;
 
-namespace KRpgLibUnitTests.Stats
+namespace StatsUnitTests
 {
     public class FakeStatSet : AbstractStatSet<int>
     {

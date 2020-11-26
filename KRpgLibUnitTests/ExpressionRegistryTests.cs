@@ -5,7 +5,7 @@ using KRpgLib.Stats.Compound.AlgoBuilder;
 using KRpgLib.Stats.Compound;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace KRpgLibUnitTests.Stats.Compound.AlgoBuilder
+namespace StatsUnitTests.Compound.AlgoBuilder
 {
     [TestClass]
     public class ExpressionRegistryTests

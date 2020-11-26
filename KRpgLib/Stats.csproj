@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Stats\Compound\AlgoBuilder.cs" />
+    <Compile Remove="Compound\AlgoBuilder.cs" />
   </ItemGroup>
 
 </Project>

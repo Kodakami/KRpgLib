@@ -9,10 +9,10 @@ namespace KRpgLib.Flags
     }
     public abstract class AbstractFlagSet : IFlagSet
     {
-        protected const int MAX_RECURSION_DEPTH = 7;
+        protected virtual int MaxRecursionDepth { get; } = 7;
 
         /// <summary>
-        /// Get a collection of top-level flags in the flag set (implied flags will be gotten recursively). Collection should be a set of unique items.
+        /// Get a collection of top-level flags in the flag set (implied flags not included). Collection should be a set of unique items.
         /// </summary>
         protected abstract List<Flag> GetFlags();
 
@@ -42,15 +42,14 @@ namespace KRpgLib.Flags
         }
         public bool HasFlag(Flag flag) => HasFlag(flag.Template, flag.VariantIndex);
 
-        // Static members.
-        protected static bool HasFlagRecursive(Flag thisFlag, IFlagTemplate targetTemplate, int targetVariantIndex, bool checkExactVariant, int recursionDepth)
+        protected bool HasFlagRecursive(Flag thisFlag, IFlagTemplate targetTemplate, int targetVariantIndex, bool checkExactVariant, int recursionDepth)
         {
             if (checkExactVariant ? thisFlag.SameAs(targetTemplate, targetVariantIndex) : thisFlag.SameTemplateAs(targetTemplate))
             {
                 return true;
             }
 
-            if (recursionDepth > MAX_RECURSION_DEPTH)
+            if (recursionDepth > MaxRecursionDepth)
             {
                 return false;
             }

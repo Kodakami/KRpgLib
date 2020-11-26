@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
-namespace KRpgLibUnitTests.Stats.Compound
+namespace StatsUnitTests.Compound
 {
     [TestClass]
     public class CompoundStatTemplateTests

@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace KRpgLibUnitTests.Stats
+namespace StatsUnitTests
 {
     [TestClass]
     public class StatSetTests

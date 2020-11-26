@@ -4,7 +4,7 @@ using System.Text;
 using KRpgLib.Stats.Compound;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace KRpgLibUnitTests.Stats.Compound
+namespace StatsUnitTests.Compound
 {
     [TestClass]
     public class ValueExpressionTests_Evaluate

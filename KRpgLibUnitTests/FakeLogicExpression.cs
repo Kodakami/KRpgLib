@@ -4,7 +4,7 @@ using System.Text;
 using KRpgLib.Stats;
 using KRpgLib.Stats.Compound;
 
-namespace KRpgLibUnitTests.Stats.Compound
+namespace StatsUnitTests.Compound
 {
     public class FakeLogicExpression : LogicExpression<int>
     {
