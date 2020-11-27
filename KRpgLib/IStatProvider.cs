@@ -22,7 +22,7 @@ namespace KRpgLib.Stats
         /// </summary>
         /// <param name="stat">any stat template</param>
         /// <returns>new list of StatDeltas</returns>
-        List<StatDelta<TValue>> GetStatDeltasForStat(IStatTemplate<TValue> stat);
+        List<StatDelta<TValue>> GetDeltasForStat(IStatTemplate<TValue> stat);
     }
     /// <summary>
     /// Interface for an object which provides stat value deltas to a stat manager. The deltas provided by this object may change during runtime, after which an event will be raised.

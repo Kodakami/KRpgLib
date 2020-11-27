@@ -40,37 +40,7 @@ namespace KRpgLib.Stats
 
         public override int GetLegalizedValue(int rawValue)
         {
-            // Start with raw value.
-
-            // Factor in MinValue.
-            if (MinValue.HasValue)
-            {
-                rawValue = Math.Max(rawValue, MinValue.Value);
-            }
-
-            // Factor in MaxValue.
-            if (MaxValue.HasValue)
-            {
-                rawValue = Math.Min(rawValue, MaxValue.Value);
-            }
-
-            if (Precision.HasValue)
-            {
-                int appliedPrecision = Precision.Value;
-
-                if (appliedPrecision > 0)
-                {
-                    // Divide by precision value, then multiply by precision value again.
-                    // floor(15 / 2) * 2 = 14
-                    // floor(166 / 50) * 50 = 150
-
-                    // Flooring (truncation) is natural for int.
-                    return rawValue / appliedPrecision * appliedPrecision;
-                }
-                // If Precision is 0 or less, we use integer precision as usual.
-            }
-
-            return rawValue;
+            return StatUtilities.LegalizeIntValue(rawValue, MinValue, MinValue, Precision);
         }
     }
     /// <summary>
@@ -90,48 +60,7 @@ namespace KRpgLib.Stats
 
         public override float GetLegalizedValue(float rawValue)
         {
-            // Start with raw value.
-
-            // Factor in MinValue.
-            if (MinValue.HasValue)
-            {
-                rawValue = Math.Max(rawValue, MinValue.Value);
-            }
-
-            // Factor in MaxValue.
-            if (MaxValue.HasValue)
-            {
-                rawValue = Math.Min(rawValue, MaxValue.Value);
-            }
-
-            if (Precision.HasValue)
-            {
-                float appliedPrecision = Precision.Value;
-
-                if (appliedPrecision > 0)
-                {
-                    // Divide by precision value, then multiply by precision value again.
-                    // floor(15 / 2) * 2 = 14
-                    // floor(166 / 50) * 50 = 150
-
-                    // Calculate the value factoring in precision.
-                    float temp = (float)Math.Floor(rawValue / appliedPrecision) * appliedPrecision;
-
-                    if (DecimalsOfPrecisionForRounding >= 0)
-                    {
-                        // Clamp decimals of precision between 0 and 8.
-                        // This could be done in the constructor.
-                        int appliedDecimalsOfPrecision = Math.Min(DecimalsOfPrecisionForRounding, 8);
-                        appliedDecimalsOfPrecision = Math.Max(appliedDecimalsOfPrecision, 0);
-
-                        // Round to the closest
-                        return (float)Math.Round(temp, appliedDecimalsOfPrecision, MidpointRounding.AwayFromZero);
-                    }
-                }
-                // If Precision is 0 or less, we use floating-point precision as usual.
-            }
-
-            return rawValue;
+            return StatUtilities.LegalizeFloatValue(rawValue, MinValue, MaxValue, Precision, DecimalsOfPrecisionForRounding);
         }
     }
 }

@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using KRpgLib.Utility;
 
 namespace KRpgLib.Stats
 {
     /// <summary>
-    /// A type of change to a stat value, such as addition vs. multiplication.
+    /// A type of change to a stat value, such as addition vs. multiplication. Static members provide functions for registering stat delta types, a step required for correctly calculating stat values.
     /// </summary>
     /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class StatDeltaType<TValue> where TValue : struct
     {
+        // Delegate.
+
         /// <summary>
         /// A math operation taking two inputs and returning an output. Input values are passed as the left-hand operand.
         /// </summary>
@@ -17,43 +20,26 @@ namespace KRpgLib.Stats
         /// <returns>result of operation on leftHand by rightHand</returns>
         public delegate TValue DeltaTypeFunc(TValue leftHand, TValue rightHand);
 
-        // This static method exists in each compiler-generated concrete type.
+        // Static members (a distinct copy exists in each compiler-generated type).
+
+        private static readonly PriorityRegistry<StatDeltaType<TValue>> _registry = new PriorityRegistry<StatDeltaType<TValue>>();
+
         /// <summary>
         /// Get all registered stat delta types in order of priority.
         /// </summary>
         /// <returns>new list of stat delta types</returns>
         public static List<StatDeltaType<TValue>> GetAllByPriority()
         {
-            if (_cacheIsDirty)
-            {
-                var newList = new List<StatDeltaType<TValue>>();
-
-                var temp = new List<KeyValuePair<StatDeltaType<TValue>, int>>(_registry);
-                temp.Sort((kvp1, kvp2) => kvp1.Value - kvp2.Value);
-
-                foreach (var item in temp)
-                {
-                    newList.Add(item.Key);
-                }
-                _deltaTypeCacheInPriorityOrder = newList;
-                _cacheIsDirty = false;
-            }
-
-            return new List<StatDeltaType<TValue>>(_deltaTypeCacheInPriorityOrder);
+            return _registry.GetAllByPriority();
         }
-        private static List<StatDeltaType<TValue>> _deltaTypeCacheInPriorityOrder = new List<StatDeltaType<TValue>>();
-        private static bool _cacheIsDirty = true;
 
-        private static readonly Dictionary<StatDeltaType<TValue>, int> _registry = new Dictionary<StatDeltaType<TValue>, int>();
-
-        // This static method without a type parameter is intended.
         /// <summary>
-        /// Register a new type of stat delta.
+        /// Register a new type of stat delta. This step is necessary for a stat delta type to be considered when performing stat calculations. Stat delta types are evaluated in numerical order of priority (lower priority values are evaluated before higher ones). Each type of backing value for a stat has a separate registry.
         /// </summary>
         /// <param name="function">the operation applied by the delta type</param>
         /// <param name="baselineValue">the neutral value of the delta (ex. 0 for additive, 1 for multiplicative)</param>
         /// <param name="combineFunction">the operation used to combine deltas of the same type (usually deltas are added together)</param>
-        /// <param name="priority">the priority value of the delta type. delta types are evaluated in numerical order of priority (lower is sooner).</param>
+        /// <param name="priority">the priority value of the delta type</param>
         public static void RegisterStatDeltaType(DeltaTypeFunc function, TValue baselineValue, DeltaTypeFunc combineFunction, int priority)
         {
             var newInstance = new StatDeltaType<TValue>(
@@ -61,8 +47,15 @@ namespace KRpgLib.Stats
                 baselineValue,
                 combineFunction ?? throw new ArgumentNullException(nameof(combineFunction)));
 
-            _registry.Add(newInstance, priority);
-            _cacheIsDirty = true;
+            _registry.RegisterItem(newInstance, priority);
+        }
+        /// <summary>
+        /// In the event that you might want to unregister a stat delta type, the function exists and works. The delta type will no longer be considered when performing stat calculations.
+        /// </summary>
+        /// <param name="statDeltaType">the stat delta type to unregister</param>
+        public static void UnregisterStatDeltaType(StatDeltaType<TValue> statDeltaType)
+        {
+            _registry.UnregisterItem(statDeltaType);
         }
 
         // Instance members.

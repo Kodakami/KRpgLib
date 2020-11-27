@@ -43,7 +43,7 @@ namespace KRpgLib.Stats
         /// Add a list of stat providers to the stat manager.
         /// </summary>
         /// <param name="statProviders">an IStatProvider list</param>
-        public void AddStatProviders(List<IStatProvider<TValue>> statProviders)
+        public void AddStatProviders(IEnumerable<IStatProvider<TValue>> statProviders)
         {
             // Null check.
             foreach (var provider in statProviders ?? throw new System.ArgumentNullException(nameof(statProviders)))
@@ -57,7 +57,7 @@ namespace KRpgLib.Stats
             AddStatProvider(dynamicStatProvider ?? throw new System.ArgumentNullException(nameof(dynamicStatProvider)));
             SubscribeToDynamicStatProvider(dynamicStatProvider);
         }
-        public void AddDynamicStatProviders(List<IStatProvider_Dynamic<TValue>> dynamicStatProviders)
+        public void AddDynamicStatProviders(IEnumerable<IStatProvider_Dynamic<TValue>> dynamicStatProviders)
         {
             // Null check.
             foreach (var dsp in dynamicStatProviders ?? throw new System.ArgumentNullException(nameof(dynamicStatProviders)))
@@ -147,7 +147,7 @@ namespace KRpgLib.Stats
             RemoveStatProvider(dynamicStatProvider ?? throw new System.ArgumentNullException(nameof(dynamicStatProvider)));
             UnsubscribeFromDynamicStatProvider(dynamicStatProvider);
         }
-        public void RemoveDynamicStatProviders(List<IStatProvider_Dynamic<TValue>> dynamicStatProviders)
+        public void RemoveDynamicStatProviders(IEnumerable<IStatProvider_Dynamic<TValue>> dynamicStatProviders)
         {
             foreach (var dsp in dynamicStatProviders ?? throw new System.ArgumentNullException(nameof(dynamicStatProviders)))
             {

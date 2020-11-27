@@ -17,7 +17,7 @@
         public StatDeltaType<TValue> Type { get; }
 
         // ctor
-        public StatDelta(TValue value, StatDeltaType<TValue> type)
+        public StatDelta(StatDeltaType<TValue> type, TValue value)
         {
             Value = value;
             Type = type ?? throw new System.ArgumentNullException(nameof(type));

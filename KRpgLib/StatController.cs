@@ -44,7 +44,7 @@ namespace KRpgLib.Stats
             List<StatDelta<TValue>> allDeltas = new List<StatDelta<TValue>>();
             foreach (var provider in _providers)
             {
-                allDeltas.AddRange(provider.GetStatDeltasForStat(StatTemplate));
+                allDeltas.AddRange(provider.GetDeltasForStat(StatTemplate));
             }
             return allDeltas;
         }
