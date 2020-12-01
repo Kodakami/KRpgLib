@@ -11,7 +11,7 @@ namespace StatsUnitTests.Compound
     {
         private void ValueExpressionTest(ValueExpression<int> testedExpression, int expectedValue)
         {
-            var stubSet = new FakeStatSet();
+            var stubSet = new FakeStatSet().Snapshot;
 
             var resultValue = testedExpression.Evaluate(stubSet);
 
@@ -42,7 +42,7 @@ namespace StatsUnitTests.Compound
         }
         private void UnaryOpTest(UnaryOperationType<int> operationType, int input, int expected)
         {
-            var stubStatSet = new FakeStatSet();
+            var stubStatSet = new FakeStatSet().Snapshot;
             var stubValueExpression = new Literal<int>(input);
             var mockExpression = new ValueOperation_Unary<int>(operationType, stubValueExpression);
 
@@ -61,7 +61,7 @@ namespace StatsUnitTests.Compound
         }
         private void BinaryOpTest(BinaryOperationType<int> operationType, int left, int right, int expected)
         {
-            var stubStatSet = new FakeStatSet();
+            var stubStatSet = new FakeStatSet().Snapshot;
             var stubValueExpressionLeft = new Literal<int>(left);
             var stubValueExpressionRight = new Literal<int>(right);
             var mockExpression = new ValueOperation_Binary<int>(operationType, stubValueExpressionLeft, stubValueExpressionRight);
@@ -100,7 +100,7 @@ namespace StatsUnitTests.Compound
         }
         private void MultiaryOpTest(MultiaryOperationType<int> operationType, int item1, int item2, int item3, int expected)
         {
-            var stubStatSet = new FakeStatSet();
+            var stubStatSet = new FakeStatSet().Snapshot;
             var stubValueExpressionList = new List<ValueExpression<int>>() { new Literal<int>(item1), new Literal<int>(item2), new Literal<int>(item3) };
             var mockExpression = new ValueOperation_Multiary<int>(operationType, stubValueExpressionList);
 
@@ -163,7 +163,7 @@ namespace StatsUnitTests.Compound
         [DataRow(false, 1, DisplayName = "With False Condition")]
         public void ConditionalExpression_Evaluate_ReturnsCorrectResult(bool conditionResult, int expected)
         {
-            var stubStatSet = new FakeStatSet();
+            var stubStatSet = new FakeStatSet().Snapshot;
             var stubCondition = new FakeLogicExpression(conditionResult);
             const int ANY_VALUE = 0;
             var stubLiteralValueConsequent = new Literal<int>(ANY_VALUE);
