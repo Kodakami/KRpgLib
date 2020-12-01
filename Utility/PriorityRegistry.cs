@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KRpgLib.Utility
 {
     public class PriorityRegistry<T>
     {
-        private readonly Dictionary<T, int> _registry = new Dictionary<T, int>();
-        private List<T> _orderedCache;
-        private bool _isDirty;
+        private readonly Dictionary<T, int> _registry;
+        protected readonly OrderedListCacheHelper _cache;
 
         public PriorityRegistry()
         {
-            _isDirty = true;
+            _registry = new Dictionary<T, int>();
+            _cache = new OrderedListCacheHelper(_registry);
         }
         public void RegisterItem(T item, int priority)
         {
@@ -21,39 +22,30 @@ namespace KRpgLib.Utility
             }
 
             _registry.Add(item, priority);
-            _isDirty = true;
+
+            SetDirty();
         }
         public void UnregisterItem(T item)
         {
-            _registry.Remove(item);
-
-            // This is faster than setting the dirty flag.
-            _orderedCache.Remove(item);
-        }
-        public List<T> GetAllByPriority()
-        {
-            if (_isDirty)
+            if (_registry.Remove(item))
             {
-                UpdateCache();
+                SetDirty();
             }
-
-            return new List<T>(_orderedCache);
         }
-        private void UpdateCache()
+        protected void SetDirty() => _cache.SetDirty_FromExternal();
+        public List<T> GetAllByPriority() => _cache.GetCacheCopy();
+
+        protected sealed class OrderedListCacheHelper : ParentedCachedValueController<List<T>, Dictionary<T, int>>
         {
-            var newList = new List<T>();
-
-            var temp = new List<KeyValuePair<T, int>>(_registry);
-            temp.Sort((kvp1, kvp2) => kvp1.Value - kvp2.Value);
-
-            foreach (var item in temp)
+            public OrderedListCacheHelper(Dictionary<T, int> parent) : base(parent) { }
+            protected override List<T> CalculateNewCache()
             {
-                newList.Add(item.Key);
+                return Parent.OrderBy(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
             }
-            
-            _orderedCache = newList;
-            
-            _isDirty = false;
+            protected override List<T> CreateCacheCopy(List<T> cache)
+            {
+                return new List<T>(cache);
+            }
         }
     }
 }

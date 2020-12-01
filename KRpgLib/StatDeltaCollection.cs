@@ -25,7 +25,7 @@ namespace KRpgLib.Stats
             // Use that dictionary smasher!
             _controllerDict = DictionarySmasher<IStatTemplate<TValue>, DeltaTypeDictHelper>.Smash(
                 valueSmasher: (_, values) => new DeltaTypeDictHelper(values),
-                dictionaries: combineFrom.Select(controller => controller._controllerDict));
+                dictionaries: combineFrom.Select(collection => collection._controllerDict).ToList());
         }
         public StatDeltaCollection(IEnumerable<StatTemplateAndDelta<TValue>> statTemplateAndDeltas)
         {
@@ -114,7 +114,7 @@ namespace KRpgLib.Stats
                 // Use that dictionary smasher!
                 _controllerDict = DictionarySmasher<StatDeltaType<TValue>, ValueListHelper>.Smash(
                     valueSmasher: (key, values) => new ValueListHelper(key, values),
-                    dictionaries: combineFrom.Select(controller => controller._controllerDict));
+                    dictionaries: combineFrom.Select(controller => controller._controllerDict).ToList());
             }
 
             public void Add(StatDeltaType<TValue> deltaType, TValue deltaValue)

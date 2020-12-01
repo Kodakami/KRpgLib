@@ -9,18 +9,31 @@ namespace KRpgLib.Utility
     /// </summary>
     public static class DictionarySmasher<TKey, TValue>
     {
-        public delegate TValue ValueSmashDelegate(TKey key, IEnumerable<TValue> allValuesForKey);
+        /// <summary>
+        /// A function taking a dictionary's key and all values found for that key, and returning the result of combining all those values.
+        /// </summary>
+        /// <param name="key">the key from the Dictionary<TKey, TValue></param>
+        /// <param name="allValuesForKey">all values found for the key across the provided collection of Dictionary<TKey, TValue></param>
+        /// <returns>combined value for new dictionary</returns>
+        public delegate TValue ValueSmashDelegate(TKey key, List<TValue> allValuesForKey);
 
-        public static Dictionary<TKey, TValue> Smash(ValueSmashDelegate valueSmasher, IEnumerable<Dictionary<TKey, TValue>> dictionaries)
+        public static Dictionary<TKey, TValue> Smash(ValueSmashDelegate valueSmasher, ICollection<Dictionary<TKey, TValue>> dictionaries)
         {
+            if (valueSmasher == null)
+            {
+                throw new ArgumentNullException(nameof(valueSmasher));
+            }
+
             // New dictionary.
             var outDict = new Dictionary<TKey, TValue>();
 
-            // Quick escape if arg null.
-            if (dictionaries == null)
+            // Quick escape if dictionary collection is null or empty.
+            if (dictionaries == null || dictionaries.Count == 0)
             {
                 return outDict;
             }
+
+            // (No quick escape if dictionary collection has only one item. Provided value smasher could be a form of conversion.)
 
             // Populate dictionary with all keys.
 
@@ -38,7 +51,7 @@ namespace KRpgLib.Utility
             // Collect all values for each key and create a new smashed value.
 
             // For each key we just added to the new dictionary (which is one copy of each key across all the dictionaries we are combining)...
-            foreach (var newKey in outDict.Keys)
+            foreach (var newKey in new List<TKey>(outDict.Keys))    // Collection clone.
             {
                 // Make a new list of values (for the ones related to this key).
                 var valueList = new List<TValue>();

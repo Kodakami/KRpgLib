@@ -26,7 +26,7 @@ namespace KRpgLib.Mods
             var flags = GetNewRolledFlags(rng);
             var statDeltas = GetNewRolledStatDeltas(rng);
 
-            return new Affix<TValue>(this, flags, statDeltas);
+            return Affix<TValue>.Create(this, flags, statDeltas);
         }
         protected List<ModFlag> GetNewRolledFlags(Random rng)
         {

@@ -15,6 +15,12 @@ namespace KRpgLib.Mods
         private readonly StatDeltaCacheHelper _statDeltaCache;
         private readonly FlagCacheHelper _flagCache;
 
+        public AffixManager()
+        {
+            _appliedAffixes = new List<Affix<TValue>>();
+            _statDeltaCache = new StatDeltaCacheHelper(this);
+            _flagCache = new FlagCacheHelper(this);
+        }
         public void RerollAllAffixValues(Random rng)
         {
             if (rng == null)
@@ -303,9 +309,9 @@ namespace KRpgLib.Mods
         public List<Flag> GetAllFlags() => _flagCache.GetCacheCopy();
         public StatDeltaCollection<TValue> GetStatDeltaCollection() => _statDeltaCache.GetCacheCopy();
 
-        private class StatDeltaCacheHelper : ParentedCachedValueController<StatDeltaCollection<TValue>, AffixManager<TValue>>
+        private sealed class StatDeltaCacheHelper : ParentedCachedValueController<StatDeltaCollection<TValue>, AffixManager<TValue>>
         {
-            protected StatDeltaCacheHelper(AffixManager<TValue> parent) : base(parent) { }
+            public StatDeltaCacheHelper(AffixManager<TValue> parent) : base(parent) { }
             protected override StatDeltaCollection<TValue> CalculateNewCache()
             {
                 // Get the stat delta collections from all affixes that have stat delta mods and make them into a new delta collection.
@@ -317,9 +323,9 @@ namespace KRpgLib.Mods
                 return cache;
             }
         }
-        private class FlagCacheHelper : ParentedCachedValueController<List<Flag>, AffixManager<TValue>>
+        private sealed class FlagCacheHelper : ParentedCachedValueController<List<Flag>, AffixManager<TValue>>
         {
-            protected FlagCacheHelper(AffixManager<TValue> parent) : base(parent) { }
+            public FlagCacheHelper(AffixManager<TValue> parent) : base(parent) { }
             protected override List<Flag> CalculateNewCache()
             {
                 // Paring down duplicate or conflicting flags is not the job of the affix manager.
