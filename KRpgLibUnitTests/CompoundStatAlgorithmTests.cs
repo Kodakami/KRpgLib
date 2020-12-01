@@ -10,7 +10,7 @@ namespace StatsUnitTests.Compound
         [TestMethod]
         public void CalculateValue_WithValidAlgorithm_ReturnsCorrectValue()
         {
-            var stubSet = new FakeStatSet();
+            var stubSet = new FakeStatSet().Snapshot;
             var stubExpression = new FakeValueExpression(0);
             var mockAlgorithm = new CompoundStatAlgorithm<int>(stubExpression);
 
@@ -32,7 +32,7 @@ namespace StatsUnitTests.Compound
         {
             var stubValueExpression = new FakeValueExpression(0);
             var mockAlgorithm = new CompoundStatAlgorithm<int>(stubValueExpression);
-            FakeStatSet stubNullSet = null;
+            KRpgLib.Stats.StatSnapshot<int> stubNullSet = null;
 
             void exceptionalAction() => mockAlgorithm.CalculateValue(stubNullSet);
 

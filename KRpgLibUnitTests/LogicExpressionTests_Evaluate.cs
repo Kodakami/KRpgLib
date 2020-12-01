@@ -17,7 +17,7 @@ namespace StatsUnitTests.Compound
             const bool LITERAL_INPUT = true;
             const bool EXPECTED_OUTPUT = false;
 
-            var stubStatSet = new FakeStatSet();
+            var stubStatSet = new FakeStatSet().Snapshot;
             var stubLiteral = new FakeLogicExpression(LITERAL_INPUT);
             var mockOperation = new LogicOperation_Not<int>(stubLiteral);
 
@@ -31,7 +31,7 @@ namespace StatsUnitTests.Compound
             Func<LogicExpression<int>, LogicExpression<int>, LogicOperation_Binary<int>> mockOperationGetter,
             bool left, bool right, bool expected)
         {
-            var stubStatSet = new FakeStatSet();
+            var stubStatSet = new FakeStatSet().Snapshot;
             var stubLiteralLeft = new FakeLogicExpression(left);
             var stubLiteralRight = new FakeLogicExpression(right);
             var mockOperation = mockOperationGetter(stubLiteralLeft, stubLiteralRight);
@@ -76,7 +76,7 @@ namespace StatsUnitTests.Compound
             Func<List<LogicExpression<int>>, LogicOperation_Multiary<int>> mockOperationGetter,
             bool item1, bool item2, bool item3, bool expected)
         {
-            var stubStatSet = new FakeStatSet();
+            var stubStatSet = new FakeStatSet().Snapshot;
             var stubLiteral1 = new FakeLogicExpression(item1);
             var stubLiteral2 = new FakeLogicExpression(item2);
             var stubLiteral3 = new FakeLogicExpression(item3);
@@ -118,7 +118,7 @@ namespace StatsUnitTests.Compound
 
         private void ComparisonTest(ComparisonType<int> comparisonType, int left, int right, bool expected)
         {
-            var stubStatSet = new FakeStatSet();
+            var stubStatSet = new FakeStatSet().Snapshot;
             var stubLiteralLeft = new Literal<int>(left);
             var stubLiteralRight = new Literal<int>(right);
             var mockOperation = new KRpgLib.Stats.Compound.Comparison<int>(comparisonType, stubLiteralLeft, stubLiteralRight);

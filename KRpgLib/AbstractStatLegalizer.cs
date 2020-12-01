@@ -40,7 +40,7 @@ namespace KRpgLib.Stats
 
         public override int GetLegalizedValue(int rawValue)
         {
-            return StatUtilities.LegalizeIntValue(rawValue, MinValue, MinValue, Precision);
+            return StatUtilities.LegalizeIntValue(rawValue, MinValue, MaxValue, Precision);
         }
     }
     /// <summary>

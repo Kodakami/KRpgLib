@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using KRpgLib.Utility;
+﻿using KRpgLib.Utility;
+using System.Collections.Generic;
 
 namespace KRpgLib.Stats
 {
     /// <summary>
-    /// Base class for an object the manages the stats for something. This may be owned by an RPG character, an enemy, etc... Your implementation should take a series of components in the constructor and apply them as initial stat providers.
+    /// An object that manages the stats for something. This may be owned by an RPG character, an enemy, etc.
     /// </summary>
     public class StatManager<TValue> : IStatSet<TValue> where TValue : struct
     {
@@ -15,18 +15,12 @@ namespace KRpgLib.Stats
         //ctor
         public StatManager()
         {
-            // Nothing. :D
             // Pass in other components that are stat providers such as class/race managers, arpg-style modifier managers, status effect managers, and passive ability managers.
+
+            _statProviders = new StatProviderCollection<TValue>();
+            _cachedSnapshot = new CachedSnapshotHelper(this);
         }
-        public StatManager(IEnumerable<IStatProvider<TValue>> initStatProviders)
-        {
-            // Initialize with stat providers.
-            foreach (var provider in initStatProviders)
-            {
-                AddStatProvider(provider);
-            }
-        }
-        
+
         /// <summary>
         /// Add a stat provider to the stat manager.
         /// </summary>

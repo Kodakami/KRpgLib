@@ -64,7 +64,7 @@ namespace StatsUnitTests.Compound.AlgoBuilder
                     q, list => new ValueOperation_Multiary<int>(CommonInstances.Int.Add, list))
                 );
             var stubStatReg = new StatTemplateRegistry<int>();
-            var stubStatSet = new FakeStatSet();
+            var stubStatSet = new FakeStatSet().Snapshot;
             var mockParser = new Parser_Int(stubTokens, stubExpReg, stubStatReg);
 
             if (!mockParser.TryParseTokens(out ValueExpression<int> resultAlgo))

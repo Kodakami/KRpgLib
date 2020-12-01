@@ -28,16 +28,16 @@ namespace KRpgLib.Stats
             {
                 int appliedPrecision = precision.Value;
 
-                if (appliedPrecision > 0)
+                if (appliedPrecision > 1)
                 {
                     // Divide by precision value, then multiply by precision value again.
                     // floor(15 / 2) * 2 = 14
                     // floor(166 / 50) * 50 = 150
 
                     // Flooring (truncation) is natural for int.
-                    return rawValue / appliedPrecision * appliedPrecision;
+                    return (rawValue / appliedPrecision) * appliedPrecision;
                 }
-                // If Precision is 0 or less, we use integer precision as usual.
+                // If Precision is 1 or less, we use integer precision as usual.
             }
 
             return rawValue;
