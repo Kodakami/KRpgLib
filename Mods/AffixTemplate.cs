@@ -2,7 +2,6 @@
 using KRpgLib.Mods.ModTemplates;
 using System;
 using System.Collections.Generic;
-using KRpgLib.Stats;
 
 namespace KRpgLib.Mods
 {

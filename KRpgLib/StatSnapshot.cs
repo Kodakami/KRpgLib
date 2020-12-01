@@ -6,41 +6,65 @@ namespace KRpgLib.Stats
     /// A frozen collection of stat values from a single moment. Missing stat templates are considered to be at default value. Created by calculating with stat deltas. Set is not modifiable after instantiation.
     /// </summary>
     /// <typeparam name="TValue">stat backing type</typeparam>
-    public sealed class StatSnapshot<TValue> : AbstractStatSet<TValue> where TValue : struct
+    public sealed class StatSnapshot<TValue> : IStatSet<TValue> where TValue : struct
     {
         private readonly Dictionary<IStatTemplate<TValue>, TValue> _statDict = new Dictionary<IStatTemplate<TValue>, TValue>();
 
-        /// <summary>
-        /// Blank stat set. All values will be considered default.
-        /// </summary>
-        public StatSnapshot()
+        private StatSnapshot()
         {
             // Nothing! :D
         }
-        /// <summary>
-        /// Create a stat set from a dictionary of raw stat values.
-        /// </summary>
-        public StatSnapshot(Dictionary<IStatTemplate<TValue>, TValue> statValueDict)
+        private StatSnapshot(Dictionary<IStatTemplate<TValue>, TValue> statValueDict)
         {
             // New dictionary.
-            _statDict = new Dictionary<IStatTemplate<TValue>, TValue>(statValueDict);
+            _statDict = new Dictionary<IStatTemplate<TValue>, TValue>(statValueDict ?? throw new System.ArgumentNullException(nameof(statValueDict)));
         }
 
-        protected override TValue GetStatValue_Internal(IStatTemplate<TValue> safeStatTemplate)
+        /// <summary>
+        /// Get the raw value of a stat. If the stat has no recorded value, returns the stat's default value.
+        /// </summary>
+        /// <param name="statTemplate">any stat template</param>
+        /// <returns>current raw stat value, accurate to the represented moment in time</returns>
+        public TValue GetStatValue(IStatTemplate<TValue> statTemplate)
         {
-            if (_statDict.ContainsKey(safeStatTemplate))
+            if (statTemplate == null)
             {
-                return _statDict[safeStatTemplate];
+                throw new System.ArgumentNullException(nameof(statTemplate));
+            }
+
+            if (_statDict.ContainsKey(statTemplate))
+            {
+                return _statDict[statTemplate];
             }
 
             // If no value, return default value.
-            return safeStatTemplate.DefaultValue;
+            return statTemplate.DefaultValue;
         }
 
         /// <summary>
-        /// Is the stat contained in the set? If not, values will be treated as default for the stat.
+        /// Get the legalized value of a stat. If the stat has no recorded value, returns the stat's legalized default value.
         /// </summary>
-        /// <param name="stat">a stat template</param>
-        public bool HasValue(IStatTemplate<TValue> stat) => _statDict.ContainsKey(stat);
+        /// <param name="statTemplate">any stat template</param>
+        /// <returns>current legal stat value, accurate to the represented moment in time</returns>
+        public TValue GetStatValueLegalized(IStatTemplate<TValue> statTemplate)
+        {
+            // Null check after the jump.
+            return statTemplate.GetLegalizedValue(GetStatValue(statTemplate));
+        }
+
+        /// <summary>
+        /// Create a blank stat set. All values will be considered default.
+        /// </summary>
+        public static StatSnapshot<TValue> Create() => new StatSnapshot<TValue>();
+
+        /// <summary>
+        /// Create a stat set from a dictionary of raw stat values.
+        /// </summary>
+        public static StatSnapshot<TValue> Create(Dictionary<IStatTemplate<TValue>, TValue> statValueDict) => new StatSnapshot<TValue>(statValueDict);
+
+        /// <summary>
+        /// Create a stat set from a stat delta collection. Same effect as using GetStatSnapshot() on the provided collection.
+        /// </summary>
+        public static StatSnapshot<TValue> Create(StatDeltaCollection<TValue> statDeltaCollection) => statDeltaCollection.GetStatSnapshot();
     }
 }

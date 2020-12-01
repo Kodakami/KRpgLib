@@ -5,121 +5,153 @@ using System.Linq;
 
 namespace KRpgLib.Stats
 {
-    public sealed class StatDeltaCollection<TValue> : IStatProvider<TValue> where TValue : struct
+    public class StatDeltaCollection<TValue> where TValue : struct
     {
-        private readonly Dictionary<IStatTemplate<TValue>, DeltaTypeController> _controllerDict = new Dictionary<IStatTemplate<TValue>, DeltaTypeController>();
+        // Internal fields.
+        private readonly Dictionary<IStatTemplate<TValue>, DeltaTypeDictHelper> _controllerDict;
 
+        // Ctors.
         public StatDeltaCollection() { }
         public StatDeltaCollection(StatDeltaCollection<TValue> otherForDeepCopy)
         {
-            _controllerDict = new Dictionary<IStatTemplate<TValue>, DeltaTypeController>();
+            _controllerDict = new Dictionary<IStatTemplate<TValue>, DeltaTypeDictHelper>();
             foreach (var kvp in otherForDeepCopy._controllerDict)
             {
-                _controllerDict.Add(kvp.Key, new DeltaTypeController(kvp.Value));
+                _controllerDict.Add(kvp.Key, new DeltaTypeDictHelper(kvp.Value));
             }
         }
         public StatDeltaCollection(IEnumerable<StatDeltaCollection<TValue>> combineFrom)
         {
             // Use that dictionary smasher!
-            _controllerDict = DictionarySmasher<IStatTemplate<TValue>, DeltaTypeController>.Smash(
-                valueSmasher: (_, values) => new DeltaTypeController(values),
+            _controllerDict = DictionarySmasher<IStatTemplate<TValue>, DeltaTypeDictHelper>.Smash(
+                valueSmasher: (_, values) => new DeltaTypeDictHelper(values),
                 dictionaries: combineFrom.Select(controller => controller._controllerDict));
         }
-
-        public void Add(StatTemplateAndDelta<TValue> statTemplateAndDelta)
+        public StatDeltaCollection(IEnumerable<StatTemplateAndDelta<TValue>> statTemplateAndDeltas)
         {
-            if (!_controllerDict.ContainsKey(statTemplateAndDelta.Template))
+            _controllerDict = new Dictionary<IStatTemplate<TValue>, DeltaTypeDictHelper>();
+            foreach (var stad in statTemplateAndDeltas)
             {
-                _controllerDict.Add(statTemplateAndDelta.Template, new DeltaTypeController());
+                Add_Internal(stad.Template, stad.DeltaType, stad.DeltaValue);
+            }
+        }
+
+        // Protected methods.
+        protected void Add_Internal(IStatTemplate<TValue> statTemplate, StatDeltaType<TValue> deltaType, TValue deltaValue)
+        {
+            if (!_controllerDict.ContainsKey(statTemplate))
+            {
+                _controllerDict.Add(statTemplate, new DeltaTypeDictHelper());
             }
 
-            _controllerDict[statTemplateAndDelta.Template].Add(statTemplateAndDelta.Delta);
+            _controllerDict[statTemplate].Add(deltaType, deltaValue);
         }
-        public void Remove(StatTemplateAndDelta<TValue> statTemplateAndDelta)
+        protected void Remove_Internal(IStatTemplate<TValue> statTemplate, StatDeltaType<TValue> deltaType, TValue deltaValue)
         {
-            if (_controllerDict.ContainsKey(statTemplateAndDelta.Template))
+            if (_controllerDict.ContainsKey(statTemplate))
             {
-                var controller = _controllerDict[statTemplateAndDelta.Template];
-                controller.Remove(statTemplateAndDelta.Delta);
+                var controller = _controllerDict[statTemplate];
+                controller.Remove(deltaType, deltaValue);
 
                 if (!controller.HasValues)
                 {
-                    _controllerDict.Remove(statTemplateAndDelta.Template);
+                    _controllerDict.Remove(statTemplate);
                 }
             }
         }
-        public bool HasDeltasForStat(IStatTemplate<TValue> statTemplate)
+
+        // Public methods.
+        public StatSnapshot<TValue> GetStatSnapshot()
         {
-            return _controllerDict.ContainsKey(statTemplate);
-        }
-        public List<StatDelta<TValue>> GetDeltasForStat(IStatTemplate<TValue> statTemplate)
-        {
-            var outList = new List<StatDelta<TValue>>();
-            if (_controllerDict.ContainsKey(statTemplate))
+            var dict = new Dictionary<IStatTemplate<TValue>, TValue>();
+            foreach (var kvp in _controllerDict)
             {
-                foreach (var kvp in _controllerDict[statTemplate].GetCacheCopy())
+                // Get total stat deltas for this stat template.
+                var deltaDict = kvp.Value.GetCacheCopy();
+
+                // Start with the default value.
+                TValue statValue = kvp.Key.DefaultValue;
+
+                // For each type of stat delta (addition, multiplication)...
+                foreach (StatDeltaType<TValue> deltaType in StatDeltaType<TValue>.GetAllByPriority())
                 {
-                    outList.Add(new StatDelta<TValue>(kvp.Key, kvp.Value));
+                    // If there is a delta of that type...
+                    if (deltaDict.TryGetValue(deltaType, out TValue found))
+                    {
+                        // Get the combined value (combining baseline value and total delta value).
+                        TValue combinedDeltaValues = deltaType.Combine(deltaType.BaselineValue, found);
+
+                        // Apply the total delta value to the current stat value.
+                        statValue = deltaType.Apply(statValue, combinedDeltaValues);
+                    }
                 }
+
+                // Add the total stat value to the dictionary.
+                dict.Add(kvp.Key, statValue);
             }
-            return outList;
-        }
-        public List<IStatTemplate<TValue>> GetStatsWithDeltas()
-        {
-            return new List<IStatTemplate<TValue>>(_controllerDict.Keys);
+
+            return StatSnapshot<TValue>.Create(dict);
         }
 
-        public StatDeltaCollection<TValue> GetDeepCopy() => new StatDeltaCollection<TValue>(this);
-        public ReadOnlyStatDeltaCollection<TValue> GetReadOnlyDeepCopy() => new ReadOnlyStatDeltaCollection<TValue>(this);
-
-        private sealed class DeltaTypeController : CachedValueController<Dictionary<StatDeltaType<TValue>,TValue>>
+        // Internal classes.
+        protected sealed class DeltaTypeDictHelper : CachedValueController<Dictionary<StatDeltaType<TValue>, TValue>>
         {
-            private readonly Dictionary<StatDeltaType<TValue>, ValueListController> _controllerDict;
+            private readonly Dictionary<StatDeltaType<TValue>, ValueListHelper> _controllerDict;
 
             public bool HasValues => _controllerDict.Count > 0;
 
-            public DeltaTypeController() { }
-            public DeltaTypeController(DeltaTypeController otherForDeepCopy)
+            public DeltaTypeDictHelper() { }
+            public DeltaTypeDictHelper(DeltaTypeDictHelper otherForDeepCopy)
             {
-                _controllerDict = new Dictionary<StatDeltaType<TValue>, ValueListController>();
+                _controllerDict = new Dictionary<StatDeltaType<TValue>, ValueListHelper>();
                 foreach (var kvp in otherForDeepCopy._controllerDict)
                 {
-                    _controllerDict.Add(kvp.Key, new ValueListController(kvp.Value));
+                    _controllerDict.Add(kvp.Key, new ValueListHelper(kvp.Value));
                 }
             }
-            public DeltaTypeController(IEnumerable<DeltaTypeController> combineFrom)
+            public DeltaTypeDictHelper(IEnumerable<DeltaTypeDictHelper> combineFrom)
             {
                 // Use that dictionary smasher!
-                _controllerDict = DictionarySmasher<StatDeltaType<TValue>, ValueListController>.Smash(
-                    valueSmasher: (key, values) => new ValueListController(key, values),
+                _controllerDict = DictionarySmasher<StatDeltaType<TValue>, ValueListHelper>.Smash(
+                    valueSmasher: (key, values) => new ValueListHelper(key, values),
                     dictionaries: combineFrom.Select(controller => controller._controllerDict));
             }
 
-            public void Add(StatDelta<TValue> statDelta)
+            public void Add(StatDeltaType<TValue> deltaType, TValue deltaValue)
             {
-                if (!_controllerDict.ContainsKey(statDelta.Type))
+                if (!_controllerDict.ContainsKey(deltaType))
                 {
-                    _controllerDict.Add(statDelta.Type, new ValueListController(statDelta.Type));
+                    _controllerDict.Add(deltaType, new ValueListHelper(deltaType));
                 }
 
-                _controllerDict[statDelta.Type].Add(statDelta.Value);
+                _controllerDict[deltaType].Add(deltaValue);
 
                 SetDirty();
             }
-
-            public void Remove(StatDelta<TValue> statDelta)
+            public void Add(StatDelta<TValue> statDelta)
             {
-                if (_controllerDict.ContainsKey(statDelta.Type))
+                Add(statDelta.Type, statDelta.Value);
+            }
+
+            public void Remove(StatDeltaType<TValue> deltaType, TValue deltaValue)
+            {
+                if (_controllerDict.ContainsKey(deltaType))
                 {
-                    var controller = _controllerDict[statDelta.Type];
-                    controller.Remove(statDelta.Value);
+                    var controller = _controllerDict[deltaType];
+
+                    controller.Remove(deltaValue);
+
                     if (!controller.HasValues)
                     {
-                        _controllerDict.Remove(statDelta.Type);
+                        _controllerDict.Remove(deltaType);
                     }
 
                     SetDirty();
                 }
+            }
+            public void Remove(StatDelta<TValue> statDelta)
+            {
+                Remove(statDelta.Type, statDelta.Value);
             }
 
             protected override Dictionary<StatDeltaType<TValue>, TValue> CalculateNewCache()
@@ -138,25 +170,22 @@ namespace KRpgLib.Stats
                 return new Dictionary<StatDeltaType<TValue>, TValue>(cache);
             }
 
-            private sealed class ValueListController : CachedValueController<TValue>
+            private sealed class ValueListHelper : ParentedCachedValueController<TValue, StatDeltaType<TValue>>
             {
                 private readonly List<TValue> _valueList = new List<TValue>();
-                private readonly StatDeltaType<TValue> _representedType;
+                private StatDeltaType<TValue> RepresentedType => Parent;
 
                 public bool HasValues => _valueList.Count > 0;
 
-                public ValueListController(StatDeltaType<TValue> representedType)
+                public ValueListHelper(StatDeltaType<TValue> representedType) : base(representedType) { }
+                public ValueListHelper(ValueListHelper otherForDeepCopy)
+                    :base(otherForDeepCopy.Parent)
                 {
-                    _representedType = representedType;
-                }
-                public ValueListController(ValueListController otherForDeepCopy)
-                {
-                    _representedType = otherForDeepCopy._representedType;
                     _valueList = new List<TValue>(otherForDeepCopy._valueList);
                 }
-                public ValueListController(StatDeltaType<TValue> representedType, IEnumerable<ValueListController> combineFrom)
+                public ValueListHelper(StatDeltaType<TValue> representedType, IEnumerable<ValueListHelper> combineFrom)
+                    :base(representedType)
                 {
-                    _representedType = representedType;
                     _valueList = combineFrom.SelectMany(controller => controller._valueList).ToList();
                 }
 
@@ -174,10 +203,10 @@ namespace KRpgLib.Stats
 
                 protected override TValue CalculateNewCache()
                 {
-                    TValue total = _representedType.BaselineValue;
+                    TValue total = RepresentedType.BaselineValue;
                     foreach (var val in _valueList)
                     {
-                        _representedType.Combine(total, val);
+                        RepresentedType.Combine(total, val);
                     }
                     return total;
                 }
@@ -189,42 +218,5 @@ namespace KRpgLib.Stats
                 }
             }
         }
-    }
-    public sealed class ReadOnlyStatDeltaCollection<TValue>: IStatProvider<TValue> where TValue : struct
-    {
-        private readonly StatDeltaCollection<TValue> _statDeltaCollection;
-
-        /// <summary>
-        /// This constructor creates a completely empty collection with no means of modifying the contents.
-        /// </summary>
-        public ReadOnlyStatDeltaCollection()
-        {
-            _statDeltaCollection = new StatDeltaCollection<TValue>();
-        }
-        /// <summary>
-        /// Creates a new read-only collection and initializes it with the supplied values. It will only ever contain these values.
-        /// </summary>
-        /// <param name="statTemplateAndDeltas">initialization values</param>
-        public ReadOnlyStatDeltaCollection(IEnumerable<StatTemplateAndDelta<TValue>> statTemplateAndDeltas)
-        {
-            _statDeltaCollection = new StatDeltaCollection<TValue>();
-            foreach (var stad in statTemplateAndDeltas)
-            {
-                _statDeltaCollection.Add(stad);
-            }
-        }
-        /// <summary>
-        /// Creates a deep copy. Values will only reflect what the collection contained at the time of instantiation.
-        /// </summary>
-        /// <param name="statDeltaCollection">a stat delta collection to copy and encapsulate</param>
-        public ReadOnlyStatDeltaCollection(StatDeltaCollection<TValue> statDeltaCollection)
-        {
-            // Deep copy.
-            _statDeltaCollection = new StatDeltaCollection<TValue>(statDeltaCollection);
-        }
-
-        public List<StatDelta<TValue>> GetDeltasForStat(IStatTemplate<TValue> stat) => _statDeltaCollection.GetDeltasForStat(stat);
-        public List<IStatTemplate<TValue>> GetStatsWithDeltas() => _statDeltaCollection.GetStatsWithDeltas();
-        public bool HasDeltasForStat(IStatTemplate<TValue> stat) => _statDeltaCollection.HasDeltasForStat(stat);
     }
 }

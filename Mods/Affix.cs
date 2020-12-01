@@ -15,54 +15,53 @@ namespace KRpgLib.Mods
         private readonly List<ModFlag> _flagMods;
         private readonly List<ModStatDelta<TValue>> _statDeltaMods;
 
-        // Cached values for the combined results of the mod instances.
+        // Cached values for the combined results of the mod instances. No need for cached value controllers, values are static.
         private readonly List<Flag> _flagCache;
-        private readonly StatDeltaCollection<TValue> _statDeltaCache;
+        private readonly StatDeltaCollection<TValue> _statDeltaCollectionCache;
 
         // Public properties (and INamedObject compliance).
         public AffixTemplate<TValue> Template { get; }
         public string ExternalName => Template.ExternalName;
 
         // Constructor.
-        public Affix(AffixTemplate<TValue> template, List<ModFlag> flagMods, List<ModStatDelta<TValue>> statDeltaMods)
+        private Affix(AffixTemplate<TValue> template, List<ModFlag> flagMods, List<ModStatDelta<TValue>> statDeltaMods)
         {
-            Template = template ?? throw new ArgumentNullException(nameof(flagMods));
+            Template = template;
+            _flagMods = flagMods;
+            _statDeltaMods = statDeltaMods;
 
-            _flagMods = flagMods ?? new List<ModFlag>();
-            _statDeltaMods = statDeltaMods ?? new List<ModStatDelta<TValue>>();
+            // Create flag cache.
+            _flagCache = _flagMods.ConvertAll(mod => mod.RolledResult);
 
-            _flagCache = CreateFlagCache(flagMods);
-            _statDeltaCache = CreateStatDeltaCache(statDeltaMods);
+            // Create stat delta collection cache.
+            _statDeltaCollectionCache = new StatDeltaCollection<TValue>(
+                _statDeltaMods.ConvertAll(mod => new StatTemplateAndDelta<TValue>(
+                    mod.Template.AffectedStatTemplate,
+                    mod.Template.StatDeltaType,
+                    mod.RolledResult)
+                ));
         }
 
         // Public methods (for viewing the mods themselves while keeping them read-only).
+        public bool HasFlagMods => _flagMods.Count > 0;
         public List<ModFlag> GetFlagModsCopy() => new List<ModFlag>(_flagMods);
+        public bool HasStatDeltaMods => _statDeltaMods.Count > 0;
         public List<ModStatDelta<TValue>> GetStatDeltaModsCopy() => new List<ModStatDelta<TValue>>(_statDeltaMods);
 
         // IFlagProvider compliance.
         public List<Flag> GetAllFlags() => new List<Flag>(_flagCache);
 
         // IStatProvider<TValue> compliance.
-        public List<StatDelta<TValue>> GetDeltasForStat(IStatTemplate<TValue> stat) => _statDeltaCache.GetDeltasForStat(stat);
-        public List<IStatTemplate<TValue>> GetStatsWithDeltas() => _statDeltaCache.GetStatsWithDeltas();
-        public bool HasDeltasForStat(IStatTemplate<TValue> stat) => _statDeltaCache.HasDeltasForStat(stat);
+        public StatDeltaCollection<TValue> GetStatDeltaCollection() => _statDeltaCollectionCache;
 
-        // Private static methods (for calculating cached values).
-        private static List<Flag> CreateFlagCache(List<ModFlag> flagMods)
+        // Static create method.
+        public static Affix<TValue> Create(AffixTemplate<TValue> template, List<ModFlag> flagMods, List<ModStatDelta<TValue>> statDeltaMods)
         {
-            return flagMods.ConvertAll(mod => mod.RolledResult);
-        }
-        private static StatDeltaCollection<TValue> CreateStatDeltaCache(List<ModStatDelta<TValue>> statDeltaMods)
-        {
-            var newCollection = new StatDeltaCollection<TValue>();
-            foreach (var mod in statDeltaMods)
-            {
-                newCollection.Add(new StatTemplateAndDelta<TValue>(
-                    mod.Template.AffectedStatTemplate,
-                    mod.Template.StatDeltaType,
-                    mod.RolledResult));
-            }
-            return newCollection;
+            return new Affix<TValue>(
+                template ?? throw new ArgumentNullException(nameof(flagMods)),
+                flagMods ?? new List<ModFlag>(),
+                statDeltaMods ?? new List<ModStatDelta<TValue>>()
+                );
         }
     }
 }

@@ -13,7 +13,10 @@ namespace KRpgLib.Utility
         {
             _cache = CalculateNewCache();
             IsDirty = false;
+
+            OnEndOfUpdate();
         }
+        protected virtual void OnEndOfUpdate() { }
         protected abstract TCache CalculateNewCache();
         protected abstract TCache CreateCacheCopy(TCache cache);
 
@@ -26,5 +29,14 @@ namespace KRpgLib.Utility
             return CreateCacheCopy(_cache);
         }
         public void ForceCacheUpdate() => UpdateCache();
+    }
+    public abstract class ParentedCachedValueController<TCache, TParent> : CachedValueController<TCache>
+    {
+        protected TParent Parent { get; private set; }
+        protected ParentedCachedValueController(TParent parent)
+        {
+            Parent = parent;
+        }
+        public void SetDirty_FromExternal() => SetDirty();
     }
 }
