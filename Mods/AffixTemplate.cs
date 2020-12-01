@@ -23,6 +23,8 @@ namespace KRpgLib.Mods
 
         public Affix<TValue> GetNewRolledAffix(Random rng)
         {
+            // Null check in later code.
+
             var flags = GetNewRolledFlags(rng);
             var statDeltas = GetNewRolledStatDeltas(rng);
 
@@ -30,10 +32,20 @@ namespace KRpgLib.Mods
         }
         protected List<ModFlag> GetNewRolledFlags(Random rng)
         {
+            if (rng == null)
+            {
+                throw new ArgumentNullException(nameof(rng));
+            }
+
             return _flagMods.ConvertAll(mt => new ModFlag(mt, rng));
         }
         protected List<ModStatDelta<TValue>> GetNewRolledStatDeltas(Random rng)
         {
+            if (rng == null)
+            {
+                throw new ArgumentNullException(nameof(rng));
+            }
+
             return _statDeltaMods.ConvertAll(mt => new ModStatDelta<TValue>(mt, rng));
         }
     }

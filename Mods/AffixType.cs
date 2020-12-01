@@ -21,10 +21,12 @@ namespace KRpgLib.Mods
 
         public AffixType(ApplyNameDelegate applyNameDelegate, int maxAffixesOfType)
         {
-            _applyNameDelegate = applyNameDelegate;
-            MaxAffixesOfType = maxAffixesOfType;
+            _applyNameDelegate = applyNameDelegate ?? throw new ArgumentNullException(nameof(applyNameDelegate));
+            MaxAffixesOfType = maxAffixesOfType >= 0 ? maxAffixesOfType : throw new ArgumentOutOfRangeException(nameof(maxAffixesOfType), "Argument must be greater than or equal to 0.");
         }
 
-        public string ApplyName(string affixName, string objectName) => _applyNameDelegate.Invoke(affixName, objectName);
+        public string ApplyName(string affixName, string objectName) =>_applyNameDelegate.Invoke(
+            affixName ?? throw new ArgumentNullException(nameof(affixName)),
+            objectName ?? throw new ArgumentNullException(objectName));
     }
 }
