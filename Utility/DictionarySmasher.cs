@@ -40,6 +40,12 @@ namespace KRpgLib.Utility
             // For each Dictionary we are combining...
             foreach (var dict in dictionaries)
             {
+                // Ignore null dictionaries.
+                if (dict == null)
+                {
+                    continue;
+                }
+
                 // For each key in their dictionary...
                 foreach (var key in dict.Keys)
                 {
@@ -59,6 +65,12 @@ namespace KRpgLib.Utility
                 // For each Dictionary we are combining...
                 foreach (var dict in dictionaries)
                 {
+                    // Ignore null dictionaries.
+                    if (dict == null)
+                    {
+                        continue;
+                    }
+
                     // Try to get a value for the key.
                     if (dict.TryGetValue(newKey, out TValue found))
                     {

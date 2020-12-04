@@ -2,12 +2,24 @@
 {
     public class CounterTemplate
     {
+        public CounterTemplate(bool isVisibleToUsers, CounterDomain domain, TrackByOriginDecision trackByOrigin, StackingInfo stackingInfo, DurationInfo? durationInfo, EarlyExpirationInfo? earlyExpirationInfo, CuringInfo? curingInfo, LinkedCounterInfo? linkedCounterInfo)
+        {
+            IsVisibleToUsers = isVisibleToUsers;
+            Domain = domain;
+            TrackByOrigin = trackByOrigin;
+            StackingInfo = stackingInfo;
+            DurationInfo = durationInfo;
+            EarlyExpirationInfo = earlyExpirationInfo;
+            CuringInfo = curingInfo;
+            LinkedCounterInfo = linkedCounterInfo;
+        }
+
         // Required components.
         public bool IsVisibleToUsers { get; }
         public CounterDomain Domain { get; }
         public TrackByOriginDecision TrackByOrigin { get; }
 
-        public StackingInfo StackingInfo {get;}
+        public StackingInfo StackingInfo { get; }
 
         // Optional components.
         public DurationInfo? DurationInfo { get; }

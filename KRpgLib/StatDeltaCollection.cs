@@ -14,6 +14,11 @@ namespace KRpgLib.Stats
         public StatDeltaCollection() { }
         public StatDeltaCollection(StatDeltaCollection<TValue> otherForDeepCopy)
         {
+            if (otherForDeepCopy == null)
+            {
+                throw new ArgumentNullException(nameof(otherForDeepCopy));
+            }
+
             _controllerDict = new Dictionary<IStatTemplate<TValue>, DeltaTypeDictHelper>();
             foreach (var kvp in otherForDeepCopy._controllerDict)
             {
@@ -22,6 +27,11 @@ namespace KRpgLib.Stats
         }
         public StatDeltaCollection(IEnumerable<StatDeltaCollection<TValue>> combineFrom)
         {
+            if (combineFrom == null)
+            {
+                throw new ArgumentNullException(nameof(combineFrom));
+            }
+
             // Use that dictionary smasher!
             _controllerDict = DictionarySmasher<IStatTemplate<TValue>, DeltaTypeDictHelper>.Smash(
                 valueSmasher: (_, values) => new DeltaTypeDictHelper(values),
@@ -29,6 +39,11 @@ namespace KRpgLib.Stats
         }
         public StatDeltaCollection(IEnumerable<StatTemplateAndDelta<TValue>> statTemplateAndDeltas)
         {
+            if (statTemplateAndDeltas == null)
+            {
+                throw new ArgumentNullException(nameof(statTemplateAndDeltas));
+            }
+
             _controllerDict = new Dictionary<IStatTemplate<TValue>, DeltaTypeDictHelper>();
             foreach (var stad in statTemplateAndDeltas)
             {
