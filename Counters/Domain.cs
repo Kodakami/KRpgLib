@@ -1,6 +1,6 @@
 ﻿namespace KRpgLib.Counters
 {
-    public enum CounterDomain
+    public enum Domain
     {
         /// <summary>
         /// The counter is representative of a game mechanic. This should only be removable by other game mechanics, and not by curing of any kind.

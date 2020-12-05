@@ -1,31 +1,52 @@
-﻿namespace KRpgLib.Counters
+﻿using System.Collections.Generic;
+namespace KRpgLib.Counters
 {
     public class CounterTemplate
     {
-        public CounterTemplate(bool isVisibleToUsers, CounterDomain domain, TrackByOriginDecision trackByOrigin, StackingInfo stackingInfo, DurationInfo? durationInfo, EarlyExpirationInfo? earlyExpirationInfo, CuringInfo? curingInfo, LinkedCounterInfo? linkedCounterInfo)
+        private readonly Dictionary<System.Type, CounterComponent> _componentDict = new Dictionary<System.Type, CounterComponent>();
+        public CounterTemplate(bool isVisibleToUsers, Domain domain, int maxStackSize, TrackByOriginDecision trackByOrigin, IEnumerable<CounterComponent> components)
         {
             IsVisibleToUsers = isVisibleToUsers;
             Domain = domain;
+            MaxInstanceCount = maxStackSize;
             TrackByOrigin = trackByOrigin;
-            StackingInfo = stackingInfo;
-            DurationInfo = durationInfo;
-            EarlyExpirationInfo = earlyExpirationInfo;
-            CuringInfo = curingInfo;
-            LinkedCounterInfo = linkedCounterInfo;
+
+            if (components != null)
+            {
+                foreach (var info in components)
+                {
+                    RegisterComponent(info);
+                }
+            }
         }
 
         // Required components.
         public bool IsVisibleToUsers { get; }
-        public CounterDomain Domain { get; }
+        public Domain Domain { get; }
+        public int MaxInstanceCount { get; }
         public TrackByOriginDecision TrackByOrigin { get; }
 
-        public StackingInfo StackingInfo { get; }
+        protected void RegisterComponent(CounterComponent info)
+        {
+            if (info == null)
+            {
+                throw new System.ArgumentNullException(nameof(info));
+            }
 
-        // Optional components.
-        public DurationInfo? DurationInfo { get; }
-        public EarlyExpirationInfo? EarlyExpirationInfo { get; }
-        public CuringInfo? CuringInfo { get; }
-        public LinkedCounterInfo? LinkedCounterInfo { get; }
+            _componentDict[info.GetType()] = info;
+        }
+        protected void UnregisterComponent<TComponent>()
+        {
+            _componentDict.Remove(typeof(TComponent));
+        }
+        public TComponent GetComponent<TComponent>() where TComponent : CounterComponent
+        {
+            if (_componentDict.TryGetValue(typeof(TComponent), out CounterComponent found))
+            {
+                return (TComponent)found;
+            }
+            return null;
+        }
     }
     public enum TrackByOriginDecision
     {

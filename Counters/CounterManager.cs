@@ -82,40 +82,56 @@ namespace KRpgLib.Counters
         }
         protected virtual Counter CreateNewCounterStack(CounterTemplate template, object origin, Random rng, CounterAdditionReason additionReason, int recursionDepth)
         {
-            var counter = Counter.Create(template, origin);
+            var counter = new Counter(template, origin);
 
             // Gain this counter stack.
             _counters.Add(counter);
 
-            // Removed on addition.
-            foreach (var lc in counter.GetCountersRemovedDuringAddition(rng, additionReason))
-            {
-                RemoveCountersRecursive(lc.Key, origin, rng, lc.Value, CounterRemovalReason.REMOVED_BY_OTHER_COUNTER, recursionDepth + 1);
-            }
-
-            // Added on addition.
-            foreach (var lc in counter.GetCountersAddedDuringAddition(rng, additionReason))
-            {
-                AddCountersRecursive(lc.Key, origin, rng, lc.Value, CounterAdditionReason.ADDED_BY_OTHER_COUNTER, recursionDepth + 1);
-            }
+            OnNewCounterStackCreated(counter, rng, additionReason, recursionDepth);
 
             return counter;
+        }
+        protected virtual void OnNewCounterStackCreated(Counter counter, Random rng, CounterAdditionReason additionReason, int recursionDepth)
+        {
+            var linkedCounters = counter.GetComponent<LinkedCounterComponent>();
+            if (linkedCounters != null)
+            {
+                // Removed on addition.
+                foreach (var lc in linkedCounters.GetCountersRemovedDuringAddition(counter, rng, additionReason))
+                {
+                    RemoveCountersRecursive(lc.Key, counter.Origin, rng, lc.Value, CounterRemovalReason.REMOVED_BY_OTHER_COUNTER, recursionDepth + 1);
+                }
+
+                // Added on addition.
+                foreach (var lc in linkedCounters.GetCountersAddedDuringAddition(counter, rng, additionReason))
+                {
+                    AddCountersRecursive(lc.Key, counter.Origin, rng, lc.Value, CounterAdditionReason.ADDED_BY_OTHER_COUNTER, recursionDepth + 1);
+                }
+            }
         }
         protected virtual void DestroyCounterStack(Counter counter, Random rng, CounterRemovalReason removalReason, int recursionDepth)
         {
             // Obliterate this counter stack.
             _counters.Remove(counter);
 
-            // Removed on removal.
-            foreach (var lc in counter.GetCountersRemovedDuringRemoval(rng, removalReason))
+            OnCounterStackDestroyed(counter, rng, removalReason, recursionDepth);
+        }
+        protected virtual void OnCounterStackDestroyed(Counter counter, Random rng, CounterRemovalReason removalReason, int recursionDepth)
+        {
+            var linkedCounters = counter.GetComponent<LinkedCounterComponent>();
+            if (linkedCounters != null)
             {
-                RemoveCountersRecursive(lc.Key, counter.Origin, rng, lc.Value, CounterRemovalReason.REMOVED_BY_OTHER_COUNTER, recursionDepth + 1);
-            }
+                // Removed on removal.
+                foreach (var lc in linkedCounters.GetCountersRemovedDuringRemoval(counter, rng, removalReason))
+                {
+                    RemoveCountersRecursive(lc.Key, counter.Origin, rng, lc.Value, CounterRemovalReason.REMOVED_BY_OTHER_COUNTER, recursionDepth + 1);
+                }
 
-            // Added on removal.
-            foreach (var lc in counter.GetCountersAddedDuringRemoval(rng, removalReason))
-            {
-                AddCountersRecursive(lc.Key, counter.Origin, rng, lc.Value, CounterAdditionReason.ADDED_BY_OTHER_COUNTER, recursionDepth + 1);
+                // Added on removal.
+                foreach (var lc in linkedCounters.GetCountersAddedDuringRemoval(counter, rng, removalReason))
+                {
+                    AddCountersRecursive(lc.Key, counter.Origin, rng, lc.Value, CounterAdditionReason.ADDED_BY_OTHER_COUNTER, recursionDepth + 1);
+                }
             }
         }
     }
