@@ -14,10 +14,10 @@ namespace KRpgLib.Mods
             Template = template ?? throw new ArgumentNullException(nameof(template));
             RolledResult = rolledValue;
         }
-        public ModStatDelta(MTStatDelta<TValue> template, Random rng)
+        public ModStatDelta(MTStatDelta<TValue> template)
         {
             Template = template ?? throw new ArgumentNullException(nameof(template));
-            RolledResult = template.GetNewRolledResult(rng ?? throw new ArgumentNullException(nameof(rng)));
+            RolledResult = template.GetNewRolledResult();
         }
     }
     public struct ModFlag : IMod<AbstractMTFlag, Flag>
@@ -30,10 +30,10 @@ namespace KRpgLib.Mods
             Template = template ?? throw new ArgumentNullException(nameof(template));
             RolledResult = rolledValue;
         }
-        public ModFlag(AbstractMTFlag template, Random rng)
+        public ModFlag(AbstractMTFlag template)
         {
             Template = template ?? throw new ArgumentNullException(nameof(template));
-            RolledResult = template.GetNewRolledResult(rng ?? throw new ArgumentNullException(nameof(rng)));
+            RolledResult = template.GetNewRolledResult();
         }
     }
 }

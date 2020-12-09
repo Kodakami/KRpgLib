@@ -21,32 +21,22 @@ namespace KRpgLib.Mods
             _statDeltaMods = statDeltaMods ?? throw new ArgumentNullException(nameof(statDeltaMods));
         }
 
-        public Affix<TValue> GetNewRolledAffix(Random rng)
+        public Affix<TValue> GetNewRolledAffix()
         {
             // Null check in later code.
 
-            var flags = GetNewRolledFlags(rng);
-            var statDeltas = GetNewRolledStatDeltas(rng);
+            var flags = GetNewRolledFlags();
+            var statDeltas = GetNewRolledStatDeltas();
 
             return Affix<TValue>.Create(this, flags, statDeltas);
         }
-        protected List<ModFlag> GetNewRolledFlags(Random rng)
+        protected List<ModFlag> GetNewRolledFlags()
         {
-            if (rng == null)
-            {
-                throw new ArgumentNullException(nameof(rng));
-            }
-
-            return _flagMods.ConvertAll(mt => new ModFlag(mt, rng));
+            return _flagMods.ConvertAll(mt => new ModFlag(mt));
         }
-        protected List<ModStatDelta<TValue>> GetNewRolledStatDeltas(Random rng)
+        protected List<ModStatDelta<TValue>> GetNewRolledStatDeltas()
         {
-            if (rng == null)
-            {
-                throw new ArgumentNullException(nameof(rng));
-            }
-
-            return _statDeltaMods.ConvertAll(mt => new ModStatDelta<TValue>(mt, rng));
+            return _statDeltaMods.ConvertAll(mt => new ModStatDelta<TValue>(mt));
         }
     }
 }

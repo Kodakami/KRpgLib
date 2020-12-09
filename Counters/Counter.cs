@@ -1,304 +1,182 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 namespace KRpgLib.Counters
 {
+    public interface ICounterTemplate
+    {
+        Counter CreateCounter(object origin);
+    }
+    public interface ICounterTemplate<TCounter> : ICounterTemplate where TCounter : Counter
+    {
+        new TCounter CreateCounter(object origin);
+    }
     public class Counter
     {
-        public CounterTemplate Template { get; }
-        public object Origin { get; }
-        public int InstanceCount { get; private set; }
-        public int UpdatesCounted { get; protected set; }
+        private readonly Dictionary<System.Type, List<CounterComponent>> _componentDict = new Dictionary<System.Type, List<CounterComponent>>();
 
-        /// <summary>
-        /// May be null if system is not used. Check for null before referencing.
-        /// </summary>
-        protected CuringHelper Curing { get; }
-        /// <summary>
-        /// May be null if system is not used. Check for null before referencing.
-        /// </summary>
-        protected DurationHelper Duration { get; }
-        /// <summary>
-        /// May be null if system is not used. Check for null before referencing.
-        /// </summary>
-        protected EarlyExpirationHelper EarlyExpiration { get; }
-        /// <summary>
-        /// May be null if system is not used. Check for null before referencing.
-        /// </summary>
-        protected LinkedCounterHelper LinkedCounters { get; }
+        public ICounterTemplate Template { get; }
 
-        protected Counter(
-            CounterTemplate template,
-            object origin,
-            CuringHelper curing,
-            DurationHelper duration,
-            EarlyExpirationHelper earlyExpiration,
-            LinkedCounterHelper linkedCounters)
+        public Counter(bool isVisibleToUsers, int maxInstanceCount, TrackByOriginDecision trackByOrigin, IEnumerable<CounterComponent> components)
         {
-            Template = template ?? throw new ArgumentNullException(nameof(template));
-            Origin = origin;
-            InstanceCount = 0;
-            UpdatesCounted = 0;
+            IsVisibleToUsers = isVisibleToUsers;
+            MaxInstanceCount = maxInstanceCount;
+            TrackByOrigin = trackByOrigin;
 
-            // All optional components may be null. If they are, their accessor functions should return default results.
-            Curing = curing;
-            Duration = duration;
-            EarlyExpiration = earlyExpiration;
-            LinkedCounters = linkedCounters;
-        }
-
-        public void AddInstances(int count)
-        {
-            InstanceCount = Math.Max(InstanceCount + count, Template.StackingInfo.MaxStackSize);
-        }
-        public void RemoveInstances(int count)
-        {
-            InstanceCount = Math.Max(InstanceCount - count, 0);
-        }
-        public void RemoveAllInstances()
-        {
-            InstanceCount = 0;
-        }
-        public bool TryCure() => Curing?.TryCure(this) ?? false;
-        public void NaturalExpireStep() => Duration?.NaturalExpireStep(this);
-        public void EarlyExpireStep(Random rng) => EarlyExpiration?.EarlyExpireStep(this, rng);
-
-        public List<KeyValuePair<CounterTemplate, int>> GetCountersAddedDuringAddition(Random rng, CounterAdditionReason additionReason)
-        {
-            return LinkedCounters?.GetCountersAddedDuringAddition(this, rng, additionReason) ?? new List<KeyValuePair<CounterTemplate, int>>();
-        }
-        public List<KeyValuePair<CounterTemplate, int>> GetCountersRemovedDuringAddition(Random rng, CounterAdditionReason additionReason)
-        {
-            return LinkedCounters?.GetCountersRemovedDuringAddition(this, rng, additionReason) ?? new List<KeyValuePair<CounterTemplate, int>>();
-        }
-        public List<KeyValuePair<CounterTemplate, int>> GetCountersAddedDuringRemoval(Random rng, CounterRemovalReason removalReason)
-        {
-            return LinkedCounters?.GetCountersAddedDuringRemoval(this, rng, removalReason) ?? new List<KeyValuePair<CounterTemplate, int>>();
-        }
-        public List<KeyValuePair<CounterTemplate, int>> GetCountersRemovedDuringRemoval(Random rng, CounterRemovalReason removalReason)
-        {
-            return LinkedCounters?.GetCountersRemovedDuringRemoval(this, rng, removalReason) ?? new List<KeyValuePair<CounterTemplate, int>>();
-        }
-
-        protected class CuringHelper
-        {
-            /// <summary>
-            /// Return true if cured, false if not.
-            /// </summary>
-            public virtual bool TryCure(Counter counter)
+            if (components != null)
             {
-                if (counter.Template.CuringInfo.HasValue)
+                foreach (var info in components)
                 {
-                    var info = counter.Template.CuringInfo.Value;
-                    if (info.DurationBeforeCurable < counter.UpdatesCounted)
+                    RegisterComponent(info);
+                }
+            }
+        }
+
+        // Required components.
+        public bool IsVisibleToUsers { get; }
+        public int MaxInstanceCount { get; }
+        public TrackByOriginDecision TrackByOrigin { get; }
+
+        protected void RegisterComponent<TComponent>(TComponent component) where TComponent : CounterComponent
+        {
+            /* 
+             *  This method uses reflection to check attributes on the provided TComponent.
+             *  It is expected to be used between 10 and 200 times (on startup) in the average program that uses it.
+             *  This will add at most a handful of milliseconds to total startup time in exchange for ease of use and clarity.
+             */
+
+            // No null components.
+            if (component == null)
+            {
+                throw new System.ArgumentNullException(nameof(component));
+            }
+
+            // Get the type of component.
+            var typeArg = typeof(TComponent);
+
+            // No components of abstract base type.
+            if (typeArg.Equals(typeof(CounterComponent)))
+            {
+                throw new System.ArgumentException("Component may not be of base class CounterComponent.", nameof(component));
+            }
+
+            // This value may be changed by an attribute later on down.
+            bool allowMultipleInstances = false;
+
+            // For each of the custom attributes on the component type.
+            foreach (var cAtt in typeArg.GetCustomAttributes(true))
+            {
+                // Grab a handle for the attribute's type.
+                var attType = cAtt.GetType();
+
+                // If it is a required component attribute,
+                if (attType.Equals(typeof(RequireCounterComponentAttribute)))
+                {
+                    // Cast to known type.
+                    RequireCounterComponentAttribute rcca = (RequireCounterComponentAttribute)cAtt;
+
+                    // If there is no key in the component dictionary (no required component registered at this point),
+                    if (!_componentDict.ContainsKey(rcca.RequiredType))
                     {
-                        return true;
+                        // Throw out.
+                        throw new System.ArgumentException($"Counter has no registered components of required type: {rcca.RequiredType}.", nameof(component));
                     }
                 }
-                return false;
+                // Otherwise if multiple instances are not yet allowed AND it is an allow multiple instances attribute,
+                else if (!allowMultipleInstances && attType.Equals(typeof(AllowMultipleComponentInstancesAttribute)))
+                {
+                    // Set the flag for that (and stop checking).
+                    allowMultipleInstances = true;
+                }
             }
+
+            // If this type of component hasn't been registered yet (make a handle for the related list),
+            if (!_componentDict.TryGetValue(typeArg, out List<CounterComponent> componentList))
+            {
+                // Make a new list.
+                componentList = new List<CounterComponent>();
+
+                // Add it as a new entry in the dictionary.
+                _componentDict.Add(typeArg, componentList);
+            }
+            // Otherwise (it has been defined),
+            else
+            {
+                // If multiple instances are not allowed and there is already an instance.
+                if (!allowMultipleInstances && componentList.Count > 0)
+                {
+                    // Throw out.
+                    // There may be a need to change this functionality in the future if it ends up being more practical to replace the old component instead.
+                    throw new System.ArgumentException($"Counter already contains a component of type \"{typeArg}\", and only one instance of this type is allowed.", nameof(component));
+                }
+            }
+
+            // Add the provided component to the list.
+            componentList.Add(component);
         }
-        protected class DurationHelper
+        protected void UnregisterComponent(CounterComponent component)
         {
-            public virtual void NaturalExpireStep(Counter counter)
+            var key = component.GetType();
+
+            _componentDict[key].Remove(component);
+
+            if (_componentDict[key].Count == 0)
             {
-                // If there is any duration info,
-                if (counter.Template.DurationInfo.HasValue)
-                {
-                    var info = counter.Template.DurationInfo.Value;
-                    // If the max duration has been exceeded as of this update,
-                    if (counter.UpdatesCounted > info.MaxDuration)
-                    {
-                        // If all instances get removed on natural expiration,
-                        if (info.OnNaturalExpire == OnExpiredDecision.REMOVE_ALL_INSTANCES_IN_STACK)
-                        {
-                            counter.RemoveAllInstances();
-                        }
-                        else
-                        {
-                            counter.RemoveInstances(1);
-                            counter.UpdatesCounted = 0;
-                        }
-                    }
-                }
+                _componentDict.Remove(key);
             }
         }
-        protected class EarlyExpirationHelper
+        public TComponent GetComponent<TComponent>() where TComponent : CounterComponent
         {
-            /// <summary>
-            /// Return true if stack is now empty, false if not.
-            /// </summary>
-            public virtual void EarlyExpireStep(Counter counter, Random rng)
+            if (_componentDict.TryGetValue(typeof(TComponent), out List<CounterComponent> found))
             {
-                if (counter.Template.EarlyExpirationInfo.HasValue)
-                {
-                    var info = counter.Template.EarlyExpirationInfo.Value;
-
-                    // Adjustment for minimum duration and increased chance per roll.
-                    double adjustedChance = 0;
-                    if (counter.UpdatesCounted > info.DurationBeforeAttemptingEarlyExpiration)
-                    {
-                        adjustedChance = info.ChanceToExpireEarly;
-                        adjustedChance += info.IncreasedChanceToExpireEarlyPerTick * (counter.UpdatesCounted - info.DurationBeforeAttemptingEarlyExpiration);
-
-                        if (info.MaxChanceToExpireEarly.HasValue)
-                        {
-                            adjustedChance = Math.Max(adjustedChance, info.MaxChanceToExpireEarly.Value);
-                        }
-                    }
-
-                    bool successfulExpire = rng.NextDouble() < adjustedChance;
-
-                    if (successfulExpire)
-                    {
-                        if (info.OnEarlyExpire == OnExpiredDecision.REMOVE_ALL_INSTANCES_IN_STACK)
-                        {
-                            counter.RemoveAllInstances();
-                        }
-                        else
-                        {
-                            counter.RemoveInstances(1);
-                        }
-                    }
-                }
+                return (TComponent)found[0];    // No need to check for empty list or null. Impossible internal state.
             }
+            return null;
         }
-        protected class LinkedCounterHelper
+        public List<TComponent> GetComponents<TComponent>() where TComponent : CounterComponent
         {
-            /// <summary>
-            /// This parent counter is being added to an object. Return a list of counters that are being added alongside it, or null.
-            /// </summary>
-            public virtual List<KeyValuePair<CounterTemplate, int>> GetCountersAddedDuringAddition(Counter counter, Random rng, CounterAdditionReason additionReason)
+            if (_componentDict.TryGetValue(typeof(TComponent), out List<CounterComponent> found))
             {
-                return GetCountersOnAddition_Internal(
-                    counter, rng,
-                    LinkedCounterAction.ADD_THIS_COUNTER,
-                    additionReason);
+                return found.ConvertAll(com => (TComponent)com);
             }
-            /// <summary>
-            /// This parent counter is being added to an object. Return a list of counters that are being removed as a result of it, or null.
-            /// </summary>
-            public virtual List<KeyValuePair<CounterTemplate, int>> GetCountersRemovedDuringAddition(Counter counter, Random rng, CounterAdditionReason additionReason)
-            {
-                return GetCountersOnAddition_Internal(
-                    counter, rng,
-                    LinkedCounterAction.REMOVE_THIS_COUNTER,
-                    additionReason);
-            }
-            /// <summary>
-            /// This parent counter is being removed from an object. Return a list of counters that are being added in its place, or null.
-            /// </summary>
-            public virtual List<KeyValuePair<CounterTemplate, int>> GetCountersAddedDuringRemoval(Counter counter, Random rng, CounterRemovalReason removalReason)
-            {
-                return GetCountersOnRemoval_Internal(
-                    counter, rng,
-                    LinkedCounterAction.ADD_THIS_COUNTER,
-                    removalReason);
-            }
-            /// <summary>
-            /// This parent counter is being removed from an object. Return a list of counters that are being removed along with it, or null.
-            /// </summary>
-            public virtual List<KeyValuePair<CounterTemplate, int>> GetCountersRemovedDuringRemoval(Counter counter, Random rng, CounterRemovalReason removalReason)
-            {
-                return GetCountersOnRemoval_Internal(
-                    counter, rng,
-                    LinkedCounterAction.REMOVE_THIS_COUNTER,
-                    removalReason);
-            }
-
-            private List<KeyValuePair<CounterTemplate, int>> GetCountersOnAddition_Internal(Counter parent, Random rng, LinkedCounterAction linkedCounterAction, CounterAdditionReason counterAdditionReason)
-            {
-                if (parent.Template.LinkedCounterInfo.HasValue)
-                {
-                    var info = parent.Template.LinkedCounterInfo.Value;
-
-                    var toBeRolled =
-                        info.LinkedCountersOnAddition.FindAll(
-                            lc => lc.LinkedCounterAction == linkedCounterAction
-                            && GetAdditionPredicate(counterAdditionReason).Invoke(lc));
-
-                    // Roll to see if each one is applied and return the resulting list.
-                    return toBeRolled.FindAll(lc => TryRollForTrigger(rng, lc.ChanceToTrigger)).ConvertAll(lc => new KeyValuePair<CounterTemplate, int>(lc.Counter, lc.InstancesToAdd));
-                }
-                return new List<KeyValuePair<CounterTemplate, int>>();
-            }
-            private List<KeyValuePair<CounterTemplate, int>> GetCountersOnRemoval_Internal(Counter parent, Random rng, LinkedCounterAction linkedCounterAction, CounterRemovalReason counterRemovalReason)
-            {
-                if (parent.Template.LinkedCounterInfo.HasValue)
-                {
-                    var info = parent.Template.LinkedCounterInfo.Value;
-
-                    var toBeRolled =
-                        info.LinkedCountersOnRemoval.FindAll(
-                            lc => lc.LinkedCounterAction == linkedCounterAction
-                            && GetRemovalPredicate(counterRemovalReason).Invoke(lc));
-
-                    // Roll to see if each one is applied and return the resulting list.
-                    return toBeRolled.FindAll(lc => TryRollForTrigger(rng, lc.ChanceToTrigger)).ConvertAll(lc => new KeyValuePair<CounterTemplate, int>(lc.Counter, lc.InstancesToAdd));
-                }
-                return new List<KeyValuePair<CounterTemplate, int>>();
-            }
-            private bool TryRollForTrigger(Random rng, double chanceToTrigger)
-            {
-                return rng.NextDouble() < chanceToTrigger;
-            }
-            private Predicate<LinkedCounterOnAddition> GetAdditionPredicate(CounterAdditionReason additionReason)
-            {
-                switch (additionReason)
-                {
-                    case CounterAdditionReason.DIRECTLY_APPLIED:
-                        return lc => lc.TriggersWhenParentIsAppliedDirectly;
-                    case CounterAdditionReason.ADDED_BY_OTHER_COUNTER:
-                        return lc => lc.TriggersWhenParentIsALinkedCounter;
-
-                    // Default includes CounterAdditionReason.SILENT_AND_ABSOLUTE.
-                    default:
-                        return _ => false;
-                }
-            }
-            private Predicate<LinkedCounterOnRemoval> GetRemovalPredicate(CounterRemovalReason removalReason)
-            {
-                switch (removalReason)
-                {
-                    case CounterRemovalReason.EXPIRED_NATURALLY:
-                        return lc => lc.TriggersWhenParentExpiresNaturally;
-                    case CounterRemovalReason.EXPIRED_EARLY:
-                        return lc => lc.TriggersWhenParentExpiresEarly;
-                    case CounterRemovalReason.CURED_BY_USER_EFFECT:
-                        return lc => lc.TriggersWhenParentIsRemovedByCuring;
-                    case CounterRemovalReason.CANCELLED_BY_USER:
-                        return lc => lc.TriggersWhenParentIsCancelled;
-                    case CounterRemovalReason.OVERWRITTEN_BY_NEWER_COUNTER:
-                        return lc => lc.TriggersWhenParentIsOverwrittenByNewerInstance;
-                    case CounterRemovalReason.REMOVED_BY_OTHER_COUNTER:
-                        return lc => lc.TriggersWhenParentIsALinkedCounter;
-
-                    // Default includes CounterRemovalReason.SILENT_AND_ABSOLUTE.
-                    default:
-                        return _ => false;
-                }
-            }
+            return null;
         }
-
-        /// <summary>
-        /// Create a counter from a counter template and origin object (origin may be null, template may not).
-        /// </summary>
-        /// <param name="template">the template this counter is an instance of</param>
-        /// <param name="origin">the object which created, provided, inflicted, or is otherwise responsible for this counter</param>
-        public static Counter Create(CounterTemplate template, object origin)
+        public List<CounterComponent> GetAllComponents()
         {
-            if (template == null)
+            var list = new List<CounterComponent>();
+            foreach (var kvp in _componentDict)
             {
-                throw new ArgumentNullException(nameof(template));
+                foreach (var com in kvp.Value)
+                {
+                    list.Add(com);
+                }
             }
-
-            return new Counter(
-                template,
-                origin,
-                template.CuringInfo.HasValue ? new CuringHelper() : null,
-                template.DurationInfo.HasValue ? new DurationHelper() : null,
-                template.EarlyExpirationInfo.HasValue ? new EarlyExpirationHelper() : null,
-                template.LinkedCounterInfo.HasValue ? new LinkedCounterHelper() : null);
+            return list;
         }
+
+        public void OnCounterTick(CounterManager counterManager, CounterStack counterStack, int numberOfTicks)
+            => PerformCallback(com => com.OnCounterTick(counterManager, counterStack, numberOfTicks));
+        public void OnCounterStackCreated(CounterManager counterManager, CounterStack stack, CounterAdditionReason additionReason)
+            => PerformCallback(com => com.OnCounterStackCreated(counterManager, stack, additionReason));
+        public void OnCounterInstanceAdded(CounterManager counterManager, CounterStack counterStack, CounterAdditionReason additionReason)
+            => PerformCallback(com => com.OnCounterInstanceAdded(counterManager, counterStack, additionReason));
+        public void OnCounterInstanceRemoved(CounterManager counterManager, CounterStack counterStack, CounterRemovalReason removalReason)
+            => PerformCallback(com => com.OnCounterInstanceRemoved(counterManager, counterStack, removalReason));
+        public void OnCounterStackDestroyed(CounterManager counterManager, CounterStack stack, CounterRemovalReason removalReason)
+            => PerformCallback(com => com.OnCounterStackDestroyed(counterManager, stack, removalReason));
+
+        private void PerformCallback(System.Action<CounterComponent> callback)
+        {
+            foreach (var kvp in _componentDict)
+            {
+                foreach (var com in kvp.Value)
+                {
+                    callback.Invoke(com);
+                }
+            }
+        }
+    }
+    public enum TrackByOriginDecision
+    {
+        ONE_STACK_REGARDLESS_OF_ORIGIN = 0,
+        EACH_ORIGIN_GETS_UNIQUE_STACK = 1,
     }
 }

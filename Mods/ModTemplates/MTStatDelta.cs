@@ -20,7 +20,7 @@ namespace KRpgLib.Mods.ModTemplates
             StatDeltaType = statDeltaType;
             _rollLegalizer = rollLegalizer;
         }
-        public TValue GetNewRolledResult(Random rng) => _rollLegalizer.GetRandomLegalValue(rng);
+        public TValue GetNewRolledResult() => _rollLegalizer.GetRandomLegalValue();
 
         protected abstract class RollLegalizer
         {
@@ -34,7 +34,7 @@ namespace KRpgLib.Mods.ModTemplates
                 Max = max;
                 Precision = precision;
             }
-            public abstract TValue GetRandomLegalValue(Random rng);
+            public abstract TValue GetRandomLegalValue();
         }
     }
     public class MTStatDelta_Int : MTStatDelta<int>
@@ -50,7 +50,7 @@ namespace KRpgLib.Mods.ModTemplates
                      max >= min ? max : throw new ArgumentException("Maximum value of stat delta must be greater than or equal to its minimum value."),
                      precision.HasValue ? precision >= 1 ? precision : null : null)
             { }
-            public override int GetRandomLegalValue(Random rng)
+            public override int GetRandomLegalValue()
             {
                 // Constructor ensures that Precision always has value >= 1 or null.
 
@@ -59,7 +59,7 @@ namespace KRpgLib.Mods.ModTemplates
                 int lowerBound = Min / appliedPrecision;
                 int upperBound = Max / appliedPrecision;
 
-                int randomValue = rng.Next(lowerBound, upperBound + 1);
+                int randomValue = Utility.Environment.Rng.Next(lowerBound, upperBound + 1);
 
                 return randomValue * appliedPrecision;
             }
@@ -81,7 +81,7 @@ namespace KRpgLib.Mods.ModTemplates
                      max >= min ? max : throw new ArgumentException("Maximum value of stat delta must be greater than or equal to its minimum value."),
                      precision.HasValue ? precision > 0 ? precision : null : null)
             { }
-            public override float GetRandomLegalValue(Random rng)
+            public override float GetRandomLegalValue()
             {
                 // Thanks Nathan.
 
@@ -92,12 +92,12 @@ namespace KRpgLib.Mods.ModTemplates
                 {
                     int appliedRange = (int)(range / Precision.Value);
 
-                    int randomValue = rng.Next(0, appliedRange + 1);
+                    int randomValue = Utility.Environment.Rng.Next(0, appliedRange + 1);
 
                     return (float)((randomValue * Precision.Value) + Min);
                 }
 
-                float randomFloat = (float)rng.NextDouble();
+                float randomFloat = (float)Utility.Environment.Rng.NextDouble();
 
                 return (randomFloat * range) + Min;
             }

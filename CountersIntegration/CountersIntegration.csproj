@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>KRpgLib.Counters</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Counters\Counters.csproj" />
+    <ProjectReference Include="..\Flags\Flags.csproj" />
+    <ProjectReference Include="..\Mods\Mods.csproj" />
+  </ItemGroup>
+
+</Project>

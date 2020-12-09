@@ -11,12 +11,12 @@ namespace KRpgLib.Mods.ModTemplates
         {
             Template = template;
         }
-        public Flag GetNewRolledResult(Random rng)
+        public Flag GetNewRolledResult()
         {
-            int variantIndex = GetVariantIndex(rng);
+            int variantIndex = GetVariantIndex();
             return Flag.Create(Template, variantIndex);
         }
-        protected abstract int GetVariantIndex(Random rng);
+        protected abstract int GetVariantIndex();
     }
     public class MTFlag : AbstractMTFlag
     {
@@ -26,7 +26,7 @@ namespace KRpgLib.Mods.ModTemplates
         {
             _variantIndex = variantIndex;
         }
-        protected override int GetVariantIndex(Random rng)
+        protected override int GetVariantIndex()
         {
             return _variantIndex;
         }
@@ -36,9 +36,9 @@ namespace KRpgLib.Mods.ModTemplates
         public MTFlag_RandomVariant(IFlagTemplate template)
             : base(template) { }
 
-        protected override int GetVariantIndex(Random rng)
+        protected override int GetVariantIndex()
         {
-            return Template.VariantCount > 1 ? rng.Next(0, Template.VariantCount) : 0;
+            return Template.VariantCount > 1 ? Utility.Environment.Rng.Next(0, Template.VariantCount) : 0;
         }
     }
     public class MTFlag_LimitedRandomVariants : AbstractMTFlag
@@ -65,9 +65,9 @@ namespace KRpgLib.Mods.ModTemplates
 
             _rollableVariants = rollableVariants;
         }
-        protected override int GetVariantIndex(Random rng)
+        protected override int GetVariantIndex()
         {
-            return _rollableVariants[rng.Next(0, _rollableVariants.Length)];
+            return _rollableVariants[Utility.Environment.Rng.Next(0, _rollableVariants.Length)];
         }
     }
 }

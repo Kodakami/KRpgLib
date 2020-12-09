@@ -21,13 +21,8 @@ namespace KRpgLib.Mods
             _statDeltaCache = new StatDeltaCacheHelper(this);
             _flagCache = new FlagCacheHelper(this);
         }
-        public void RerollAllAffixValues(Random rng)
+        public void RerollAllAffixValues()
         {
-            if (rng == null)
-            {
-                return;
-            }
-
             // Collect each template.
             var templates = _appliedAffixes.ConvertAll(a => a.Template);
 
@@ -35,7 +30,7 @@ namespace KRpgLib.Mods
             ClearAffixes_Internal();
 
             // Reapply each affix from template with new rolls.
-            foreach (var affix in templates.ConvertAll(t => t.GetNewRolledAffix(rng)))
+            foreach (var affix in templates.ConvertAll(t => t.GetNewRolledAffix()))
             {
                 AddAffix_Internal(affix);
             }
@@ -43,9 +38,9 @@ namespace KRpgLib.Mods
             // Set dirty.
             SetDirty(_appliedAffixes);
         }
-        public void RerollAffixValuesWhere(Random rng, Predicate<Affix<TValue>> predicate)
+        public void RerollAffixValuesWhere(Predicate<Affix<TValue>> predicate)
         {
-            if (rng == null || predicate == null)
+            if (predicate == null)
             {
                 return;
             }
@@ -56,7 +51,7 @@ namespace KRpgLib.Mods
                 var newAffixes = new List<Affix<TValue>>();
                 foreach (var oldAffix in affixesWhere)
                 {
-                    var newAffix = oldAffix.Template.GetNewRolledAffix(rng);
+                    var newAffix = oldAffix.Template.GetNewRolledAffix();
                     newAffixes.Add(newAffix);   //For setting dirty.
 
                     RemoveAffix_Internal(oldAffix);
@@ -67,7 +62,7 @@ namespace KRpgLib.Mods
                 SetDirty(newAffixes);
             }
         }
-        public void RerollAllAffixValues(Random rng, AffixType withAffixType) => RerollAffixValuesWhere(rng, a => a.Template.AffixType == withAffixType);
+        public void RerollAllAffixValues(AffixType withAffixType) => RerollAffixValuesWhere(a => a.Template.AffixType == withAffixType);
 
         public void AddAffix(Affix<TValue> preRolledAffix)
         {
@@ -78,14 +73,14 @@ namespace KRpgLib.Mods
                 SetDirty(preRolledAffix);
             }
         }
-        public void AddAffix(Random rng, AffixTemplate<TValue> affixToRoll)
+        public void AddAffix(AffixTemplate<TValue> affixToRoll)
         {
             if (affixToRoll == null)
             {
                 return;
             }
 
-            AddAffix(affixToRoll.GetNewRolledAffix(rng));
+            AddAffix(affixToRoll.GetNewRolledAffix());
         }
 
         public void AddAffixes(IEnumerable<Affix<TValue>> preRolledAffixes)
