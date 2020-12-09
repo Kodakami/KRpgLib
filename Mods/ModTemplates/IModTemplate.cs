@@ -6,6 +6,6 @@ namespace KRpgLib.Mods.ModTemplates
 {
     public interface IModTemplate<TRolledResult>
     {
-        TRolledResult GetNewRolledResult(Random rng);
+        TRolledResult GetNewRolledResult();
     }
 }

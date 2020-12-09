@@ -5,133 +5,126 @@ namespace KRpgLib.Counters
 {
     public class CounterManager
     {
-        private readonly List<Counter> _counters = new List<Counter>();
+        private readonly List<CounterStack> _counterStacks = new List<CounterStack>();
 
         protected virtual int MaxRecursionDepthForLinkedCounterTriggering => 7;
 
-        public void AddCountersSilently(CounterTemplate counterTemplate, object origin, int numberOfInstances, Random rng)
+        /// <summary>
+        /// Returns the number of instances added.
+        /// </summary>
+        public int AddCounters(Counter counter, object origin, int instanceCount, CounterAdditionReason additionReason)
         {
-            AddCountersRecursive(counterTemplate, origin, rng, numberOfInstances, CounterAdditionReason.SILENT_AND_ABSOLUTE, 0);
-        }
-        public void AddCounters(CounterTemplate counterTemplate, object origin, int numberOfInstances, Random rng)
-        {
-            AddCountersRecursive(counterTemplate, origin, rng, numberOfInstances, CounterAdditionReason.DIRECTLY_APPLIED, 0);
-        }
-        public void RemoveCountersSilently(CounterTemplate counterTemplate, object origin, int numberOfInstances, Random rng)
-        {
-            RemoveCountersRecursive(counterTemplate, origin, rng, numberOfInstances, CounterRemovalReason.SILENT_AND_ABSOLUTE, 0);
-        }
-        public void TryCure(CounterTemplate counterTemplate, object origin, int numberOfInstances, Random rng)
-        {
-            RemoveCountersRecursive(counterTemplate, origin, rng, numberOfInstances, CounterRemovalReason.CURED_BY_USER_EFFECT, 0);
-        }
-        public void TryCancel(CounterTemplate counterTemplate, object origin, int numberOfInstances, Random rng)
-        {
-            RemoveCountersRecursive(counterTemplate, origin, rng, numberOfInstances, CounterRemovalReason.CANCELLED_BY_USER, 0);
-        }
-        protected void AddCountersRecursive(CounterTemplate template, object origin, Random rng, int instanceCount, CounterAdditionReason additionReason, int recursionDepth)
-        {
-            if (recursionDepth > MaxRecursionDepthForLinkedCounterTriggering)
-            {
-                return;
-            }
+            var stack = FindOrCreateStack(counter, origin, additionReason);
 
-            var counter = FindOrCreateCounterStack(
-                template, origin,
-                template.TrackByOrigin == TrackByOriginDecision.EACH_ORIGIN_GETS_UNIQUE_STACK,
-                rng, additionReason, recursionDepth);
-
-            counter.AddInstances(instanceCount);
+            return stack.AddInstances(this, instanceCount, additionReason);
         }
-        protected void RemoveCountersRecursive(CounterTemplate template, object origin, Random rng, int instanceCount, CounterRemovalReason removalReason, int recursionDepth)
+        /// <summary>
+        /// Returns the number of instances removed.
+        /// </summary>
+        public int RemoveInstances(Counter counter, object origin, int instanceCount, CounterRemovalReason removalReason)
         {
-            if (recursionDepth > MaxRecursionDepthForLinkedCounterTriggering)
+            var stack = FindExistingStackOrNull(counter, origin);
+            if (stack != null)
             {
-                return;
-            }
+                int removedCount = stack.RemoveInstances(this, instanceCount, removalReason);
 
-            var counter = FindExistingCounterOrNull(template, origin, template.TrackByOrigin == TrackByOriginDecision.EACH_ORIGIN_GETS_UNIQUE_STACK);
-            if (counter != null)
-            {
-                counter.RemoveInstances(instanceCount);
-                if (counter.InstanceCount == 0)
+                if (stack.InstanceCount == 0)
                 {
-                    DestroyCounterStack(counter, rng, removalReason, recursionDepth);
+                    DestroyStack(stack, removalReason);
+                }
+                return removedCount;
+            }
+            return 0;
+        }
+        /// <summary>
+        /// Returns the number of instances removed.
+        /// </summary>
+        public int RemoveStack(Counter counter, object origin, CounterRemovalReason removalReason)
+        {
+            var stack = FindExistingStackOrNull(counter, origin);
+            if (stack != null)
+            {
+                int removedCount = stack.RemoveAllInstances(this, removalReason);
+                DestroyStack(stack, removalReason);
+                return removedCount;
+            }
+            return 0;
+        }
+        /// <summary>
+        /// Returns the total number of instances removed.
+        /// </summary>
+        public int RemoveAllStacksWhere(Predicate<CounterStack> predicate, CounterRemovalReason removalReason)
+        {
+            int instancesRemoved = 0;
+            foreach (var stack in FindAllExistingStacks(predicate))
+            {
+                instancesRemoved += stack.RemoveAllInstances(this, removalReason);
+
+                if (stack.InstanceCount == 0)
+                {
+                    DestroyStack(stack, removalReason);
                 }
             }
+            return instancesRemoved;
         }
-        protected virtual Counter FindOrCreateCounterStack(
-            CounterTemplate template, object origin, bool mustBeOriginSpecific, Random rng, CounterAdditionReason additionReason, int recursionDepth)
+        protected virtual CounterStack FindOrCreateStack(
+            Counter counter, object origin, CounterAdditionReason additionReason)
         {
-             return FindExistingCounterOrNull(template, origin, mustBeOriginSpecific) ??
-                CreateNewCounterStack(template, origin, rng, additionReason, recursionDepth);
-        }
-        protected virtual Counter FindExistingCounterOrNull(CounterTemplate template, object origin, bool mustBeOriginSpecific)
-        {
-            Predicate<Counter> predicate;
-            if (mustBeOriginSpecific)
+            var stack = FindExistingStackOrNull(counter, origin);
+            if (stack != null)
             {
-                predicate = c => c.Template == template && c.Origin == origin;
-            }
-            else
-            {
-                predicate = c => c.Template == template;
+                return stack;
             }
 
-            return _counters.Find(predicate);
+            if (counter.TrackByOrigin == TrackByOriginDecision.ONE_STACK_REGARDLESS_OF_ORIGIN)
+            {
+                var existingStackWithTemplate = _counterStacks.Find(c => c.Template == counter.Template);
+                if (existingStackWithTemplate != null)
+                {
+                    // One stack exists and only one may exist, regardless of origin.
+                    DestroyStack(existingStackWithTemplate, CounterRemovalReason.OVERWRITTEN_BY_NEWER_COUNTER);
+                }
+            }
+
+            return CreateNewStack(counter, origin, additionReason);
         }
-        protected virtual Counter CreateNewCounterStack(CounterTemplate template, object origin, Random rng, CounterAdditionReason additionReason, int recursionDepth)
+        protected virtual CounterStack FindExistingStackOrNull(Counter counter, object origin)
         {
-            var counter = new Counter(template, origin);
+            return _counterStacks.Find(c => c.Template == counter && c.Origin == origin);
+        }
+        protected virtual List<CounterStack> FindAllExistingStacks(Counter counter)
+        {
+            return FindAllExistingStacks(s => s.Template == counter.Template);
+        }
+        protected virtual List<CounterStack> FindAllExistingStacks(Predicate<CounterStack> predicate)
+        {
+            return _counterStacks.FindAll(predicate);
+        }
+        protected virtual CounterStack CreateNewStack(Counter counter, object origin, CounterAdditionReason additionReason)
+        {
+            var stack = new CounterStack(counter, origin);
 
             // Gain this counter stack.
-            _counters.Add(counter);
+            _counterStacks.Add(stack);
 
-            OnNewCounterStackCreated(counter, rng, additionReason, recursionDepth);
+            // OnCounterStackCreated callback happens.
+            stack.Counter.OnCounterStackCreated(this, stack, additionReason);
 
-            return counter;
+            return stack;
         }
-        protected virtual void OnNewCounterStackCreated(Counter counter, Random rng, CounterAdditionReason additionReason, int recursionDepth)
-        {
-            var linkedCounters = counter.GetComponent<LinkedCounterComponent>();
-            if (linkedCounters != null)
-            {
-                // Removed on addition.
-                foreach (var lc in linkedCounters.GetCountersRemovedDuringAddition(counter, rng, additionReason))
-                {
-                    RemoveCountersRecursive(lc.Key, counter.Origin, rng, lc.Value, CounterRemovalReason.REMOVED_BY_OTHER_COUNTER, recursionDepth + 1);
-                }
-
-                // Added on addition.
-                foreach (var lc in linkedCounters.GetCountersAddedDuringAddition(counter, rng, additionReason))
-                {
-                    AddCountersRecursive(lc.Key, counter.Origin, rng, lc.Value, CounterAdditionReason.ADDED_BY_OTHER_COUNTER, recursionDepth + 1);
-                }
-            }
-        }
-        protected virtual void DestroyCounterStack(Counter counter, Random rng, CounterRemovalReason removalReason, int recursionDepth)
+        protected virtual void DestroyStack(CounterStack stack, CounterRemovalReason removalReason)
         {
             // Obliterate this counter stack.
-            _counters.Remove(counter);
+            _counterStacks.Remove(stack);
 
-            OnCounterStackDestroyed(counter, rng, removalReason, recursionDepth);
+            stack.Counter.OnCounterStackDestroyed(this, stack, removalReason);
         }
-        protected virtual void OnCounterStackDestroyed(Counter counter, Random rng, CounterRemovalReason removalReason, int recursionDepth)
+        protected virtual void DestroyStacks(IEnumerable<CounterStack> stacks, CounterRemovalReason removalReason)
         {
-            var linkedCounters = counter.GetComponent<LinkedCounterComponent>();
-            if (linkedCounters != null)
+            foreach (var stack in stacks)
             {
-                // Removed on removal.
-                foreach (var lc in linkedCounters.GetCountersRemovedDuringRemoval(counter, rng, removalReason))
-                {
-                    RemoveCountersRecursive(lc.Key, counter.Origin, rng, lc.Value, CounterRemovalReason.REMOVED_BY_OTHER_COUNTER, recursionDepth + 1);
-                }
-
-                // Added on removal.
-                foreach (var lc in linkedCounters.GetCountersAddedDuringRemoval(counter, rng, removalReason))
-                {
-                    AddCountersRecursive(lc.Key, counter.Origin, rng, lc.Value, CounterAdditionReason.ADDED_BY_OTHER_COUNTER, recursionDepth + 1);
-                }
+                _counterStacks.Remove(stack);
+                stack.Counter.OnCounterStackDestroyed(this, stack, removalReason);
             }
         }
     }

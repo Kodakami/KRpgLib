@@ -6,29 +6,32 @@ namespace KRpgLib.Counters
 {
     public class Duration : CounterComponent
     {
-        // Duration expressed in number of counter ticks (Number of seconds * Number of ticks per second).
+        /// <summary>
+        /// Duration expressed in number of counter ticks (Number of seconds * Number of ticks per second).
+        /// </summary>
         public int MaxDuration { get; }
-        public OnExpiredDecision OnNaturalExpire { get; }
 
-        public Duration(int maxDuration, OnExpiredDecision onDurationExpired)
+        private readonly OnExpiredDecision _onExpiredNaturally;
+
+        public Duration(int maxDuration, OnExpiredDecision onExpiredNaturally)
         {
             MaxDuration = maxDuration;
-            OnNaturalExpire = onDurationExpired;
+            _onExpiredNaturally = onExpiredNaturally;
         }
 
-        public virtual void NaturalExpireStep(Counter counter)
+        public override void OnCounterTick(CounterManager counterManager, CounterStack counterStack, int numberOfTicks)
         {
-            if (counter.TicksCounted > MaxDuration)
+            if (counterStack.TicksCounted > MaxDuration)
             {
                 // If all instances get removed on natural expiration,
-                if (OnNaturalExpire == OnExpiredDecision.REMOVE_ALL_INSTANCES_IN_STACK)
+                if (_onExpiredNaturally == OnExpiredDecision.REMOVE_ONE_INSTANCE)
                 {
-                    counter.RemoveAllInstances();
+                    counterStack.RemoveInstances(counterManager, 1, CounterRemovalReason.EXPIRED_NATURALLY);
+                    counterStack.ResetTicksCounted();
                 }
                 else
                 {
-                    counter.RemoveInstances(1);
-                    counter.ResetTicksCounted();
+                    counterStack.RemoveAllInstances(counterManager, CounterRemovalReason.EXPIRED_NATURALLY);
                 }
             }
         }
