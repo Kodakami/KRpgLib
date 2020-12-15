@@ -2,10 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>KRpgLib.Flags</RootNamespace>
+    <RootNamespace>KRpgLib.Investments</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Flags\Flags.csproj" />
+    <ProjectReference Include="..\KRpgLib\Stats.csproj" />
     <ProjectReference Include="..\Utility\Utility.csproj" />
   </ItemGroup>
 

@@ -5,9 +5,9 @@ namespace KRpgLib.Flags
     public interface IFlagProvider
     {
         /// <summary>
-        /// Get provided flags. If no flags are provided under current conditions (dynamic flag providers only), return null.
+        /// Get provided flags.
         /// </summary>
-        List<Flag> GetAllFlags();
+        FlagCollection GetFlagCollection();
     }
     public interface IFlagProvider_Dynamic : IFlagProvider
     {

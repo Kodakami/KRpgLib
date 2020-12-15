@@ -1,14 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using KRpgLib.Utility;
 
 namespace KRpgLib.Flags
 {
-    public class FlagManager : AbstractFlagSet
+    public class FlagManager : IFlagProvider_Dynamic
     {
         protected List<FlagProviderController> _controllers = new List<FlagProviderController>();
 
-        public FlagManager() { }
+        public event Action OnFlagsChanged;
+
+        protected FlagTotalCacheHelper FlagTotalCache { get; }
+
+        public FlagManager()
+        {
+            FlagTotalCache = new FlagTotalCacheHelper(this);
+        }
         public FlagManager(List<IFlagProvider> initialProviders)
+            :this()
         {
             foreach (var ip in initialProviders)
             {
@@ -16,6 +25,10 @@ namespace KRpgLib.Flags
             }
         }
 
+        public FlagCollection GetFlagCollection()
+        {
+            return FlagTotalCache.GetCacheCopy();
+        }
         public void AddFlagProvider(IFlagProvider flagProvider)
         {
             AddFlagProvider_Internal(new FlagProviderController(flagProvider ?? throw new ArgumentNullException(nameof(flagProvider))));
@@ -23,6 +36,7 @@ namespace KRpgLib.Flags
         public void AddFlagProvider(IFlagProvider_Dynamic dynamicFlagProvider)
         {
             AddFlagProvider_Internal(new FlagProviderController_Dynamic(dynamicFlagProvider ?? throw new ArgumentNullException(nameof(dynamicFlagProvider))));
+            dynamicFlagProvider.OnFlagsChanged += SetDirty;
         }
         private void AddFlagProvider_Internal(FlagProviderController controller)
         {
@@ -35,90 +49,99 @@ namespace KRpgLib.Flags
                 throw new ArgumentNullException(nameof(flagProvider));
             }
 
-            for (int i = 0; i < _controllers.Count; i++)
+            var found = _controllers.Find(c => c.Provider == flagProvider);
+            if (found != null)
             {
-                var inspected = _controllers[i];
-                if (inspected.Provider == flagProvider)
-                {
-                    if (inspected.IsDynamic())
-                    {
-                        var casted = (FlagProviderController_Dynamic)inspected;
-                        casted.Dispose();
-                    }
+                _controllers.Remove(found);
+            }
+        }
+        public void RemoveFlagProvider(IFlagProvider_Dynamic dynamicFlagProvider)
+        {
+            if (dynamicFlagProvider == null)
+            {
+                throw new ArgumentNullException(nameof(dynamicFlagProvider));
+            }
 
-                    _controllers.RemoveAt(i);
-                    return;
-                }
+            var found = _controllers.Find(c => c.Provider == dynamicFlagProvider);
+            if (found != null)
+            {
+                found.Dispose();
+                dynamicFlagProvider.OnFlagsChanged -= SetDirty;
+
+                _controllers.Remove(found);
             }
         }
 
-        protected override List<Flag> GetFlags()
+        protected void SetDirty()
         {
-            List<Flag> outList = new List<Flag>();
-            foreach (var controller in _controllers)
-            {
-                var flagList = controller.GetFlags();
-                if (flagList != null)
-                {
-                    foreach (var flag in flagList)
-                    {
-                        if (!outList.Exists(f => f.SameAs(flag)))
-                        {
-                            outList.Add(flag);
-                        }
-                    }
-                }
-            }
-            return outList;
+            FlagTotalCache.SetDirty_FromExternal();
+            OnFlagsChanged?.Invoke();
         }
 
         // Internal classes.
-        protected class FlagProviderController
+        protected sealed class FlagTotalCacheHelper : ParentedCachedValueController<FlagCollection, FlagManager>
+        {
+            public FlagTotalCacheHelper(FlagManager parent) : base(parent) { }
+            protected override FlagCollection CalculateNewCache()
+            {
+                return new FlagCollection(Parent._controllers.ConvertAll(c => c.GetFlags()));
+            }
+
+            protected override FlagCollection CreateCacheCopy(FlagCollection cache)
+            {
+                return new FlagCollection(cache);
+            }
+        }
+
+        protected class FlagProviderController : System.IDisposable
         {
             public IFlagProvider Provider { get; }
-            protected List<Flag> _flagCache;
-            public virtual bool IsDynamic() => false;
 
             public FlagProviderController(IFlagProvider flagProvider)
             {
                 Provider = flagProvider;
-                _flagCache = flagProvider.GetAllFlags();
             }
-            public virtual List<Flag> GetFlags()
+            public virtual FlagCollection GetFlags()
             {
-                return _flagCache;
+                return Provider.GetFlagCollection();
             }
+            public virtual void Dispose() { }
         }
-        protected class FlagProviderController_Dynamic : FlagProviderController, System.IDisposable
-        {
-            public override bool IsDynamic() => true;
 
-            private bool _isDirty = false;  // No need to set true. Base constructor gets current value regardless.
-            private void SetDirty() => _isDirty = true;
+        protected class FlagProviderController_Dynamic : FlagProviderController
+        {
+            new protected IFlagProvider_Dynamic Provider => (IFlagProvider_Dynamic)base.Provider;
+            protected CacheHelper Cache { get; }
 
             public FlagProviderController_Dynamic(IFlagProvider_Dynamic flagProvider)
                 :base(flagProvider)
             {
-                flagProvider.OnFlagsChanged += SetDirty;
-            }
-            public override List<Flag> GetFlags()
-            {
-                if (_isDirty)
-                {
-                    UpdateCache();
-                }
-                return base.GetFlags();
-            }
-            public void UpdateCache()
-            {
-                _flagCache = Provider.GetAllFlags();
-                _isDirty = false;
-            }
-            public void Dispose()
-            {
-                var casted = (IFlagProvider_Dynamic)Provider;
+                Cache = new CacheHelper(this);
 
-                casted.OnFlagsChanged -= SetDirty;
+                flagProvider.OnFlagsChanged += Cache.SetDirty_FromExternal;
+            }
+
+            public override FlagCollection GetFlags()
+            {
+                return Cache.GetCacheCopy();
+            }
+            public override void Dispose()
+            {
+                Provider.OnFlagsChanged -= Cache.SetDirty_FromExternal;
+            }
+
+            protected sealed class CacheHelper : ParentedCachedValueController<FlagCollection, FlagProviderController_Dynamic>
+            {
+                public CacheHelper(FlagProviderController_Dynamic parent) : base(parent) { }
+                protected override FlagCollection CalculateNewCache()
+                {
+                    return Parent.Provider.GetFlagCollection();
+                }
+
+                protected override FlagCollection CreateCacheCopy(FlagCollection cache)
+                {
+                    return new FlagCollection(cache);
+                }
             }
         }
     }

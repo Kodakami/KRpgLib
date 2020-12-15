@@ -6,14 +6,14 @@ namespace KRpgLib.Counters
 {
     public class FlagComponent : CounterComponent, IFlagProvider
     {
-        public List<Flag> Flags { get; }
-        public FlagComponent(List<Flag> flags)
+        protected FlagCollection FlagCollection { get; }
+        public FlagComponent(FlagCollection flagCollection)
         {
-            Flags = flags != null ? new List<Flag>(flags) : throw new ArgumentNullException(nameof(flags));
+            FlagCollection = flagCollection != null ? new FlagCollection() : throw new ArgumentNullException(nameof(flagCollection));
         }
-        public List<Flag> GetAllFlags()
+        public FlagCollection GetFlagCollection()
         {
-            return Flags;
+            return FlagCollection;
         }
     }
 }

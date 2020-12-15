@@ -5,6 +5,6 @@ namespace KRpgLib.Flags
     public interface IFlagTemplate
     {
         int VariantCount { get; }
-        List<Flag> GetAllImpliedFlags();
+        IEnumerable<Flag> GetAllImpliedFlags();
     }
 }
