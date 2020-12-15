@@ -24,7 +24,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModsUnitTests", "..\ModsUni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Counters", "..\Counters\Counters.csproj", "{7AFDA920-A61D-4A5F-80CF-9F122E75AB2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CountersIntegration", "..\CountersIntegration\CountersIntegration.csproj", "{E4553315-5336-46B9-8DDD-0A88DA946EB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CountersIntegration", "..\CountersIntegration\CountersIntegration.csproj", "{E4553315-5336-46B9-8DDD-0A88DA946EB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Items", "..\Items\Items.csproj", "{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -72,6 +74,10 @@ Global
 		{E4553315-5336-46B9-8DDD-0A88DA946EB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4553315-5336-46B9-8DDD-0A88DA946EB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4553315-5336-46B9-8DDD-0A88DA946EB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -17,7 +17,7 @@ namespace KRpgLib.Utility
         /// <returns>combined value for new dictionary</returns>
         public delegate TValue ValueSmashDelegate(TKey key, List<TValue> allValuesForKey);
 
-        public static Dictionary<TKey, TValue> Smash(ValueSmashDelegate valueSmasher, ICollection<Dictionary<TKey, TValue>> dictionaries)
+        public static Dictionary<TKey, TValue> Smash(ValueSmashDelegate valueSmasher, IEnumerable<Dictionary<TKey, TValue>> dictionaries)
         {
             if (valueSmasher == null)
             {
@@ -27,8 +27,8 @@ namespace KRpgLib.Utility
             // New dictionary.
             var outDict = new Dictionary<TKey, TValue>();
 
-            // Quick escape if dictionary collection is null or empty.
-            if (dictionaries == null || dictionaries.Count == 0)
+            // Quick escape if dictionary collection is null (empty collection will result in no loops).
+            if (dictionaries == null)
             {
                 return outDict;
             }
