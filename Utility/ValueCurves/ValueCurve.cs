@@ -60,6 +60,10 @@ namespace KRpgLib.Utility.ValueCurves
         }
         public TypeY GetY(double x)
         {
+            if (_orderedKnownPoints == null)
+            {
+                return default;
+            }
             // Point is known.
             if (_orderedKnownPoints.TryGetValue(x, out Point<TypeY> found))
             {
