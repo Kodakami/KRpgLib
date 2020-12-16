@@ -1,31 +1,62 @@
 ﻿using System;
-using System.Linq;
-using KRpgLib.Flags;
-using KRpgLib.Stats;
+using System.Collections.Generic;
 
 namespace KRpgLib.Investments
 {
-    // TODO: Consider refactoring Investment system to use Komponent system.
+    public interface IInvestmentValue { }
 
-    public interface IInvestmentTemplate<TValue> : IFlagProvider, IStatProvider<TValue> where TValue : struct { }
-    public class Investment<TValue> : IFlagProvider, IStatProvider<TValue> where TValue : struct
+    public interface IInvestmentTemplate<TInvestmentValue> where TInvestmentValue : IInvestmentValue { }
+
+    public abstract class AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
+        where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
+        where TInvestmentValue : struct, IInvestmentValue
     {
-        public IInvestmentTemplate<TValue> Template { get; }
-        public InvestmentValue<TValue> Value { get; }
+        public TInvestmentTemplate Template { get; }
+        public abstract TInvestmentValue Value { get; }
 
-        public Investment(IInvestmentTemplate<TValue> template)
+        protected AbstractInvestment(TInvestmentTemplate template)
         {
-            Template = template ?? throw new ArgumentNullException(nameof(template));
-            Value = new InvestmentValue<TValue>(Template.GetFlagCollection(), Template.GetStatDeltaCollection());
+            Template = template;
         }
+    }
+    public abstract class StaticInvestment<TInvestmentTemplate, TInvestmentValue> : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
+        where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
+        where TInvestmentValue : struct, IInvestmentValue
+    {
+        protected TInvestmentValue _staticValue;
 
-        public virtual StatDeltaCollection<TValue> GetStatDeltaCollection()
+        public override TInvestmentValue Value => _staticValue;
+
+        protected StaticInvestment(TInvestmentTemplate template, TInvestmentValue value)
+            :base(template)
         {
-            return Value.GetStatDeltaCollection();
+            _staticValue = value;
         }
-        public FlagCollection GetFlagCollection()
+    }
+    public abstract class TieredInvestment<TInvestmentTemplate, TInvestmentValue> : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
+        where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
+        where TInvestmentValue : struct, IInvestmentValue
+    {
+        private readonly List<TInvestmentValue> _valueList;
+        private int _tier;
+        public int Tier
         {
-            return Value.GetFlagCollection();
+            get
+            {
+                return _tier;
+            }
+            protected set
+            {
+                // Clamp between tier 0 and max tier possible.
+                _tier = Math.Max(0, Math.Min(_valueList.Count - 1, value));
+            }
+        }
+        public override TInvestmentValue Value => _valueList[_tier];
+
+        protected TieredInvestment(TInvestmentTemplate template, IEnumerable<TInvestmentValue> allValues)
+            :base(template)
+        {
+            _valueList = new List<TInvestmentValue>(allValues ?? throw new ArgumentNullException(nameof(allValues)));
         }
     }
 }

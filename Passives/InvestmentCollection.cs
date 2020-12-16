@@ -6,16 +6,19 @@ using KRpgLib.Utility;
 
 namespace KRpgLib.Investments
 {
-    public class InvestmentCollection<TValue> where TValue : struct
+    public abstract class InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>
+        where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
+        where TInvestment : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
+        where TInvestmentValue : struct, IInvestmentValue
     {
-        private readonly List<Investment<TValue>> _investments = new List<Investment<TValue>>();
+        private readonly List<TInvestment> _investments = new List<TInvestment>();
 
         protected InvestmentValueCacheHelper InvestmentValueCache { get; }
-        public InvestmentCollection()
+        protected InvestmentCollection()
         {
-            InvestmentValueCache = new InvestmentValueCacheHelper(this);
+            InvestmentValueCache = CreateCacheHelper();
         }
-        public InvestmentCollection(IEnumerable<Investment<TValue>> investments)
+        protected InvestmentCollection(IEnumerable<TInvestment> investments)
             :this()
         {
             foreach (var investment in investments ?? throw new ArgumentNullException(nameof(investments)))
@@ -24,11 +27,11 @@ namespace KRpgLib.Investments
             }
         }
 
-        public bool HasInvestment(IInvestmentTemplate<TValue> template)
+        public bool HasInvestment(TInvestmentTemplate template)
         {
-            return _investments.Exists(p => p.Template == template);
+            return _investments.Exists(p => p.Template.Equals(template));
         }
-        protected void Add(Investment<TValue> investment)
+        protected void Add(TInvestment investment)
         {
             if (investment != null)
             {
@@ -37,7 +40,7 @@ namespace KRpgLib.Investments
                 InvestmentValueCache.SetDirty_FromExternal();
             }
         }
-        protected void Remove(Investment<TValue> investment)
+        protected void Remove(TInvestment investment)
         {
             if (investment != null)
             {
@@ -46,39 +49,22 @@ namespace KRpgLib.Investments
                 InvestmentValueCache.SetDirty_FromExternal();
             }
         }
+        protected abstract InvestmentValueCacheHelper CreateCacheHelper();
 
-        protected class InvestmentValueCacheHelper : ParentedCachedValueController<InvestmentValue<TValue>, InvestmentCollection<TValue>>
+        protected abstract class InvestmentValueCacheHelper : ParentedCachedValueController<
+            TInvestmentValue,
+            InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>>
         {
-            public InvestmentValueCacheHelper(InvestmentCollection<TValue> parent) : base(parent) { }
-            protected override InvestmentValue<TValue> CalculateNewCache()
-            {
-                var list = new List<InvestmentValue<TValue>>();
-                foreach (var passive in Parent._investments)
-                {
-                    // Struct is safe to add directly.
-                    list.Add(passive.Value);
-                }
-
-                // No need for null collection item checks. InvestmentValue throws null args in ctor.
-                var totalStatDeltas = new StatDeltaCollection<TValue>(list.ConvertAll(iv => iv.GetStatDeltaCollection()));
-                var totalFlags = new FlagCollection(list.ConvertAll(iv => iv.GetFlagCollection()));
-
-                return new InvestmentValue<TValue>(totalFlags, totalStatDeltas);
-            }
-
-            protected override InvestmentValue<TValue> CreateCacheCopy(InvestmentValue<TValue> cache)
-            {
-                // Safe to pass struct directly.
-                return cache;
-            }
+            protected InvestmentValueCacheHelper(InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue> parent) : base(parent) { }
         }
     }
-    public class WriteableInvestmentCollection<TValue> : InvestmentCollection<TValue> where TValue : struct
+    public abstract class WriteableInvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>
+        : InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>
+        where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
+        where TInvestment : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
+        where TInvestmentValue : struct, IInvestmentValue
     {
-        public WriteableInvestmentCollection() { }
-        public WriteableInvestmentCollection(IEnumerable<Investment<TValue>> investments) : base(investments) { }
-
-        new public void Add(Investment<TValue> investment) => base.Add(investment);
-        new public void Remove(Investment<TValue> investment) => base.Remove(investment);
+        new public void Add(TInvestment investment) => base.Add(investment);
+        new public void Remove(TInvestment investment) => base.Remove(investment);
     }
 }
