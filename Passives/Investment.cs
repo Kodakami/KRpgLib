@@ -3,10 +3,6 @@ using System.Collections.Generic;
 
 namespace KRpgLib.Investments
 {
-    public interface IInvestmentValue { }
-
-    public interface IInvestmentTemplate<TInvestmentValue> where TInvestmentValue : IInvestmentValue { }
-
     public abstract class AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
         where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
         where TInvestmentValue : struct, IInvestmentValue

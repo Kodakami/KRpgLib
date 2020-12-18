@@ -20,7 +20,7 @@ namespace KRpgLib.Flags
 
             foreach (var flag in flags ?? throw new ArgumentNullException(nameof(flags)))
             {
-                Add(flag);
+                AddIfNotInSet(flag);
             }
         }
         public FlagCollection(IEnumerable<FlagCollection> flagCollections)
@@ -29,7 +29,7 @@ namespace KRpgLib.Flags
             {
                 foreach (var flag in fc._topLevelSet)
                 {
-                    Add(flag);
+                    AddIfNotInSet(flag);
                 }
             }
         }
@@ -88,14 +88,14 @@ namespace KRpgLib.Flags
             return false;
         }
 
-        protected void Add(Flag flag)
+        protected void AddIfNotInSet(Flag flag)
         {
             if (!_topLevelSet.Exists(f => f.SameAs(flag)))
             {
                 _topLevelSet.Add(flag);
             }
         }
-        protected void Remove(Flag flag)
+        protected void RemoveIfNotInSet(Flag flag)
         {
             _topLevelSet.Remove(flag);
         }
@@ -114,9 +114,9 @@ namespace KRpgLib.Flags
         public WriteableFlagCollection(IEnumerable<FlagCollection> flagCollections) : base(flagCollections) { }
         public WriteableFlagCollection(params FlagCollection[] flagCollections) : base(flagCollections) { }
 
-        new public void Add(Flag flag)
+        public void Add(Flag flag)
         {
-            base.Add(flag);
+            AddIfNotInSet(flag);
         }
         public void AddRange(IEnumerable<Flag> flags)
         {
@@ -125,9 +125,9 @@ namespace KRpgLib.Flags
                 Add(flag);
             }
         }
-        new public void Remove(Flag flag)
+        public void Remove(Flag flag)
         {
-            base.Remove(flag);
+            RemoveIfNotInSet(flag);
         }
         public void RemoveAll(IEnumerable<Flag> flags)
         {
