@@ -1,8 +1,8 @@
 ﻿using System;
-using KRpgLib.Mods.ModTemplates;
+using KRpgLib.Affixes.ModTemplates;
 using KRpgLib.Flags;
 
-namespace KRpgLib.Mods
+namespace KRpgLib.Affixes
 {
     public struct ModStatDelta<TValue> : IMod<MTStatDelta<TValue>, TValue> where TValue : struct
     {

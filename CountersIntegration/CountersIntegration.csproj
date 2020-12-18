@@ -8,7 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Counters\Counters.csproj" />
     <ProjectReference Include="..\Flags\Flags.csproj" />
-    <ProjectReference Include="..\Mods\Mods.csproj" />
+    <ProjectReference Include="..\Mods\Affixes.csproj" />
   </ItemGroup>
 
 </Project>

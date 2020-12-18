@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace KRpgLib.Mods.ModTemplates
+namespace KRpgLib.Affixes.ModTemplates
 {
     public interface IModTemplate<TRolledResult>
     {
