@@ -73,52 +73,12 @@ namespace KRpgLib.Utility.Gaccha
          *      There is almost certainly a way to elegantly unite these two disparate houses, but if you can find it, you're a smarter coder than I am today.
          *      
          *      - Eric  12/14/20
+         *      
+         *      There is never a time to TryFind and not TryPon. Removed pointless branch. Got your back, man.
+         *      
+         *      - Eric  12/17/20
          */
 
-        public bool TryFindMany(PredicateChain<TCapsule> predicateChain, int count, out IEnumerable<TCapsule> capsules)
-        {
-            // Create the list of results.
-            var capsuleList = new List<TCapsule>();
-
-            // Create a handle for the selected capsule.
-            TCapsule selected = default;
-            int countRemaining = count;
-
-            // For each predicate in the chain...
-            foreach (var predicate in predicateChain)
-            {
-                // If all capsules have been found, we can stop looping.
-                if (countRemaining == 0)
-                {
-                    break;
-                }
-
-                // Count the total number of capsules that apply to this predicate (if null, total capsule count).
-                int totalNumberOfApplicableCapsules = Pool.GetCapsuleCount(predicate);
-
-                // For the number of capsules left to find...
-                for (int i = 0; i < countRemaining; i++)
-                {
-                    // If we found a capsule,
-                    if (TryFind_Internal(predicate, totalNumberOfApplicableCapsules, out selected))
-                    {
-                        // Add it to the list.
-                        capsuleList.Add(selected);
-                    }
-                    // Otherwise (we couldn't find an applicable capsule),
-                    else
-                    {
-                        // No valid capsules left for predicate. Try the next predicate.
-                        break;
-                    }
-                }
-            }
-
-            // It is possible that not all capsules have been found by this point. If so, it is not possible to fulfill the predicate chain with the current state of the gaccha.
-
-            capsules = capsuleList;
-            return capsules.Count() == count;
-        }
         public bool TryPonMany(PredicateChain<TCapsule> predicateChain, int count, bool withReplacement, out IEnumerable<TCapsule> capsules)
         {
             // Create the list of results.
@@ -164,40 +124,6 @@ namespace KRpgLib.Utility.Gaccha
             return capsules.Count() == count;
         }
         /// <summary>
-        /// Try and find a number of capsules in the gaccha which fulfill the predicate. The capsules are never removed. Returns true if all required capsules were found.
-        /// </summary>
-        public bool TryFindMany(Predicate<TCapsule> predicateOrNull, int count, out IEnumerable<TCapsule> capsules)
-        {
-            // Create the list of results.
-            var capsuleList = new List<TCapsule>();
-
-            // Create a handle for the selected capsule.
-            TCapsule selected = default;
-
-            // Count the total number of capsules that apply to this predicate (if not null).
-            int totalNumberOfApplicableCapsules = Pool.GetCapsuleCount(predicateOrNull);
-
-            // For the number of capsules we are finding...
-            for (int i = 0; i < count; i++)
-            {
-                // If we found a capsule,
-                if (TryFind_Internal(predicateOrNull, totalNumberOfApplicableCapsules, out selected))
-                {
-                    // Add it to the list.
-                    capsuleList.Add(selected);
-                }
-                // Otherwise (we couldn't find an applicable capsule),
-                else
-                {
-                    // No valid capsules left. Time to go.
-                    break;
-                }
-            }
-
-            capsules = capsuleList;
-            return capsules.Count() == count;
-        }
-        /// <summary>
         /// Try and pon a number of capsules from the gaccha. Returns true if all required capsules were ponned.
         /// </summary>
         public bool TryPonMany(Predicate<TCapsule> predicateOrNull, int count, bool withReplacement, out IEnumerable<TCapsule> capsules)
@@ -231,22 +157,6 @@ namespace KRpgLib.Utility.Gaccha
             capsules = capsuleList;
             return capsules.Count() == count;
         }
-        public bool TryFindSingle(PredicateChain<TCapsule> predicateChain, out TCapsule capsule)
-        {
-            capsule = default;
-
-            foreach (var predicate in predicateChain)
-            {
-                if (TryFindSingle(predicate, out capsule))
-                {
-                    return true;
-                }
-
-                // Try the next predicate in the chain.
-            }
-
-            return false;
-        }
         public bool TryPonSingle(PredicateChain<TCapsule> predicateChain, bool withReplacement, out TCapsule capsule)
         {
             capsule = default;
@@ -264,15 +174,6 @@ namespace KRpgLib.Utility.Gaccha
             return false;
         }
         /// <summary>
-        /// Try and find a capsule in the gaccha which fulfills the predicate. Returns true if the capsule was found.
-        /// </summary>
-        public bool TryFindSingle(Predicate<TCapsule> predicateOrNull, out TCapsule capsule)
-        {
-            int totalNumberOfApplicableCapsules = Pool.GetCapsuleCount(predicateOrNull);
-
-            return TryFind_Internal(predicateOrNull, totalNumberOfApplicableCapsules, out capsule);
-        }
-        /// <summary>
         /// Try and pon a capsule from the gaccha which fulfills the predicate. Returns true if the capsule was ponned.
         /// </summary>
         public bool TryPonSingle(Predicate<TCapsule> predicateOrNull, bool withReplacement, out TCapsule capsule)
@@ -281,17 +182,12 @@ namespace KRpgLib.Utility.Gaccha
 
             return TryPon_Internal(predicateOrNull, totalNumberOfApplicableCapsules, withReplacement, out capsule);
         }
-
-        protected bool TryFind_Internal(Predicate<TCapsule> predicateOrNull, int totalNumberOfApplicableCapsules, out TCapsule capsule)
-        {
-            return Pool.TryGetCapsule(predicateOrNull, totalNumberOfApplicableCapsules, out capsule);
-        }
         /// <summary>
         /// A gateway between TryPonMany/TryPonSingle and the internal private method for finding capsules. Override this to intercept/observe/record/modify the call in transit. Remember to call base method if applicable before returning.
         /// </summary>
         protected bool TryPon_Internal(Predicate<TCapsule> predicateOrNull, int totalNumberOfApplicableCapsules, bool withReplacement, out TCapsule capsule)
         {
-            if (!Pool.TryGetCapsule(predicateOrNull, totalNumberOfApplicableCapsules, out capsule))
+            if (!Pool.TryFindCapsule(predicateOrNull, totalNumberOfApplicableCapsules, out capsule))
             {
                 return false;
             }
