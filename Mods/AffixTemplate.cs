@@ -1,9 +1,9 @@
 ﻿using KRpgLib.Flags;
-using KRpgLib.Mods.ModTemplates;
+using KRpgLib.Affixes.ModTemplates;
 using System;
 using System.Collections.Generic;
 
-namespace KRpgLib.Mods
+namespace KRpgLib.Affixes
 {
     public class AffixTemplate<TValue> where TValue : struct
     {

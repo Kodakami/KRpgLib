@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace KRpgLib.Mods
+namespace KRpgLib.Affixes
 {
     public sealed class AffixType
     {

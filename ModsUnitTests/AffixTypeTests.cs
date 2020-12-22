@@ -1,5 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using KRpgLib.Mods;
+using KRpgLib.Affixes;
 using System;
 
 namespace ModsUnitTests

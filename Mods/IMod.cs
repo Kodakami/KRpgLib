@@ -1,6 +1,6 @@
-﻿using KRpgLib.Mods.ModTemplates;
+﻿using KRpgLib.Affixes.ModTemplates;
 
-namespace KRpgLib.Mods
+namespace KRpgLib.Affixes
 {
     public interface IMod<TModTemplate, TRolledResult>
         where TModTemplate : IModTemplate<TRolledResult>

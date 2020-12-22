@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using KRpgLib.Mods;
-using KRpgLib.Mods.ModTemplates;
+using KRpgLib.Affixes;
+using KRpgLib.Affixes.ModTemplates;
 
 namespace ModsUnitTests
 {

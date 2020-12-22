@@ -1,9 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <AssemblyName>AffixesUnitTests</AssemblyName>
+
+    <RootNamespace>AffixesUnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mods\Mods.csproj" />
+    <ProjectReference Include="..\Mods\Affixes.csproj" />
   </ItemGroup>
 
 </Project>

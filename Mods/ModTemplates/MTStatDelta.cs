@@ -1,7 +1,7 @@
 ﻿using System;
 using KRpgLib.Stats;
 
-namespace KRpgLib.Mods.ModTemplates
+namespace KRpgLib.Affixes.ModTemplates
 {
     // Later, make a compound version of this that has multiple rolled values in one mod (like minimum and maximum damage values per hit).
     public abstract class MTStatDelta<TValue> : IModTemplate<TValue> where TValue : struct

@@ -3,10 +3,12 @@ using KRpgLib.Stats;
 using KRpgLib.Flags;
 using System;
 using System.Collections.Generic;
-using KRpgLib.Mods.ModTemplates;
+using KRpgLib.Affixes.ModTemplates;
 
-namespace KRpgLib.Mods
+namespace KRpgLib.Affixes
 {
+    // TODO: Consider taking another pass at Affix system. May be useful to abstract out the underlying types of mods (flag mods, stat delta mods) and create a project that integrates the other systems (like Counters has). We can have interesting mods that rely on other systems later without needing to change the Affix project.
+
     public struct Affix<TValue> : INamedObject, IFlagProvider, IStatProvider<TValue> where TValue : struct
     {
         // Private instance members.

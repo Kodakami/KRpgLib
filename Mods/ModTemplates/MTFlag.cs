@@ -1,7 +1,7 @@
 ﻿using System;
 using KRpgLib.Flags;
 
-namespace KRpgLib.Mods.ModTemplates
+namespace KRpgLib.Affixes.ModTemplates
 {
     public abstract class AbstractMTFlag : IModTemplate<Flag>
     {

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KRpgLib.Mods
+namespace KRpgLib.Affixes
 {
     public class AffixManager<TValue> : IFlagProvider, IStatProvider<TValue> where TValue : struct
     {

@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>KRpgLib.Mods</RootNamespace>
+    <RootNamespace>KRpgLib.Affixes</RootNamespace>
+    <AssemblyName>Affixes</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
