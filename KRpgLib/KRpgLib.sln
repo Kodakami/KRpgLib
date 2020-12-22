@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CountersIntegration", "..\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Items", "..\Items\Items.csproj", "{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Investments", "..\Passives\Investments.csproj", "{EAA9EC4A-D557-4818-A9A2-AB239B4CB8EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +80,10 @@ Global
 		{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAA9EC4A-D557-4818-A9A2-AB239B4CB8EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAA9EC4A-D557-4818-A9A2-AB239B4CB8EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAA9EC4A-D557-4818-A9A2-AB239B4CB8EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAA9EC4A-D557-4818-A9A2-AB239B4CB8EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

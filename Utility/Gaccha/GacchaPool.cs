@@ -94,13 +94,13 @@ namespace KRpgLib.Utility.Gaccha
             }
         }
 
-        public bool TryGetCapsule(Predicate<TCapsule> predicateOrNull, out TCapsule capsule)
+        public bool TryFindCapsule(Predicate<TCapsule> predicateOrNull, out TCapsule capsule)
         {
             int totalNumberOfApplicableCapsules = GetCapsuleCount(predicateOrNull);
 
-            return TryGetCapsule(predicateOrNull, totalNumberOfApplicableCapsules, out capsule);
+            return TryFindCapsule(predicateOrNull, totalNumberOfApplicableCapsules, out capsule);
         }
-        public bool TryGetCapsule(Predicate<TCapsule> predicateOrNull, int totalNumberOfApplicableCapsules, out TCapsule capsule)
+        public bool TryFindCapsule(Predicate<TCapsule> predicateOrNull, int totalNumberOfApplicableCapsules, out TCapsule capsule)
         {
             capsule = default;
 
