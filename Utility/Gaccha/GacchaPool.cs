@@ -135,13 +135,13 @@ namespace KRpgLib.Utility.Gaccha
         }
 
         // Protected helper classes.
-        protected sealed class TotalCapsuleCountHelper : ParentedCachedValueController<int, GacchaPool<TCapsule>>
+        protected sealed class TotalCapsuleCountHelper : CachedValueController<int, GacchaPool<TCapsule>>
         {
             public TotalCapsuleCountHelper(GacchaPool<TCapsule> parent) : base(parent) { }
 
             protected override int CalculateNewCache()
             {
-                return Parent._pool.Sum(kvp => kvp.Value);
+                return Context._pool.Sum(kvp => kvp.Value);
             }
             protected override int CreateCacheCopy(int cache) => cache;
         }

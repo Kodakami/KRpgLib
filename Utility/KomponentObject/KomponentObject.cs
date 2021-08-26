@@ -5,22 +5,12 @@ using System.Text;
 namespace KRpgLib.Utility.KomponentObject
 {
     public interface IKomponentObjectTemplate { }
-    public abstract class KomponentObject<TTemplate, TKomponentBase>
-        where TTemplate : IKomponentObjectTemplate
-        where TKomponentBase : Komponent
+    public abstract class KomponentObject<TKomponentBase>
+        where TKomponentBase : class, IKomponent
     {
         private readonly Dictionary<Type, List<TKomponentBase>> _komponentDict = new Dictionary<Type, List<TKomponentBase>>();
-
-        public TTemplate Template { get; }
-
-        protected KomponentObject(TTemplate template, IEnumerable<TKomponentBase> komponents)
+        protected KomponentObject(IEnumerable<TKomponentBase> komponents)
         {
-            if (template == null)
-            {
-                throw new ArgumentNullException(nameof(template));
-            }
-            Template = template;
-
             // Accepting null saves the creation of an empty collection.
             if (komponents != null)
             {
@@ -30,7 +20,6 @@ namespace KRpgLib.Utility.KomponentObject
                 }
             }
         }
-
         protected void RegisterKomponent(TKomponentBase komponent)
         {
             /* 
@@ -48,8 +37,8 @@ namespace KRpgLib.Utility.KomponentObject
             // Get the type of komponent.
             var argType = komponent.GetType();
 
-            // No components of abstract base type.
-            if (argType.Equals(typeof(TKomponentBase)))
+            // No components of base types.
+            if (!argType.IsSubclassOf(typeof(TKomponentBase)))
             {
                 throw new ArgumentException($"Komponent may not be of base type {argType}.");
             }
@@ -123,7 +112,7 @@ namespace KRpgLib.Utility.KomponentObject
             }
         }
         public bool HasKomponent<TKomponent>() where TKomponent : TKomponentBase => _komponentDict.ContainsKey(typeof(TKomponent));
-        public TKomponent GetKomponent<TKomponent>() where TKomponent : TKomponentBase
+        public TKomponent GetKomponent<TKomponent>() where TKomponent : class, TKomponentBase
         {
             if (_komponentDict.TryGetValue(typeof(TKomponent), out List<TKomponentBase> found))
             {
@@ -131,7 +120,7 @@ namespace KRpgLib.Utility.KomponentObject
             }
             return null;
         }
-        public List<TKomponent> GetKomponents<TKomponent>() where TKomponent : TKomponentBase
+        public IEnumerable<TKomponent> GetKomponents<TKomponent>() where TKomponent : class, TKomponentBase
         {
             if (_komponentDict.TryGetValue(typeof(TKomponent), out List<TKomponentBase> found))
             {
@@ -139,7 +128,7 @@ namespace KRpgLib.Utility.KomponentObject
             }
             return null;
         }
-        public List<TKomponentBase> GetAllKomponents()
+        public IEnumerable<TKomponentBase> GetAllKomponents()
         {
             var list = new List<TKomponentBase>();
             foreach (var kvp in _komponentDict)
@@ -151,12 +140,44 @@ namespace KRpgLib.Utility.KomponentObject
             }
             return list;
         }
-        protected void ForEachKomponent(Action<KeyValuePair<Type, List<TKomponentBase>>> forEach)
+        protected void ForEachKomponent(Action<Type, TKomponentBase> forEach)
         {
             foreach (var kvp in _komponentDict)
             {
-                forEach.Invoke(kvp);
+                foreach (var komponent in kvp.Value)
+                {
+                    forEach.Invoke(kvp.Key, komponent);
+                }
             }
+        }
+        protected void ForEachKomponent<TKomponent>(Action<TKomponent> forEach)
+            where TKomponent : class, TKomponentBase
+        {
+            if (_komponentDict.TryGetValue(typeof(TKomponent), out List<TKomponentBase> found))
+            {
+                foreach (var komponent in found)
+                {
+                    var castKomponent = (TKomponent)komponent;
+
+                    forEach.Invoke(castKomponent);
+                }
+            }
+        }
+    }
+    public abstract class KomponentObject<TTemplate, TKomponentBase> : KomponentObject<TKomponentBase>
+        where TTemplate : IKomponentObjectTemplate
+        where TKomponentBase : Komponent
+    {
+        public TTemplate Template { get; }
+
+        protected KomponentObject(TTemplate template, IEnumerable<TKomponentBase> komponents)
+            :base(komponents)
+        {
+            if (template == null)
+            {
+                throw new ArgumentNullException(nameof(template));
+            }
+            Template = template;
         }
     }
 }

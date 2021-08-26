@@ -30,12 +30,12 @@ namespace KRpgLib.Utility
         }
         public void ForceCacheUpdate() => UpdateCache();
     }
-    public abstract class ParentedCachedValueController<TCache, TParent> : CachedValueController<TCache>
+    public abstract class CachedValueController<TCache, TContext> : CachedValueController<TCache>
     {
-        protected TParent Parent { get; private set; }
-        protected ParentedCachedValueController(TParent parent)
+        protected TContext Context { get; private set; }
+        protected CachedValueController(TContext context)
         {
-            Parent = parent;
+            Context = context;
         }
         public void SetDirty_FromExternal() => SetDirty();
     }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using KRpgLib.Flags;
+using System.Linq;
 using KRpgLib.Stats;
 using KRpgLib.Utility;
 
@@ -17,7 +17,8 @@ namespace KRpgLib.Investments
         protected InvestmentValueCacheHelper InvestmentValueCache { get; }
         protected InvestmentCollection()
         {
-            InvestmentValueCache = CreateCacheHelper() ?? throw new InvalidOperationException("Overrides of InvestmentCollection.CreateCacheHelper() may not return null.");
+            // Pass in self to "CalculateTotalValue". I can't rely on my future self and others to realize that the derrived class is a collection of investments.
+            InvestmentValueCache = new InvestmentValueCacheHelper(() => CalculateTotalValue(this), CreateCacheCopy);
         }
         protected InvestmentCollection(IEnumerable<TInvestment> investments)
             :this()
@@ -64,7 +65,8 @@ namespace KRpgLib.Investments
                 InvestmentValueCache.SetDirty_FromExternal();
             }
         }
-        protected abstract InvestmentValueCacheHelper CreateCacheHelper();
+        protected abstract TInvestmentValue CalculateTotalValue(IEnumerable<TInvestment> investments);
+        protected abstract TInvestmentValue CreateCacheCopy(TInvestmentValue cache);
 
         public IEnumerator<TInvestment> GetEnumerator()
         {
@@ -76,11 +78,22 @@ namespace KRpgLib.Investments
             return ((IEnumerable)_investments).GetEnumerator();
         }
 
-        protected abstract class InvestmentValueCacheHelper : ParentedCachedValueController<
-            TInvestmentValue,
-            InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>>
+        protected sealed class InvestmentValueCacheHelper : CachedValueController<TInvestmentValue>
         {
-            protected InvestmentValueCacheHelper(InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue> parent) : base(parent) { }
+            private readonly Func<TInvestmentValue> _calculateNewCacheFunc;
+            private readonly Func<TInvestmentValue, TInvestmentValue> _createCachecopyFunc;
+
+            public InvestmentValueCacheHelper(Func<TInvestmentValue> createNewCacheFunc, Func<TInvestmentValue, TInvestmentValue> copyCacheFunc)
+            {
+                // No null checks. Methods must exist.
+                _calculateNewCacheFunc = createNewCacheFunc;
+                _createCachecopyFunc = copyCacheFunc;
+            }
+
+            public void SetDirty_FromExternal() => SetDirty();
+
+            protected override TInvestmentValue CalculateNewCache() => _calculateNewCacheFunc();
+            protected override TInvestmentValue CreateCacheCopy(TInvestmentValue cache) => _createCachecopyFunc(cache);
         }
     }
     public abstract class WriteableInvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>

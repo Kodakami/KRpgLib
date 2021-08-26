@@ -102,12 +102,12 @@ namespace KRpgLib.Stats
             _statProviders.RemoveProvider(safeStatProvider);
         }
 
-        protected class CachedSnapshotHelper : ParentedCachedValueController<StatSnapshot<TValue>, StatManager<TValue>>
+        protected class CachedSnapshotHelper : CachedValueController<StatSnapshot<TValue>, StatManager<TValue>>
         {
             public CachedSnapshotHelper(StatManager<TValue> parent) : base(parent) { }
             protected override StatSnapshot<TValue> CalculateNewCache()
             {
-                return StatSnapshot<TValue>.Create(Parent._statProviders.GetStatDeltaCollection());
+                return StatSnapshot<TValue>.Create(Context._statProviders.GetStatDeltaCollection());
             }
             protected override StatSnapshot<TValue> CreateCacheCopy(StatSnapshot<TValue> cache)
             {
