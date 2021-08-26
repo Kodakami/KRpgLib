@@ -17,7 +17,7 @@ namespace ModsUnitTests
             var stubFlagMods = new List<AbstractMTFlag>();
             var stubStatDeltaMods = new List<MTStatDelta<int>>();
 
-            void exceptionalAction() => new AffixTemplate<int>(null, StubAffixType, stubFlagMods, stubStatDeltaMods);
+            void exceptionalAction() => new AffixTemplate_Obsolete<int>(null, StubAffixType, stubFlagMods, stubStatDeltaMods);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
@@ -28,7 +28,7 @@ namespace ModsUnitTests
             var stubFlagMods = new List<AbstractMTFlag>();
             var stubStatDeltaMods = new List<MTStatDelta<int>>();
 
-            void exceptionalAction() => new AffixTemplate<int>(ANY_NAME, null, stubFlagMods, stubStatDeltaMods);
+            void exceptionalAction() => new AffixTemplate_Obsolete<int>(ANY_NAME, null, stubFlagMods, stubStatDeltaMods);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
@@ -38,7 +38,7 @@ namespace ModsUnitTests
             const string ANY_NAME = "";
             var stubStatDeltaMods = new List<MTStatDelta<int>>();
 
-            void exceptionalAction() => new AffixTemplate<int>(ANY_NAME, StubAffixType, null, stubStatDeltaMods);
+            void exceptionalAction() => new AffixTemplate_Obsolete<int>(ANY_NAME, StubAffixType, null, stubStatDeltaMods);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
@@ -48,7 +48,7 @@ namespace ModsUnitTests
             const string ANY_NAME = "";
             var stubFlagMods = new List<AbstractMTFlag>();
 
-            void exceptionalAction() => new AffixTemplate<int>(ANY_NAME, StubAffixType, stubFlagMods, null);
+            void exceptionalAction() => new AffixTemplate_Obsolete<int>(ANY_NAME, StubAffixType, stubFlagMods, null);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }

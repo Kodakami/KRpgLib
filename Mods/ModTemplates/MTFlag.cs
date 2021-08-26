@@ -11,11 +11,13 @@ namespace KRpgLib.Affixes.ModTemplates
         {
             Template = template;
         }
+
         public Flag GetNewRolledResult()
         {
             int variantIndex = GetVariantIndex();
             return Flag.Create(Template, variantIndex);
         }
+
         protected abstract int GetVariantIndex();
     }
     public class MTFlag : AbstractMTFlag

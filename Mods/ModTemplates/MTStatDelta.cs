@@ -4,7 +4,8 @@ using KRpgLib.Stats;
 namespace KRpgLib.Affixes.ModTemplates
 {
     // Later, make a compound version of this that has multiple rolled values in one mod (like minimum and maximum damage values per hit).
-    public abstract class MTStatDelta<TValue> : IModTemplate<TValue> where TValue : struct
+    public abstract class MTStatDelta<TValue> : IModTemplate<StatTemplateAndDelta<TValue>>
+        where TValue : struct
     {
         private readonly RollLegalizer _rollLegalizer;
 
@@ -20,7 +21,11 @@ namespace KRpgLib.Affixes.ModTemplates
             StatDeltaType = statDeltaType;
             _rollLegalizer = rollLegalizer;
         }
-        public TValue GetNewRolledResult() => _rollLegalizer.GetRandomLegalValue();
+        public StatTemplateAndDelta<TValue> GetNewRolledResult()
+        {
+            var value = _rollLegalizer.GetRandomLegalValue();
+            return new StatTemplateAndDelta<TValue>(AffectedStatTemplate, StatDeltaType, value);
+        }
 
         protected abstract class RollLegalizer
         {
