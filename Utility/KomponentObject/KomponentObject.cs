@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace KRpgLib.Utility.KomponentObject
 {
     public interface IKomponentObjectTemplate { }
-    public abstract class KomponentObject<TTemplate, TKomponentBase>
+    public abstract class KomponentObject<TTemplate, TKomponentBase> : IEnumerable<KeyValuePair<Type, IReadOnlyList<TKomponentBase>>>
         where TTemplate : IKomponentObjectTemplate
-        where TKomponentBase : Komponent
+        where TKomponentBase : IKomponent
     {
         private readonly Dictionary<Type, List<TKomponentBase>> _komponentDict = new Dictionary<Type, List<TKomponentBase>>();
 
@@ -129,34 +130,29 @@ namespace KRpgLib.Utility.KomponentObject
             {
                 return (TKomponent)found[0];    // No need to check for empty list or null. Impossible internal state.
             }
-            return null;
+            return default;
         }
-        public List<TKomponent> GetKomponents<TKomponent>() where TKomponent : TKomponentBase
+        public IEnumerable<TKomponent> GetKomponents<TKomponent>() where TKomponent : TKomponentBase
         {
             if (_komponentDict.TryGetValue(typeof(TKomponent), out List<TKomponentBase> found))
             {
-                return found.ConvertAll(com => (TKomponent)com);
+                return found.Cast<TKomponent>();
             }
-            return null;
+            return new TKomponent[0];
         }
-        public List<TKomponentBase> GetAllKomponents()
+        public IEnumerable<TKomponentBase> GetAllKomponents()
         {
-            var list = new List<TKomponentBase>();
-            foreach (var kvp in _komponentDict)
-            {
-                foreach (var com in kvp.Value)
-                {
-                    list.Add(com);
-                }
-            }
-            return list;
+            return _komponentDict.SelectMany(kvp => kvp.Value);
         }
-        protected void ForEachKomponent(Action<KeyValuePair<Type, List<TKomponentBase>>> forEach)
+
+        public IEnumerator<KeyValuePair<Type, IReadOnlyList<TKomponentBase>>> GetEnumerator()
         {
-            foreach (var kvp in _komponentDict)
-            {
-                forEach.Invoke(kvp);
-            }
+            return _komponentDict.Select(kvp => new KeyValuePair<Type, IReadOnlyList<TKomponentBase>>(kvp.Key, kvp.Value)).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _komponentDict.GetEnumerator();
         }
     }
 }

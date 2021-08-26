@@ -2,53 +2,21 @@
 using System;
 using System.Collections.Generic;
 using KRpgLib.Affixes;
-using KRpgLib.Affixes.ModTemplates;
 
 namespace ModsUnitTests
 {
     [TestClass]
     public class AffixTemplateTests
     {
-        private static AffixType StubAffixType { get; } = new AffixType((aff, obj) => $"{aff} {obj}", 1);
+        private const int STUB_MAX_AFFIXES_OF_TYPE = 1;
+        private static AffixType StubAffixType { get; } = new AffixType(STUB_MAX_AFFIXES_OF_TYPE);
 
         [TestMethod]
         public void Constructor_WithNullName_ThrowsArgNullEx()
         {
-            var stubFlagMods = new List<AbstractMTFlag>();
-            var stubStatDeltaMods = new List<MTStatDelta<int>>();
+            var stubModTemplates = new ModTemplateBase[0];
 
-            void exceptionalAction() => new AffixTemplate<int>(null, StubAffixType, stubFlagMods, stubStatDeltaMods);
-
-            Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
-        }
-        [TestMethod]
-        public void Constructor_WithNullAffixType_ThrowsArgNullEx()
-        {
-            const string ANY_NAME = "";
-            var stubFlagMods = new List<AbstractMTFlag>();
-            var stubStatDeltaMods = new List<MTStatDelta<int>>();
-
-            void exceptionalAction() => new AffixTemplate<int>(ANY_NAME, null, stubFlagMods, stubStatDeltaMods);
-
-            Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
-        }
-        [TestMethod]
-        public void Constructor_WithNullFlagMods_ThrowsArgNullEx()
-        {
-            const string ANY_NAME = "";
-            var stubStatDeltaMods = new List<MTStatDelta<int>>();
-
-            void exceptionalAction() => new AffixTemplate<int>(ANY_NAME, StubAffixType, null, stubStatDeltaMods);
-
-            Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
-        }
-        [TestMethod]
-        public void Constructor_WithNullStatDeltaMods_ThrowsArgNullEx()
-        {
-            const string ANY_NAME = "";
-            var stubFlagMods = new List<AbstractMTFlag>();
-
-            void exceptionalAction() => new AffixTemplate<int>(ANY_NAME, StubAffixType, stubFlagMods, null);
+            void exceptionalAction() => new AffixTemplate(null, StubAffixType, stubModTemplates);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }

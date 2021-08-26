@@ -2,7 +2,7 @@
 
 namespace KRpgLib.Counters
 {
-    public abstract class CounterComponent : Komponent
+    public abstract class CounterComponent : IKomponent
     {
         public virtual void OnCounterTick(CounterManager counterManager, CounterStack counterStack, int numberOfTicks) { }
         public virtual void OnCounterStackCreated(CounterManager counterManager, CounterStack counterStack, CounterAdditionReason additionReason) { }

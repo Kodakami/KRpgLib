@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using KRpgLib.Utility.KomponentObject;
+using System.Linq;
+
 namespace KRpgLib.Counters
 {
     public interface ICounterTemplate : IKomponentObjectTemplate
@@ -40,15 +42,14 @@ namespace KRpgLib.Counters
 
         private void PerformCallback(System.Action<CounterComponent> callback)
         {
-            void forEach(KeyValuePair<System.Type, List<CounterComponent>> kvp)
+            // "this" is an IEnumerable<KeyValuePair<Type, IReadOnlyList<KomponentBase>>> by being a KomponentObject
+            foreach (var kvp in this)
             {
                 foreach (var com in kvp.Value)
                 {
                     callback.Invoke(com);
                 }
             }
-
-            ForEachKomponent(forEach);
         }
     }
     public enum TrackByOriginDecision
