@@ -13,6 +13,8 @@ namespace KRpgLib.Affixes
         public string InternaName { get; }
         public AffixType AffixType { get; }
 
+        public int ModTemplateCount => _modTemplates.Count;
+
         // TODO: Tags.
 
         public AffixTemplate(string internalName, AffixType affixType, IEnumerable<ModTemplateBase> modTemplates)

@@ -9,12 +9,6 @@ namespace KRpgLib.Affixes
     /// </summary>
     public sealed class AffixType
     {
-        // Static members.
-        private static readonly PriorityRegistry<AffixType> _registry = new PriorityRegistry<AffixType>();
-        public static void RegisterAffixType(AffixType affixType, int priority) => _registry.RegisterItem(affixType, priority);
-        public static void UnregisterAffixType(AffixType affixType) => _registry.UnregisterItem(affixType);
-        public static IEnumerable<AffixType> GetAllByPriority() => _registry.GetAllByPriority();
-
         // Instance members.
         public int MaxAffixesOfType { get; }
 

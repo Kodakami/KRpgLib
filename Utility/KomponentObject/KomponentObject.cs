@@ -5,30 +5,24 @@ using System.Linq;
 
 namespace KRpgLib.Utility.KomponentObject
 {
-    public interface IKomponentObjectTemplate { }
-    public abstract class KomponentObject<TTemplate, TKomponentBase> : IEnumerable<KeyValuePair<Type, IReadOnlyList<TKomponentBase>>>
-        where TTemplate : IKomponentObjectTemplate
+    /// <summary>
+    /// Base class for objects which manage components through a type-keyed dictionary. Similar to Unity's GameObject/Component system.
+    /// </summary>
+    /// <typeparam name="TKomponentBase">The base class for valid components, must implement IKomponent</typeparam>
+    public abstract class KomponentObject<TKomponentBase> : IEnumerable<KeyValuePair<Type, IReadOnlyList<TKomponentBase>>>
         where TKomponentBase : IKomponent
     {
         private readonly Dictionary<Type, List<TKomponentBase>> _komponentDict = new Dictionary<Type, List<TKomponentBase>>();
-
-        public TTemplate Template { get; }
-
-        protected KomponentObject(TTemplate template, IEnumerable<TKomponentBase> komponents)
+        protected KomponentObject() { }
+        protected KomponentObject(TKomponentBase komponent)
         {
-            if (template == null)
+            RegisterKomponent(komponent);
+        }
+        protected KomponentObject(IEnumerable<TKomponentBase> komponents)
+        {
+            foreach (var k in komponents ?? throw new ArgumentNullException(nameof(komponents)))
             {
-                throw new ArgumentNullException(nameof(template));
-            }
-            Template = template;
-
-            // Accepting null saves the creation of an empty collection.
-            if (komponents != null)
-            {
-                foreach (var k in komponents)
-                {
-                    RegisterKomponent(k);
-                }
+                RegisterKomponent(k);
             }
         }
 
@@ -154,5 +148,17 @@ namespace KRpgLib.Utility.KomponentObject
         {
             return _komponentDict.GetEnumerator();
         }
+    }
+    /// <summary>
+    /// A plain implementation of KomponentObject for objects which use component management but can't or don't want to inherit from KomponentObject.
+    /// </summary>
+    public sealed class BasicKomponentManager : KomponentObject<IKomponent>
+    {
+        public BasicKomponentManager() { }
+        public BasicKomponentManager(IKomponent komponent) : base(komponent) { }
+        public BasicKomponentManager(IEnumerable<IKomponent> komponents) : base(komponents) { }
+
+        public new void RegisterKomponent(IKomponent komponent) => base.RegisterKomponent(komponent);
+        public new void UnregisterKomponent(IKomponent komponent) => base.UnregisterKomponent(komponent);
     }
 }

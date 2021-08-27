@@ -19,6 +19,6 @@ namespace KRpgLib.Affixes
             _modInstances = new List<ModBase>(modInstances);
         }
         public void RerollAllMods(Random rng) => _modInstances.ForEach(m => m.RollNewValue(rng));
-        public void Modify(IModdable moddable) => _modInstances.ForEach(m => m.Modify(moddable));
+        public void Modify(ModdableDataManager manager) => _modInstances.ForEach(m => m.Modify(manager));
     }
 }

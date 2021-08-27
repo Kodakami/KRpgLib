@@ -29,9 +29,9 @@ namespace KRpgLib.Affixes
         where TData : IModdableDataSet
     {
         protected override ModBase CreateNewModInstance_Internal() => new Mod<TData>(this);
-        public void Modify(IModdable moddable)
+        public void Modify(ModdableDataManager manager)
         {
-            var foundDataSet = moddable.GetModdableDataSet<TData>();
+            var foundDataSet = manager.GetKomponent<TData>();
             if (foundDataSet != null)
             {
                 Modify_Internal(foundDataSet);
@@ -57,9 +57,9 @@ namespace KRpgLib.Affixes
         /// <summary>
         /// Modify the moddable's component, supplying the rolled arg value from the mod instance.
         /// </summary>
-        public void Modify(IModdable moddable, TArg argValue)
+        public void Modify(ModdableDataManager manager, TArg argValue)
         {
-            var foundDataSet = moddable.GetModdableDataSet<TData>();
+            var foundDataSet = manager.GetKomponent<TData>();
             if (foundDataSet != null)
             {
                 Modify_Internal(foundDataSet, argValue);

@@ -13,7 +13,7 @@ namespace KRpgLib.Affixes
         {
             Template = template;
         }
-        public abstract void Modify(IModdable moddable);
+        public abstract void Modify(ModdableDataManager manager);
         public virtual void RollNewValue(Random rng) { }
     }
     /// <summary>
@@ -28,7 +28,7 @@ namespace KRpgLib.Affixes
         public new ModTemplate<TData> Template => (ModTemplate<TData>)base.Template;
 
         // Delegate to mod template.
-        public override void Modify(IModdable moddable) => Template.Modify(moddable);
+        public override void Modify(ModdableDataManager manager) => Template.Modify(manager);
     }
     /// <summary>
     /// A mod instance with a rolled arg value.
@@ -47,7 +47,7 @@ namespace KRpgLib.Affixes
         public Mod(ModTemplate<TData, TArg> template) : base(template) { }
 
         // Delegate to mod template.
-        public override void Modify(IModdable moddable) => Template.Modify(moddable, Arg);
+        public override void Modify(ModdableDataManager manager) => Template.Modify(manager, Arg);
         public override void RollNewValue(Random rng) => Arg = Template.GetNewArg(rng);
     }
 }
