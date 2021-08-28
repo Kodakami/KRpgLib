@@ -1,7 +1,7 @@
 ﻿using KRpgLib.Stats;
 using KRpgLib.Stats.Compound;
 
-namespace StatsUnitTests.Compound
+namespace KRpgLib.UnitTests.StatsTests.Compound
 {
     public class FakeValueExpression : ValueExpression<int>
     {

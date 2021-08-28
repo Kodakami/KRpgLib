@@ -4,7 +4,7 @@ using System.Text;
 using KRpgLib.Stats.Compound.AlgoBuilder;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace StatsUnitTests.Compound.AlgoBuilder
+namespace KRpgLib.UnitTests.StatsTests.Compound.AlgoBuilder
 {
     [TestClass]
     public class StatTemplateRegistryTests

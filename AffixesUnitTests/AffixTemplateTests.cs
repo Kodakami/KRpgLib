@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using KRpgLib.Affixes;
 
-namespace ModsUnitTests
+namespace KRpgLib.UnitTests.AffixesTests
 {
     [TestClass]
     public class AffixTemplateTests

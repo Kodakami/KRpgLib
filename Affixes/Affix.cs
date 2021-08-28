@@ -3,7 +3,6 @@ using System.Linq;
 using System.Collections.Generic;
 using KRpgLib.Utility.TemplateObject;
 using KRpgLib.Utility;
-using KRpgLib.Utility.KomponentObject;
 
 namespace KRpgLib.Affixes
 {
@@ -53,15 +52,15 @@ namespace KRpgLib.Affixes
         public ModEffectCollection GetAllModEffects() => _effectCacheHelper.GetCacheCopy();
         public void ForceCacheUpdate() => _effectCacheHelper.ForceCacheUpdate();
 
-        private sealed class ModEffectCacheHelper : ParentedCachedValueController<ModEffectCollection, Affix>
+        private sealed class ModEffectCacheHelper : CachedValueController<ModEffectCollection, Affix>
         {
             // Handle to parent collection.
             private readonly IReadOnlyList<Mod> _parentModInstances;
 
-            public ModEffectCacheHelper(Affix parent)
-                :base(parent)
+            public ModEffectCacheHelper(Affix context)
+                :base(context)
             {
-                _parentModInstances = parent._modInstances;
+                _parentModInstances = context._modInstances;
             }
 
             protected override ModEffectCollection CalculateNewCache()

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using KRpgLib.Flags;
 
-namespace FlagsUnitTests
+namespace KRpgLib.UnitTests.FlagsTests
 {
     public class FakeFlagProvider : IFlagProvider
     {

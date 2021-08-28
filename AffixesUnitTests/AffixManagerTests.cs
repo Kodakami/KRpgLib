@@ -2,7 +2,7 @@
 using KRpgLib.Affixes;
 using System;
 
-namespace ModsUnitTests
+namespace KRpgLib.UnitTests.AffixesTests
 {
     [TestClass]
     public static class AffixManagerTests

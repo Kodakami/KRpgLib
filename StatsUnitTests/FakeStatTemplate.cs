@@ -1,6 +1,6 @@
 ﻿using KRpgLib.Stats;
 
-namespace StatsUnitTests
+namespace KRpgLib.UnitTests.StatsTests
 {
     public class FakeStatTemplate : StatTemplate_Int
     {

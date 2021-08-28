@@ -5,7 +5,7 @@ using KRpgLib.Stats.Compound.AlgoBuilder;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
-namespace StatsUnitTests.Compound.AlgoBuilder
+namespace KRpgLib.UnitTests.StatsTests.Compound.AlgoBuilder
 {
     [TestClass]
     public class ScannerTests

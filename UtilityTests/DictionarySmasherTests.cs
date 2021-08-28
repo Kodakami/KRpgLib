@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using KRpgLib.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UtilityTests
+namespace KRpgLib.UnitTests.UtilityTests
 {
     [TestClass]
     public class DictionarySmasherTests

@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UtilityTests
+namespace KRpgLib.UnitTests.UtilityTests
 {
     [TestClass]
     public class CachedValueControllerTests

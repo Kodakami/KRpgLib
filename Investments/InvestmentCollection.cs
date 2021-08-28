@@ -76,7 +76,7 @@ namespace KRpgLib.Investments
             return ((IEnumerable)_investments).GetEnumerator();
         }
 
-        protected abstract class InvestmentValueCacheHelper : ParentedCachedValueController<
+        protected abstract class InvestmentValueCacheHelper : CachedValueController<
             TInvestmentValue,
             InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>>
         {

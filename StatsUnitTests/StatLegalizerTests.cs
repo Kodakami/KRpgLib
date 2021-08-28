@@ -1,7 +1,7 @@
 using KRpgLib.Stats;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace StatsUnitTests
+namespace KRpgLib.UnitTests.StatsTests
 {
     [TestClass]
     public class StatLegalizerTests

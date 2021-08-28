@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using KRpgLib.Utility;
 
-namespace UtilityTests
+namespace KRpgLib.UnitTests.UtilityTests
 {
     [TestClass]
     public class PriorityRegistryTests

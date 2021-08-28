@@ -5,7 +5,7 @@ using KRpgLib.Stats.Compound.AlgoBuilder;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using KRpgLib.Stats.Compound;
 
-namespace StatsUnitTests.Compound.AlgoBuilder
+namespace KRpgLib.UnitTests.StatsTests.Compound.AlgoBuilder
 {
     [TestClass]
     public class ParserTests

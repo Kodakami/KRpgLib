@@ -9,6 +9,7 @@
     <ProjectReference Include="..\Counters\Counters.csproj" />
     <ProjectReference Include="..\Flags\Flags.csproj" />
     <ProjectReference Include="..\Affixes\Affixes.csproj" />
+    <ProjectReference Include="..\Stats\Stats.csproj" />
   </ItemGroup>
 
 </Project>

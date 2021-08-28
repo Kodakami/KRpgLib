@@ -1,7 +1,7 @@
 ﻿using KRpgLib.Flags;
 using System.Collections.Generic;
 
-namespace FlagsUnitTests
+namespace KRpgLib.UnitTests.FlagsTests
 {
     public class FakeFlagTemplate_WithImplied : IFlagTemplate
     {

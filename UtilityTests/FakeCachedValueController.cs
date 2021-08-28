@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using KRpgLib.Utility;
 
-namespace UtilityTests
+namespace KRpgLib.UnitTests.UtilityTests
 {
     public class FakeCachedValueController : CachedValueController<int>
     {

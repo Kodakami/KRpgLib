@@ -186,16 +186,16 @@ namespace KRpgLib.Stats
                 return new Dictionary<StatDeltaType<TValue>, TValue>(cache);
             }
 
-            private sealed class ValueListHelper : ParentedCachedValueController<TValue, StatDeltaType<TValue>>
+            private sealed class ValueListHelper : CachedValueController<TValue, StatDeltaType<TValue>>
             {
                 private readonly List<TValue> _valueList = new List<TValue>();
-                private StatDeltaType<TValue> RepresentedType => Parent;
+                private StatDeltaType<TValue> RepresentedType => Context;
 
                 public bool HasValues => _valueList.Count > 0;
 
                 public ValueListHelper(StatDeltaType<TValue> representedType) : base(representedType) { }
                 public ValueListHelper(ValueListHelper otherForDeepCopy)
-                    :base(otherForDeepCopy.Parent)
+                    :base(otherForDeepCopy.Context)
                 {
                     _valueList = new List<TValue>(otherForDeepCopy._valueList);
                 }

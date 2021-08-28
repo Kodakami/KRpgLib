@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using KRpgLib.Affixes;
 using System;
 
-namespace ModsUnitTests
+namespace KRpgLib.UnitTests.AffixesTests
 {
     [TestClass]
     public class AffixTypeTests

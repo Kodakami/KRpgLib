@@ -7,7 +7,7 @@
 
     <AssemblyName>AffixesUnitTests</AssemblyName>
 
-    <RootNamespace>AffixesUnitTests</RootNamespace>
+    <RootNamespace>KRpgLib.UnitTests.AffixesUnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

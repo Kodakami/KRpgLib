@@ -37,13 +37,13 @@ namespace KRpgLib.Stats
         public bool HasProvider(IStatProvider<TValue> statProvider) => _providers.Contains(statProvider);
         public StatDeltaCollection<TValue> GetStatDeltaCollection() => _statDeltaCollectionCache.GetCacheCopy();
 
-        private class DeltaCollectionCacheHelper : ParentedCachedValueController<StatDeltaCollection<TValue>, List<IStatProvider<TValue>>>
+        private class DeltaCollectionCacheHelper : CachedValueController<StatDeltaCollection<TValue>, List<IStatProvider<TValue>>>
         {
-            public DeltaCollectionCacheHelper(List<IStatProvider<TValue>> parent) : base(parent) { }
+            public DeltaCollectionCacheHelper(List<IStatProvider<TValue>> context) : base(context) { }
 
             protected override StatDeltaCollection<TValue> CalculateNewCache()
             {
-                return new StatDeltaCollection<TValue>(Parent.ConvertAll(p => p.GetStatDeltaCollection()));
+                return new StatDeltaCollection<TValue>(Context.ConvertAll(p => p.GetStatDeltaCollection()));
             }
             protected override StatDeltaCollection<TValue> CreateCacheCopy(StatDeltaCollection<TValue> cache)
             {

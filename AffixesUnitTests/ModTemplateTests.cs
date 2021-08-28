@@ -3,7 +3,7 @@ using KRpgLib.Affixes;
 using KRpgLib.Utility.KomponentObject;
 using System;
 
-namespace ModsUnitTests
+namespace KRpgLib.UnitTests.AffixesTests
 {
     [TestClass]
     public static class ModTemplateTests

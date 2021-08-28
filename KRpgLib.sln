@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlagsUnitTests", "FlagsUnit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utility", "Utility\Utility.csproj", "{F02493FB-D1A3-4F44-BCF4-01DE6B7C0A28}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UtilityTests", "UtilityTests\UtilityTests.csproj", "{02F79080-B440-41FF-95BA-41CDE1450D90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UtilityUnitTests", "UtilityTests\UtilityUnitTests.csproj", "{02F79080-B440-41FF-95BA-41CDE1450D90}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AffixesUnitTests", "AffixesUnitTests\AffixesUnitTests.csproj", "{94FF88E3-DF93-4D32-B862-9F09E4D674BF}"
 EndProject
@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Investments", "Investments\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Affixes", "Affixes\Affixes.csproj", "{2597B91F-E06C-45E3-99CB-DA6F5D6824BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AffixesStatsIntegration", "AffixesStatsIntegration\AffixesStatsIntegration.csproj", "{B656B446-01D1-4233-A514-E02A3D594442}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AffixesStatsIntegration", "AffixesStatsIntegration\AffixesStatsIntegration.csproj", "{B656B446-01D1-4233-A514-E02A3D594442}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

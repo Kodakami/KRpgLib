@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using KRpgLib.Flags;
 using System;
 
-namespace FlagsUnitTests
+namespace KRpgLib.UnitTests.FlagsTests
 {
     [TestClass]
     public class FlagTests

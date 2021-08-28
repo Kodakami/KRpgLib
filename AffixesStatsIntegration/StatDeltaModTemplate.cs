@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace KRpgLib.AffixStatsIntegration
+namespace KRpgLib.AffixesStatsIntegration
 {
     public sealed class StatDeltaModEffect<TValue> : IModEffect where TValue : struct
     {

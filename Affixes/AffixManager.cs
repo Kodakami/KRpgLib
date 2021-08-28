@@ -1,6 +1,4 @@
-﻿using KRpgLib.Flags;
-using KRpgLib.Stats;
-using KRpgLib.Utility;
+﻿using KRpgLib.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -294,14 +292,14 @@ namespace KRpgLib.Affixes
                 return true;
             }
         }
-        private class ModEffectCacheHelper : ParentedCachedValueController<ModEffectCollection, AffixManager>
+        private class ModEffectCacheHelper : CachedValueController<ModEffectCollection, AffixManager>
         {
-            public ModEffectCacheHelper(AffixManager parent) : base(parent) { }
+            public ModEffectCacheHelper(AffixManager context) : base(context) { }
 
             protected override ModEffectCollection CalculateNewCache()
             {
                 // Get all mod effect collections from all affixes. Will use cached values for affixes which haven't changed.
-                return new ModEffectCollection(Parent._appliedAffixes.Select(a => a.GetAllModEffects()));
+                return new ModEffectCollection(Context._appliedAffixes.Select(a => a.GetAllModEffects()));
             }
 
             protected override ModEffectCollection CreateCacheCopy(ModEffectCollection cache)
