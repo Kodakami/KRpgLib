@@ -35,12 +35,12 @@ namespace KRpgLib.Utility
         protected void SetDirty() => _cache.SetDirty_FromExternal();
         public List<T> GetAllByPriority() => _cache.GetCacheCopy();
 
-        protected sealed class OrderedListCacheHelper : ParentedCachedValueController<List<T>, Dictionary<T, int>>
+        protected sealed class OrderedListCacheHelper : CachedValueController<List<T>, Dictionary<T, int>>
         {
             public OrderedListCacheHelper(Dictionary<T, int> parent) : base(parent) { }
             protected override List<T> CalculateNewCache()
             {
-                return Parent.OrderBy(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
+                return Context.OrderBy(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
             }
             protected override List<T> CreateCacheCopy(List<T> cache)
             {

@@ -85,12 +85,12 @@ namespace KRpgLib.Flags
         }
 
         // Internal classes.
-        protected sealed class FlagTotalCacheHelper : ParentedCachedValueController<FlagCollection, FlagManager>
+        protected sealed class FlagTotalCacheHelper : CachedValueController<FlagCollection, FlagManager>
         {
             public FlagTotalCacheHelper(FlagManager parent) : base(parent) { }
             protected override FlagCollection CalculateNewCache()
             {
-                return new FlagCollection(Parent._controllers.ConvertAll(c => c.GetFlags()));
+                return new FlagCollection(Context._controllers.ConvertAll(c => c.GetFlags()));
             }
 
             protected override FlagCollection CreateCacheCopy(FlagCollection cache)
@@ -136,12 +136,12 @@ namespace KRpgLib.Flags
                 Provider.OnFlagsChanged -= Cache.SetDirty_FromExternal;
             }
 
-            protected sealed class CacheHelper : ParentedCachedValueController<FlagCollection, FlagProviderController_Dynamic>
+            protected sealed class CacheHelper : CachedValueController<FlagCollection, FlagProviderController_Dynamic>
             {
                 public CacheHelper(FlagProviderController_Dynamic parent) : base(parent) { }
                 protected override FlagCollection CalculateNewCache()
                 {
-                    return Parent.Provider.GetFlagCollection();
+                    return Context.Provider.GetFlagCollection();
                 }
 
                 protected override FlagCollection CreateCacheCopy(FlagCollection cache)
