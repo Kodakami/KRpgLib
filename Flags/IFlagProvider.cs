@@ -7,7 +7,7 @@ namespace KRpgLib.Flags
         /// <summary>
         /// Get provided flags.
         /// </summary>
-        FlagCollection GetFlagCollection();
+        IReadOnlyFlagCollection GetFlagCollection();
     }
     public interface IFlagProvider_Dynamic : IFlagProvider
     {

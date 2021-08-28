@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace KRpgLib.UnitTests.FlagsTests
 {
     [TestClass]
-    public class FlagSetTests
+    public class FlagCollectionTests
     {
         [TestMethod]
         public void HasFlag_WithTopLevelFlag_ReturnsTrue()

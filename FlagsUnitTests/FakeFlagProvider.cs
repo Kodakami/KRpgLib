@@ -14,7 +14,7 @@ namespace KRpgLib.UnitTests.FlagsTests
             _flagsProvided = new List<Flag>(flagsProvided);
         }
 
-        public FlagCollection GetFlagCollection()
+        public IReadOnlyFlagCollection GetFlagCollection()
         {
             return new FlagCollection(_flagsProvided);
         }
@@ -40,7 +40,7 @@ namespace KRpgLib.UnitTests.FlagsTests
             OnFlagsChanged?.Invoke();
         }
 
-        public FlagCollection GetFlagCollection()
+        public IReadOnlyFlagCollection GetFlagCollection()
         {
             var templateUsed = _state ? FlagTemplateProvided_InTrueState : FlagTemplateProvided_InFalseState;
 
