@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KRpgLib\Stats.csproj" />
+    <ProjectReference Include="..\Stats\Stats.csproj" />
   </ItemGroup>
 
 </Project>

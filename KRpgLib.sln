@@ -3,31 +3,31 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stats", "Stats.csproj", "{F5FE66B0-9A72-4E22-833A-818915625C91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stats", "Stats\Stats.csproj", "{F5FE66B0-9A72-4E22-833A-818915625C91}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StatsUnitTests", "..\KRpgLibUnitTests\StatsUnitTests.csproj", "{6D49440F-53D0-41A0-8F32-5EFB81B53726}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StatsUnitTests", "StatsUnitTests\StatsUnitTests.csproj", "{6D49440F-53D0-41A0-8F32-5EFB81B53726}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flags", "..\Flags\Flags.csproj", "{F10823F7-2884-4E27-9C12-DA2323F6F28E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flags", "Flags\Flags.csproj", "{F10823F7-2884-4E27-9C12-DA2323F6F28E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlagsUnitTests", "..\FlagsUnitTests\FlagsUnitTests.csproj", "{55199C1E-A8D1-40D5-B171-DF97635C89C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlagsUnitTests", "FlagsUnitTests\FlagsUnitTests.csproj", "{55199C1E-A8D1-40D5-B171-DF97635C89C7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utility", "..\Utility\Utility.csproj", "{F02493FB-D1A3-4F44-BCF4-01DE6B7C0A28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utility", "Utility\Utility.csproj", "{F02493FB-D1A3-4F44-BCF4-01DE6B7C0A28}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UtilityTests", "..\UtilityTests\UtilityTests.csproj", "{02F79080-B440-41FF-95BA-41CDE1450D90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UtilityTests", "UtilityTests\UtilityTests.csproj", "{02F79080-B440-41FF-95BA-41CDE1450D90}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AffixesUnitTests", "..\ModsUnitTests\AffixesUnitTests.csproj", "{94FF88E3-DF93-4D32-B862-9F09E4D674BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AffixesUnitTests", "AffixesUnitTests\AffixesUnitTests.csproj", "{94FF88E3-DF93-4D32-B862-9F09E4D674BF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Counters", "..\Counters\Counters.csproj", "{7AFDA920-A61D-4A5F-80CF-9F122E75AB2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Counters", "Counters\Counters.csproj", "{7AFDA920-A61D-4A5F-80CF-9F122E75AB2A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CountersIntegration", "..\CountersIntegration\CountersIntegration.csproj", "{E4553315-5336-46B9-8DDD-0A88DA946EB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CountersIntegration", "CountersIntegration\CountersIntegration.csproj", "{E4553315-5336-46B9-8DDD-0A88DA946EB3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Items", "..\Items\Items.csproj", "{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Items", "Items\Items.csproj", "{AAC2E2CD-3290-44B0-ABDD-8AA995A5458B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Investments", "..\Passives\Investments.csproj", "{EAA9EC4A-D557-4818-A9A2-AB239B4CB8EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Investments", "Investments\Investments.csproj", "{EAA9EC4A-D557-4818-A9A2-AB239B4CB8EE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Affixes", "..\Affixes\Affixes.csproj", "{2597B91F-E06C-45E3-99CB-DA6F5D6824BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Affixes", "Affixes\Affixes.csproj", "{2597B91F-E06C-45E3-99CB-DA6F5D6824BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AffixStatsIntegration", "..\AffixStatsIntegration\AffixStatsIntegration.csproj", "{B656B446-01D1-4233-A514-E02A3D594442}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AffixesStatsIntegration", "AffixesStatsIntegration\AffixesStatsIntegration.csproj", "{B656B446-01D1-4233-A514-E02A3D594442}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
