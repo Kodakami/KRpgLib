@@ -12,7 +12,7 @@ namespace FlagsUnitTests
             VariantCount = variantCount;
         }
 
-        public List<Flag> GetAllImpliedFlags()
+        public IEnumerable<Flag> GetAllImpliedFlags()
         {
             return new List<Flag>();
         }

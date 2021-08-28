@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using KRpgLib.Utility.TemplateObject;
 
 namespace KRpgLib.Affixes
 {
     /// <summary>
     /// A blueprint for an Affix.
     /// </summary>
-    public class AffixTemplate
+    public class AffixTemplate : ITemplate
     {
-        private readonly List<ModTemplateBase> _modTemplates;
+        private readonly List<ModTemplate> _modTemplates;
 
         public string InternaName { get; }
         public AffixType AffixType { get; }
@@ -17,11 +18,11 @@ namespace KRpgLib.Affixes
 
         // TODO: Tags.
 
-        public AffixTemplate(string internalName, AffixType affixType, IEnumerable<ModTemplateBase> modTemplates)
+        public AffixTemplate(string internalName, AffixType affixType, IEnumerable<ModTemplate> modTemplates)
         {
             InternaName = internalName ?? throw new ArgumentNullException(nameof(internalName));
             AffixType = affixType ?? throw new ArgumentNullException(nameof(affixType));
-            _modTemplates = new List<ModTemplateBase>(modTemplates ?? throw new ArgumentNullException(nameof(modTemplates)));
+            _modTemplates = new List<ModTemplate>(modTemplates ?? throw new ArgumentNullException(nameof(modTemplates)));
         }
         public Affix CreateNewAffixInstance(Random rng)
         {

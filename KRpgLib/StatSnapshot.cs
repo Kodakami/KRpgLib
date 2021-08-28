@@ -12,7 +12,7 @@ namespace KRpgLib.Stats
 
         private StatSnapshot()
         {
-            // Nothing! :D
+            _statDict = new Dictionary<IStatTemplate<TValue>, TValue>();
         }
         private StatSnapshot(Dictionary<IStatTemplate<TValue>, TValue> statValueDict)
         {

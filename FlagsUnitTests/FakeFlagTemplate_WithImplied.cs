@@ -9,7 +9,7 @@ namespace FlagsUnitTests
 
         public int VariantCount => 1;
 
-        public List<Flag> GetAllImpliedFlags()
+        public IEnumerable<Flag> GetAllImpliedFlags()
         {
             return new List<Flag>() { Flag.Create(ImpliedFlagTemplate, 0) };
         }

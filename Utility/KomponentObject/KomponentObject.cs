@@ -25,6 +25,25 @@ namespace KRpgLib.Utility.KomponentObject
                 RegisterKomponent(k);
             }
         }
+        protected KomponentObject(KomponentObject<TKomponentBase> other)
+        {
+            // Shallow copy.
+            _komponentDict = new Dictionary<Type, List<TKomponentBase>>(other._komponentDict);
+        }
+        protected KomponentObject(IEnumerable<KomponentObject<TKomponentBase>> others)
+        {
+            foreach (var other in others)
+            {
+                foreach (var kvp in other)
+                {
+                    foreach (var komponent in kvp.Value)
+                    {
+                        // Will throw if required component has not been registered during the process. Don't use "required component" attributes if you're going to use this constructor.
+                        RegisterKomponent(komponent);
+                    }
+                }
+            }
+        }
 
         protected void RegisterKomponent(TKomponentBase komponent)
         {
@@ -58,7 +77,7 @@ namespace KRpgLib.Utility.KomponentObject
                 // Grab a handle for the attribute's type.
                 var attType = att.GetType();
 
-                // If it is a required component attribute,
+                // If it is a "required component" attribute,
                 if (attType.Equals(typeof(RequireKomponentAttribute)))
                 {
                     // Cast to known type.
@@ -71,7 +90,7 @@ namespace KRpgLib.Utility.KomponentObject
                         throw new ArgumentException($"Object has no registered komponents of required type: {rka.RequiredType}.");
                     }
                 }
-                // Otherwise if multiple instances are not yet allowed AND it is an allow multiple instances attribute,
+                // Otherwise if multiple instances are not yet allowed AND it is an "allow multiple instances" attribute,
                 else if (!allowMultipleInstances && attType.Equals(typeof(AllowMultipleKomponentInstancesAttribute)))
                 {
                     // Set the flag for that (and stop checking).
@@ -138,6 +157,15 @@ namespace KRpgLib.Utility.KomponentObject
         {
             return _komponentDict.SelectMany(kvp => kvp.Value);
         }
+        public IReadOnlyDictionary<Type, IEnumerable<TKomponentBase>> GetAsReadOnlyDictionary()
+        {
+            var dict = new Dictionary<Type, IEnumerable<TKomponentBase>>();
+            foreach (var kvp in this)
+            {
+                dict.Add(kvp.Key, kvp.Value);
+            }
+            return dict;
+        }
 
         public IEnumerator<KeyValuePair<Type, IReadOnlyList<TKomponentBase>>> GetEnumerator()
         {
@@ -148,17 +176,5 @@ namespace KRpgLib.Utility.KomponentObject
         {
             return _komponentDict.GetEnumerator();
         }
-    }
-    /// <summary>
-    /// A plain implementation of KomponentObject for objects which use component management but can't or don't want to inherit from KomponentObject.
-    /// </summary>
-    public sealed class BasicKomponentManager : KomponentObject<IKomponent>
-    {
-        public BasicKomponentManager() { }
-        public BasicKomponentManager(IKomponent komponent) : base(komponent) { }
-        public BasicKomponentManager(IEnumerable<IKomponent> komponents) : base(komponents) { }
-
-        public new void RegisterKomponent(IKomponent komponent) => base.RegisterKomponent(komponent);
-        public new void UnregisterKomponent(IKomponent komponent) => base.UnregisterKomponent(komponent);
     }
 }

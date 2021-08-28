@@ -11,7 +11,7 @@ namespace ModsUnitTests
         private const int STUB_MAX_AFFIXES_OF_TYPE = 1;
         private const string STUB_NAME = "";
         private static AffixType StubAffixType { get; } = new AffixType(STUB_MAX_AFFIXES_OF_TYPE);
-        private static IEnumerable<ModTemplateBase> StubModTemplates { get; } = new ModTemplateBase[0];
+        private static IEnumerable<ModTemplate> StubModTemplates { get; } = new ModTemplate[0];
 
         [TestMethod]
         public void Ctor_WithNullName_ThrowsArgNullEx()
@@ -32,7 +32,7 @@ namespace ModsUnitTests
         [TestMethod]
         public void Ctor_WithNullModTemplates_ThrowsArgNullEx()
         {
-            IEnumerable<ModTemplateBase> mockNullModTemplates = null;
+            IEnumerable<ModTemplate> mockNullModTemplates = null;
 
             void exceptionalAction() => new AffixTemplate(STUB_NAME, StubAffixType, mockNullModTemplates);
 

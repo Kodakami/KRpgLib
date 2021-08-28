@@ -41,6 +41,7 @@ namespace KRpgLib.Flags
         private void AddFlagProvider_Internal(FlagProviderController controller)
         {
             _controllers.Add(controller);
+            SetDirty();
         }
         public void RemoveFlagProvider(IFlagProvider flagProvider)
         {
@@ -52,7 +53,7 @@ namespace KRpgLib.Flags
             var found = _controllers.Find(c => c.Provider == flagProvider);
             if (found != null)
             {
-                _controllers.Remove(found);
+                RemoveFlagProvider_Internal(found);
             }
         }
         public void RemoveFlagProvider(IFlagProvider_Dynamic dynamicFlagProvider)
@@ -68,8 +69,13 @@ namespace KRpgLib.Flags
                 found.Dispose();
                 dynamicFlagProvider.OnFlagsChanged -= SetDirty;
 
-                _controllers.Remove(found);
+                RemoveFlagProvider_Internal(found);
             }
+        }
+        private void RemoveFlagProvider_Internal(FlagProviderController controller)
+        {
+            _controllers.Remove(controller);
+            SetDirty();
         }
 
         protected void SetDirty()

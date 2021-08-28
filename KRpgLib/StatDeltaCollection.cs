@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using KRpgLib.Utility;
 using System.Linq;
+using KRpgLib.Utility.KomponentObject;
 
 namespace KRpgLib.Stats
 {
-    public class StatDeltaCollection<TValue> where TValue : struct
+    public class StatDeltaCollection<TValue> : IKomponent where TValue : struct
     {
         // Internal fields.
         private readonly Dictionary<IStatTemplate<TValue>, DeltaTypeDictHelper> _controllerDict;

@@ -9,7 +9,6 @@ namespace ModsUnitTests
     public static class ModTemplateTests
     {
         private static readonly Random _stubRandom = new Random();
-        private static ModdableDataManager GetStubModdableDataManager() => new ModdableDataManager(new FakeModdableDataSet());
 
         [TestClass]
         public static class ModTemplateNoArgTests
@@ -18,14 +17,12 @@ namespace ModsUnitTests
             public static void Modify_WithValidInput_ReturnsExpectedResult()
             {
                 var mockModTemplate = new FakeModTemplateNoArgs();
-                var stubManager = GetStubModdableDataManager();
 
-                ModBase resultMod = mockModTemplate.CreateNewModInstance(_stubRandom);
-                resultMod.Modify(stubManager);
+                Mod resultMod = mockModTemplate.CreateNewModInstance(_stubRandom);
 
-                var resultDataSet = stubManager.GetKomponent<FakeModdableDataSet>();
+                var stubEffectCollection = new ModEffectCollection(new IModEffect[] { resultMod.GetModEffect() });
 
-                Assert.AreEqual(FakeModTemplateNoArgs.EXPECTED_VALUE, resultDataSet.Value);
+                Assert.AreEqual(FakeModTemplateNoArgs.EXPECTED_VALUE, stubEffectCollection.GetKomponent<FakeModEffect>().Value);
             }
         }
         [TestClass]
@@ -35,44 +32,45 @@ namespace ModsUnitTests
             public static void Modify_WithValidInput_ReturnsExpectedResult()
             {
                 var mockModTemplate = new FakeModTemplateWithArgs();
-                var stubManager = GetStubModdableDataManager();
 
-                ModBase resultMod = mockModTemplate.CreateNewModInstance(_stubRandom);
-                resultMod.Modify(stubManager);
+                Mod resultMod = mockModTemplate.CreateNewModInstance(_stubRandom);
 
-                var resultDataSet = stubManager.GetKomponent<FakeModdableDataSet>();
+                var stubEffectCollection = new ModEffectCollection(new IModEffect[] { resultMod.GetModEffect() });
 
-                Assert.AreEqual(FakeModTemplateWithArgs.EXPECTED_VALUE, resultDataSet.Value);
+                Assert.AreEqual(FakeModTemplateWithArgs.ASSIGNED_VALUE, stubEffectCollection.GetKomponent<FakeModEffect>().Value);
             }
         }
 
     }
-    public sealed class FakeModdableDataSet : IModdableDataSet
+    public sealed class FakeModEffect : IModEffect
     {
-        public const int INITIAL_VALUE = 0;
-        public int Value { get; set; } = INITIAL_VALUE;
+        public int Value { get; set; } = 0;
     }
-    public sealed class FakeModTemplateNoArgs : ModTemplate<FakeModdableDataSet>
+    public sealed class FakeModTemplateNoArgs : ModTemplate
     {
         public const int EXPECTED_VALUE = 1;
-        protected override void Modify_Internal(FakeModdableDataSet safeDataSet)
+
+        public override IModEffect GetModEffect(Mod modInstance)
         {
-            safeDataSet.Value = EXPECTED_VALUE;
+            // Ignore internal arg value.
+
+            return new FakeModEffect() { Value = EXPECTED_VALUE };
         }
     }
-    public sealed class FakeModTemplateWithArgs : ModTemplate<FakeModdableDataSet, int>
+    public sealed class FakeModTemplateWithArgs : ModTemplate<int>
     {
-        public const int EXPECTED_VALUE = 2;
+        public const int ASSIGNED_VALUE = 1;
 
-        public override int GetNewArg(Random rng)
+        public override IModEffect GetModEffect(Mod<int> modInstance)
         {
-            // Dodge random for testing purposes.
-            return EXPECTED_VALUE;
+            return new FakeModEffect() { Value = modInstance.StrongArg };
         }
 
-        protected override void Modify_Internal(FakeModdableDataSet safeDataSet, int argValue)
+        public override int GetNewArg(Random rng, Mod<int> modInstance)
         {
-            safeDataSet.Value = argValue;
+            // Dodge random for testing.
+
+            return ASSIGNED_VALUE;
         }
     }
 }

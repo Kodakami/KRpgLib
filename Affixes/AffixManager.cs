@@ -15,47 +15,48 @@ namespace KRpgLib.Affixes
         private readonly List<Affix> _appliedAffixes;
 
         private readonly AffixApplicationHelper _affixApplicationHelper;
+        private readonly ModEffectCacheHelper _effectCacheHelper;
 
         public AffixManager()
         {
             _appliedAffixes = new List<Affix>();
             _affixApplicationHelper = new AffixApplicationHelper(this);
+            _effectCacheHelper = new ModEffectCacheHelper(this);
         }
 
-        public void Modify(ModdableDataManager manager)
-        {
-            Modify_Internal(manager ?? throw new ArgumentNullException(nameof(manager)), _appliedAffixes);
-        }
-        /// <summary>
-        /// Default implementation appiles each affix in an undefined order. Override for precise order of operations.
-        /// </summary>
-        /// <param name="safeManager"></param>
-        /// <param name="appliedAffixes"></param>
-        protected virtual void Modify_Internal(ModdableDataManager safeManager, IEnumerable<Affix> appliedAffixes)
-        {
-            foreach (var affix in _appliedAffixes)
-            {
-                affix.Modify(safeManager);
-            }
-        }
+        public ModEffectCollection GetAllModEffects() => _effectCacheHelper.GetCacheCopy();
 
-        public void RerollAllAffixValues(Random rng)
+        public bool RerollAllAffixValues(Random rng)
         {
-            _appliedAffixes.ForEach(a => a.RerollAllMods(rng));
+            return RerollAffixValues_Internal(_appliedAffixes, rng);
         }
-        public void RerollAffixValues(Predicate<Affix> predicate, Random rng)
+        public bool RerollAffixValues(Predicate<Affix> predicate, Random rng)
         {
-            if (predicate == null)
+            return RerollAffixValues_Internal(FindAffixes(predicate ?? throw new ArgumentNullException(nameof(predicate))), rng);
+        }
+        public bool RerollAffixValues(AffixType withAffixType, Random rng)
+        {
+            return RerollAffixValues(a => a.Template.AffixType == (withAffixType ?? throw new ArgumentNullException(nameof(withAffixType))), rng);
+        }
+        private bool RerollAffixValues_Internal(IEnumerable<Affix> affixes, Random rng)
+        {
+            bool changeOccurred = false;
+
+            foreach (var affix in affixes)
             {
-                throw new ArgumentNullException(nameof(predicate));
+                bool changed = affix.RerollAllMods(rng);
+
+                changeOccurred = changeOccurred || changed;
             }
 
-            foreach (var affix in FindAffixes(predicate))
+            if (changeOccurred)
             {
-                affix.RerollAllMods(rng);
+                // Set this effect collection dirty.
+                _effectCacheHelper.SetDirty_FromExternal();
             }
+
+            return changeOccurred;
         }
-        public void RerollAffixValues(AffixType withAffixType, Random rng) => RerollAffixValues(a => a.Template.AffixType == withAffixType, rng);
 
         public void AddAffix_NoMessage(Affix preRolledAffix)
         {
@@ -195,18 +196,27 @@ namespace KRpgLib.Affixes
             // It may be useful to raise an event here.
 
             _appliedAffixes.Add(affix);
+
+            // Set this effect collection dirty.
+            _effectCacheHelper.SetDirty_FromExternal();
         }
         private void AddAffixes_Internal(IEnumerable<Affix> affixes)
         {
             // It may be useful to raise an event here.
 
             _appliedAffixes.AddRange(affixes);
+
+            // Set this effect collection dirty.
+            _effectCacheHelper.SetDirty_FromExternal();
         }
         private void RemoveAffix_Internal(Affix affix)
         {
             // It may be useful to raise an event here.
 
             _appliedAffixes.Remove(affix);
+
+            // Set this effect collection dirty.
+            _effectCacheHelper.SetDirty_FromExternal();
         }
         private void RemoveAffixes_Internal(IEnumerable<Affix> affixes)
         {
@@ -216,12 +226,18 @@ namespace KRpgLib.Affixes
             {
                 _appliedAffixes.Remove(affix);
             }
+
+            // Set this effect collection dirty.
+            _effectCacheHelper.SetDirty_FromExternal();
         }
         private void ClearAffixes_Internal()
         {
             // It may be useful to raise an event here.
 
             _appliedAffixes.Clear();
+
+            // Set this effect collection dirty.
+            _effectCacheHelper.SetDirty_FromExternal();
         }
 
         private class AffixApplicationHelper
@@ -276,6 +292,22 @@ namespace KRpgLib.Affixes
                 // Other limitations here.
 
                 return true;
+            }
+        }
+        private class ModEffectCacheHelper : ParentedCachedValueController<ModEffectCollection, AffixManager>
+        {
+            public ModEffectCacheHelper(AffixManager parent) : base(parent) { }
+
+            protected override ModEffectCollection CalculateNewCache()
+            {
+                // Get all mod effect collections from all affixes. Will use cached values for affixes which haven't changed.
+                return new ModEffectCollection(Parent._appliedAffixes.Select(a => a.GetAllModEffects()));
+            }
+
+            protected override ModEffectCollection CreateCacheCopy(ModEffectCollection cache)
+            {
+                // ModEffectCollection is sealed and not modifiable. Safe to pass by reference.
+                return cache;
             }
         }
     }

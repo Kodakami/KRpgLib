@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>KRpgLib.AffixStatsIntegration</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Affixes\Affixes.csproj" />
+    <ProjectReference Include="..\KRpgLib\Stats.csproj" />
+  </ItemGroup>
+
+</Project>

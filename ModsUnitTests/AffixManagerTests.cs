@@ -9,24 +9,23 @@ namespace ModsUnitTests
     {
         private static readonly Random StubRandom = new Random();
         private static readonly AffixType StubAffixType = new AffixType(1);
-        private static ModdableDataManager GetStubDataManager() => new ModdableDataManager(new FakeModdableDataSet());
 
         [TestMethod]
         public static void CreateNewAffixInstance_WithValidArgs_ReturnsExpectedResult()
         {
-            ModdableDataManager stubDataManager = GetStubDataManager();
-
             var mockTemplate = new FakeAffixTemplate(StubAffixType);
             var resultAffix = mockTemplate.CreateNewAffixInstance(StubRandom);
-            resultAffix.Modify(stubDataManager);
 
-            Assert.AreEqual(FakeModTemplateNoArgs.EXPECTED_VALUE, stubDataManager.GetKomponent<FakeModdableDataSet>().Value);
+            var mockAffixManager = new AffixManager();
+            mockAffixManager.AddAffix(resultAffix);
+
+            Assert.AreEqual(FakeModTemplateNoArgs.EXPECTED_VALUE, mockAffixManager.HasAffix(mockTemplate));
         }
     }
     public sealed class FakeAffixTemplate : AffixTemplate
     {
         public FakeAffixTemplate(AffixType affixType)
-            :base("Test", affixType, new ModTemplateBase[] { new FakeModTemplateNoArgs() })
+            :base("Test", affixType, new ModTemplate[] { new FakeModTemplateNoArgs() })
         { }
     }
 }
