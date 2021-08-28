@@ -87,7 +87,7 @@ namespace KRpgLib.Utility.Gaccha
             }
 
             if (RollSequentiallyForProc(out GacchaLifeguard<TCapsule> proc)
-                && gaccha.TryFindSingle(proc.PredicateChain, out capsule))
+                && gaccha.TryPonSingle(proc.PredicateChain, withReplacement: true, out capsule))
             {
                 // Trigger resets if applicable.
                 if (OnProc == ResetOption.RESET_ALL_LIFEGUARDS_ON_PROC)

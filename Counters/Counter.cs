@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using KRpgLib.Utility.KomponentObject;
+using KRpgLib.Utility.TemplateObject;
+using System.Linq;
+
 namespace KRpgLib.Counters
 {
-    public interface ICounterTemplate : IKomponentObjectTemplate
+    public interface ICounterTemplate : ITemplate
     {
         Counter CreateCounter();
     }
@@ -11,13 +14,14 @@ namespace KRpgLib.Counters
     {
         new TCounter CreateCounter();
     }
-    public class Counter : KomponentObject<ICounterTemplate, CounterComponent>
+    public class Counter : KomponentObject<CounterComponent>, ITemplateObject<ICounterTemplate>
     {
-        new public ICounterTemplate Template { get; }
+        public ICounterTemplate Template { get; }
 
         public Counter(ICounterTemplate template, bool isVisibleToUsers, int maxInstanceCount, TrackByOriginDecision trackByOrigin, IEnumerable<CounterComponent> components)
-            :base(template, components)
+            :base(components)
         {
+            Template = template;
             IsVisibleToUsers = isVisibleToUsers;
             MaxInstanceCount = maxInstanceCount;
             TrackByOrigin = trackByOrigin;
@@ -40,15 +44,14 @@ namespace KRpgLib.Counters
 
         private void PerformCallback(System.Action<CounterComponent> callback)
         {
-            void forEach(KeyValuePair<System.Type, List<CounterComponent>> kvp)
+            // "this" is an IEnumerable<KeyValuePair<Type, IReadOnlyList<KomponentBase>>> by being a KomponentObject
+            foreach (var kvp in this)
             {
                 foreach (var com in kvp.Value)
                 {
                     callback.Invoke(com);
                 }
             }
-
-            ForEachKomponent(forEach);
         }
     }
     public enum TrackByOriginDecision

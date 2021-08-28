@@ -2,13 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>KRpgLib.Counters</RootNamespace>
+    <RootNamespace>KRpgLib.AffixStatsIntegration</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Counters\Counters.csproj" />
-    <ProjectReference Include="..\Flags\Flags.csproj" />
     <ProjectReference Include="..\Affixes\Affixes.csproj" />
+    <ProjectReference Include="..\KRpgLib\Stats.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,55 +2,48 @@
 using System;
 using System.Collections.Generic;
 using KRpgLib.Affixes;
-using KRpgLib.Affixes.ModTemplates;
 
 namespace ModsUnitTests
 {
     [TestClass]
     public class AffixTemplateTests
     {
-        private static AffixType StubAffixType { get; } = new AffixType((aff, obj) => $"{aff} {obj}", 1);
+        private const int STUB_MAX_AFFIXES_OF_TYPE = 1;
+        private const string STUB_NAME = "";
+        private static AffixType StubAffixType { get; } = new AffixType(STUB_MAX_AFFIXES_OF_TYPE);
+        private static IEnumerable<ModTemplate> StubModTemplates { get; } = new ModTemplate[0];
 
         [TestMethod]
-        public void Constructor_WithNullName_ThrowsArgNullEx()
+        public void Ctor_WithNullName_ThrowsArgNullEx()
         {
-            var stubFlagMods = new List<AbstractMTFlag>();
-            var stubStatDeltaMods = new List<MTStatDelta<int>>();
-
-            void exceptionalAction() => new AffixTemplate_Obsolete<int>(null, StubAffixType, stubFlagMods, stubStatDeltaMods);
+            static void exceptionalAction() => new AffixTemplate(null, StubAffixType, StubModTemplates);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
-        public void Constructor_WithNullAffixType_ThrowsArgNullEx()
+        public void Ctor_WithNullAffixType_ThrowsArgNullEx()
         {
-            const string ANY_NAME = "";
-            var stubFlagMods = new List<AbstractMTFlag>();
-            var stubStatDeltaMods = new List<MTStatDelta<int>>();
+            AffixType mockNullAffixType = null;
 
-            void exceptionalAction() => new AffixTemplate_Obsolete<int>(ANY_NAME, null, stubFlagMods, stubStatDeltaMods);
+            void exceptionalAction() => new AffixTemplate(STUB_NAME, mockNullAffixType, StubModTemplates);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
-        public void Constructor_WithNullFlagMods_ThrowsArgNullEx()
+        public void Ctor_WithNullModTemplates_ThrowsArgNullEx()
         {
-            const string ANY_NAME = "";
-            var stubStatDeltaMods = new List<MTStatDelta<int>>();
+            IEnumerable<ModTemplate> mockNullModTemplates = null;
 
-            void exceptionalAction() => new AffixTemplate_Obsolete<int>(ANY_NAME, StubAffixType, null, stubStatDeltaMods);
+            void exceptionalAction() => new AffixTemplate(STUB_NAME, StubAffixType, mockNullModTemplates);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
-        public void Constructor_WithNullStatDeltaMods_ThrowsArgNullEx()
+        public void Ctor_WithValidInputs_ReturnsValidInstance()
         {
-            const string ANY_NAME = "";
-            var stubFlagMods = new List<AbstractMTFlag>();
+            var mockAffixTemplate = new AffixTemplate(STUB_NAME, StubAffixType, StubModTemplates);
 
-            void exceptionalAction() => new AffixTemplate_Obsolete<int>(ANY_NAME, StubAffixType, stubFlagMods, null);
-
-            Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
+            Assert.IsNotNull(mockAffixTemplate);
         }
     }
 }

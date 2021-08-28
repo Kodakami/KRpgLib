@@ -14,10 +14,10 @@ namespace FlagsUnitTests
         {
             var stubFlag = Flag.Create(FakeFlagProvider.FakeFlagTemplate_VariantCount1, 0);
             var stubProvider = new FakeFlagProvider(stubFlag);
-            var mockSet = new FlagManager();
-            mockSet.AddFlagProvider(stubProvider);
+            var mockmanager = new FlagManager();
+            mockmanager.AddFlagProvider(stubProvider);
 
-            bool result = mockSet.HasFlag(stubFlag);
+            bool result = mockmanager.GetFlagCollection().HasFlag(stubFlag);
 
             Assert.IsTrue(result);
         }
@@ -30,7 +30,7 @@ namespace FlagsUnitTests
             var mockSet = new FlagManager();
             mockSet.AddFlagProvider(stubProvider);
 
-            bool result = mockSet.HasFlag(FakeFlagTemplate_WithImplied.ImpliedFlagTemplate, 0);
+            bool result = mockSet.GetFlagCollection().HasFlag(FakeFlagTemplate_WithImplied.ImpliedFlagTemplate, 0);
 
             Assert.IsTrue(result);
         }

@@ -83,6 +83,6 @@ namespace KRpgLib.Counters
         public void RemoveTicksCounted(int tickCount) => TicksCounted -= tickCount;
         public void ResetTicksCounted() => TicksCounted = 0;
 
-        public TComponent GetComponent<TComponent>() where TComponent : CounterComponent => Counter.GetComponent<TComponent>();
+        public TComponent GetComponent<TComponent>() where TComponent : CounterComponent => Counter.GetKomponent<TComponent>();
     }
 }

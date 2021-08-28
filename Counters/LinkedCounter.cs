@@ -1,8 +1,9 @@
 ﻿using System;
+using KRpgLib.Utility.KomponentObject;
 
 namespace KRpgLib.Counters
 {
-    [AllowMultipleComponentInstances]
+    [AllowMultipleKomponentInstances]
     public abstract class LinkedCounter : CounterComponent
     {
         protected LinkedCounter(LinkedCounterAction action, Counter counter, int instanceCount, double chanceToTrigger, bool triggersWhenParentIsALinkedCounter)

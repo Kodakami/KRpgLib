@@ -33,11 +33,11 @@ namespace FlagsUnitTests
             var mockManager = new FlagManager();
             mockManager.AddFlagProvider(stubProvider);
 
-            Assert.IsTrue(mockManager.HasFlagTemplate(stubTemplate));
+            Assert.IsTrue(mockManager.GetFlagCollection().HasFlagTemplate(stubTemplate));
 
             mockManager.RemoveFlagProvider(stubProvider);
 
-            Assert.IsFalse(mockManager.HasFlagTemplate(stubTemplate));
+            Assert.IsFalse(mockManager.GetFlagCollection().HasFlagTemplate(stubTemplate));
         }
         [TestMethod]
         public void HasFlagTemplate_AfterDynamicProviderUpdate_ReturnsCorrectResult()
@@ -49,11 +49,11 @@ namespace FlagsUnitTests
             IFlagTemplate expectedTemplateBeforeUpdate = FakeFlagProvider_Dynamic.FlagTemplateProvided_InFalseState;
             IFlagTemplate expectedTemplateAfterUpdate = FakeFlagProvider_Dynamic.FlagTemplateProvided_InTrueState;
 
-            Assert.IsTrue(mockManager.HasFlagTemplate(expectedTemplateBeforeUpdate));
+            Assert.IsTrue(mockManager.GetFlagCollection().HasFlagTemplate(expectedTemplateBeforeUpdate));
 
             stubDynamicProvider.ToggleState();
 
-            Assert.IsTrue(mockManager.HasFlagTemplate(expectedTemplateAfterUpdate));
+            Assert.IsTrue(mockManager.GetFlagCollection().HasFlagTemplate(expectedTemplateAfterUpdate));
         }
     }
 }

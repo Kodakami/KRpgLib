@@ -1,25 +1,50 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace KRpgLib.Utility.KomponentObject
 {
-    public interface IKomponentObjectTemplate { }
-    public abstract class KomponentObject<TKomponentBase>
-        where TKomponentBase : class, IKomponent
+    /// <summary>
+    /// Base class for objects which manage components through a type-keyed dictionary. Similar to Unity's GameObject/Component system.
+    /// </summary>
+    /// <typeparam name="TKomponentBase">The base class for valid components, must implement IKomponent</typeparam>
+    public abstract class KomponentObject<TKomponentBase> : IEnumerable<KeyValuePair<Type, IReadOnlyList<TKomponentBase>>>
+        where TKomponentBase : IKomponent
     {
         private readonly Dictionary<Type, List<TKomponentBase>> _komponentDict = new Dictionary<Type, List<TKomponentBase>>();
+        protected KomponentObject() { }
+        protected KomponentObject(TKomponentBase komponent)
+        {
+            RegisterKomponent(komponent);
+        }
         protected KomponentObject(IEnumerable<TKomponentBase> komponents)
         {
-            // Accepting null saves the creation of an empty collection.
-            if (komponents != null)
+            foreach (var k in komponents ?? throw new ArgumentNullException(nameof(komponents)))
             {
-                foreach (var k in komponents)
+                RegisterKomponent(k);
+            }
+        }
+        protected KomponentObject(KomponentObject<TKomponentBase> other)
+        {
+            // Shallow copy.
+            _komponentDict = new Dictionary<Type, List<TKomponentBase>>(other._komponentDict);
+        }
+        protected KomponentObject(IEnumerable<KomponentObject<TKomponentBase>> others)
+        {
+            foreach (var other in others)
+            {
+                foreach (var kvp in other)
                 {
-                    RegisterKomponent(k);
+                    foreach (var komponent in kvp.Value)
+                    {
+                        // Will throw if required component has not been registered during the process. Don't use "required component" attributes if you're going to use this constructor.
+                        RegisterKomponent(komponent);
+                    }
                 }
             }
         }
+
         protected void RegisterKomponent(TKomponentBase komponent)
         {
             /* 
@@ -37,8 +62,8 @@ namespace KRpgLib.Utility.KomponentObject
             // Get the type of komponent.
             var argType = komponent.GetType();
 
-            // No components of base types.
-            if (!argType.IsSubclassOf(typeof(TKomponentBase)))
+            // No components of abstract base type.
+            if (argType.Equals(typeof(TKomponentBase)))
             {
                 throw new ArgumentException($"Komponent may not be of base type {argType}.");
             }
@@ -52,7 +77,7 @@ namespace KRpgLib.Utility.KomponentObject
                 // Grab a handle for the attribute's type.
                 var attType = att.GetType();
 
-                // If it is a required component attribute,
+                // If it is a "required component" attribute,
                 if (attType.Equals(typeof(RequireKomponentAttribute)))
                 {
                     // Cast to known type.
@@ -65,7 +90,7 @@ namespace KRpgLib.Utility.KomponentObject
                         throw new ArgumentException($"Object has no registered komponents of required type: {rka.RequiredType}.");
                     }
                 }
-                // Otherwise if multiple instances are not yet allowed AND it is an allow multiple instances attribute,
+                // Otherwise if multiple instances are not yet allowed AND it is an "allow multiple instances" attribute,
                 else if (!allowMultipleInstances && attType.Equals(typeof(AllowMultipleKomponentInstancesAttribute)))
                 {
                     // Set the flag for that (and stop checking).
@@ -112,72 +137,44 @@ namespace KRpgLib.Utility.KomponentObject
             }
         }
         public bool HasKomponent<TKomponent>() where TKomponent : TKomponentBase => _komponentDict.ContainsKey(typeof(TKomponent));
-        public TKomponent GetKomponent<TKomponent>() where TKomponent : class, TKomponentBase
+        public TKomponent GetKomponent<TKomponent>() where TKomponent : TKomponentBase
         {
             if (_komponentDict.TryGetValue(typeof(TKomponent), out List<TKomponentBase> found))
             {
                 return (TKomponent)found[0];    // No need to check for empty list or null. Impossible internal state.
             }
-            return null;
+            return default;
         }
-        public IEnumerable<TKomponent> GetKomponents<TKomponent>() where TKomponent : class, TKomponentBase
+        public IEnumerable<TKomponent> GetKomponents<TKomponent>() where TKomponent : TKomponentBase
         {
             if (_komponentDict.TryGetValue(typeof(TKomponent), out List<TKomponentBase> found))
             {
-                return found.ConvertAll(com => (TKomponent)com);
+                return found.Cast<TKomponent>();
             }
-            return null;
+            return new TKomponent[0];
         }
         public IEnumerable<TKomponentBase> GetAllKomponents()
         {
-            var list = new List<TKomponentBase>();
-            foreach (var kvp in _komponentDict)
-            {
-                foreach (var com in kvp.Value)
-                {
-                    list.Add(com);
-                }
-            }
-            return list;
+            return _komponentDict.SelectMany(kvp => kvp.Value);
         }
-        protected void ForEachKomponent(Action<Type, TKomponentBase> forEach)
+        public IReadOnlyDictionary<Type, IEnumerable<TKomponentBase>> GetAsReadOnlyDictionary()
         {
-            foreach (var kvp in _komponentDict)
+            var dict = new Dictionary<Type, IEnumerable<TKomponentBase>>();
+            foreach (var kvp in this)
             {
-                foreach (var komponent in kvp.Value)
-                {
-                    forEach.Invoke(kvp.Key, komponent);
-                }
+                dict.Add(kvp.Key, kvp.Value);
             }
+            return dict;
         }
-        protected void ForEachKomponent<TKomponent>(Action<TKomponent> forEach)
-            where TKomponent : class, TKomponentBase
-        {
-            if (_komponentDict.TryGetValue(typeof(TKomponent), out List<TKomponentBase> found))
-            {
-                foreach (var komponent in found)
-                {
-                    var castKomponent = (TKomponent)komponent;
 
-                    forEach.Invoke(castKomponent);
-                }
-            }
-        }
-    }
-    public abstract class KomponentObject<TTemplate, TKomponentBase> : KomponentObject<TKomponentBase>
-        where TTemplate : IKomponentObjectTemplate
-        where TKomponentBase : Komponent
-    {
-        public TTemplate Template { get; }
-
-        protected KomponentObject(TTemplate template, IEnumerable<TKomponentBase> komponents)
-            :base(komponents)
+        public IEnumerator<KeyValuePair<Type, IReadOnlyList<TKomponentBase>>> GetEnumerator()
         {
-            if (template == null)
-            {
-                throw new ArgumentNullException(nameof(template));
-            }
-            Template = template;
+            return _komponentDict.Select(kvp => new KeyValuePair<Type, IReadOnlyList<TKomponentBase>>(kvp.Key, kvp.Value)).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _komponentDict.GetEnumerator();
         }
     }
 }

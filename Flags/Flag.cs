@@ -1,10 +1,11 @@
-﻿using System;
+﻿using KRpgLib.Utility.TemplateObject;
+using System;
 namespace KRpgLib.Flags
 {
     /// <summary>
     /// A flag that represents a state or condition of something. If this flag is included in a flag manager, it means that something is true of the object represented by that manager. Flags are value types (structs) and therefore not passed by reference. Use SameTemplateAs() and SameAs() methods when checking for equality.
     /// </summary>
-    public struct Flag
+    public struct Flag : ITemplateObject<IFlagTemplate>
     {
         /// <summary>
         /// The template this flag is an instance of.

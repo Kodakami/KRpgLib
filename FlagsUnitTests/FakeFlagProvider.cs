@@ -8,15 +8,15 @@ namespace FlagsUnitTests
     {
         public static FakeFlagTemplate FakeFlagTemplate_VariantCount1 = new FakeFlagTemplate(variantCount: 1);
 
-        private readonly List<Flag> _flagsProvided;
+        private readonly IEnumerable<Flag> _flagsProvided;
         public FakeFlagProvider(params Flag[] flagsProvided)
         {
             _flagsProvided = new List<Flag>(flagsProvided);
         }
 
-        public List<Flag> GetAllFlags()
+        public FlagCollection GetFlagCollection()
         {
-            return new List<Flag>(_flagsProvided);
+            return new FlagCollection(_flagsProvided);
         }
     }
     public class FakeFlagProvider_Dynamic : IFlagProvider_Dynamic
@@ -40,11 +40,11 @@ namespace FlagsUnitTests
             OnFlagsChanged?.Invoke();
         }
 
-        public List<Flag> GetAllFlags()
+        public FlagCollection GetFlagCollection()
         {
             var templateUsed = _state ? FlagTemplateProvided_InTrueState : FlagTemplateProvided_InFalseState;
 
-            return new List<Flag>() { Flag.Create(templateUsed, 0) };
+            return new FlagCollection(new List<Flag>() { Flag.Create(templateUsed, 0) });
         }
     }
 }
