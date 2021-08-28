@@ -2,12 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>KRpgLib.Investments</RootNamespace>
+    <OutputType>Library</OutputType>
+    <StartupObject></StartupObject>
+    <RootNamespace>KRpgLib.Stats</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Flags\Flags.csproj" />
-    <ProjectReference Include="..\KRpgLib\Stats.csproj" />
+    <Compile Remove="Compound\AlgoBuilder.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Utility\Utility.csproj" />
   </ItemGroup>
 

@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Affixes\Affixes.csproj" />
-    <ProjectReference Include="..\KRpgLib\Stats.csproj" />
+    <ProjectReference Include="..\Stats\Stats.csproj" />
   </ItemGroup>
 
 </Project>
