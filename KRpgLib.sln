@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Affixes", "Affixes\Affixes.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AffixesStatsIntegration", "AffixesStatsIntegration\AffixesStatsIntegration.csproj", "{B656B446-01D1-4233-A514-E02A3D594442}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AffixesFlagsIntegration", "AffixesFlagsIntegration\AffixesFlagsIntegration.csproj", "{BB19EEF6-334B-4A25-B6E2-248BA41E1D0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{B656B446-01D1-4233-A514-E02A3D594442}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B656B446-01D1-4233-A514-E02A3D594442}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B656B446-01D1-4233-A514-E02A3D594442}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB19EEF6-334B-4A25-B6E2-248BA41E1D0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB19EEF6-334B-4A25-B6E2-248BA41E1D0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB19EEF6-334B-4A25-B6E2-248BA41E1D0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB19EEF6-334B-4A25-B6E2-248BA41E1D0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
