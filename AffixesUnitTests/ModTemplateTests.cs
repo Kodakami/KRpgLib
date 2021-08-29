@@ -2,6 +2,7 @@
 using KRpgLib.Affixes;
 using KRpgLib.Utility.KomponentObject;
 using System;
+using System.Collections.Generic;
 
 namespace KRpgLib.UnitTests.AffixesTests
 {
@@ -21,8 +22,9 @@ namespace KRpgLib.UnitTests.AffixesTests
                 Mod resultMod = mockModTemplate.CreateNewModInstance(_stubRandom);
 
                 var stubEffectCollection = new ModEffectCollection(new IModEffect[] { resultMod.GetModEffect() });
+                var result = new List<FakeModEffect>(stubEffectCollection.GetModEffects<FakeModEffect>())[0];
 
-                Assert.AreEqual(FakeModTemplateNoArgs.EXPECTED_VALUE, stubEffectCollection.GetKomponent<FakeModEffect>().Value);
+                Assert.AreEqual(FakeModTemplateNoArgs.EXPECTED_VALUE, result.Value);
             }
         }
         [TestClass]
@@ -36,8 +38,9 @@ namespace KRpgLib.UnitTests.AffixesTests
                 Mod resultMod = mockModTemplate.CreateNewModInstance(_stubRandom);
 
                 var stubEffectCollection = new ModEffectCollection(new IModEffect[] { resultMod.GetModEffect() });
+                var result = new List<FakeModEffect>(stubEffectCollection.GetModEffects<FakeModEffect>())[0];
 
-                Assert.AreEqual(FakeModTemplateWithArgs.ASSIGNED_VALUE, stubEffectCollection.GetKomponent<FakeModEffect>().Value);
+                Assert.AreEqual(FakeModTemplateWithArgs.ASSIGNED_VALUE, result.Value);
             }
         }
 

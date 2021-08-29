@@ -81,14 +81,14 @@ namespace KRpgLib.Affixes
 
             AddAffix_NoMessage(affixToRoll.CreateNewAffixInstance(rng));
         }
-        public void AddAffix(AffixTemplate affixToRoll, Random rng)
+        public AffixApplicationStatus AddAffix(AffixTemplate affixToRoll, Random rng)
         {
             if (affixToRoll == null)
             {
                 throw new ArgumentNullException(nameof(affixToRoll));
             }
 
-            AddAffix(affixToRoll.CreateNewAffixInstance(rng));
+            return AddAffix(affixToRoll.CreateNewAffixInstance(rng));
         }
 
         public void AddAffixes_NoMessages(IEnumerable<Affix> preRolledAffixes)
