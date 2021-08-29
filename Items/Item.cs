@@ -14,7 +14,7 @@ namespace KRpgLib.Items
     {
         new TItem CreateItem();
     }
-    public class Item : KomponentObject<IItemComponent>, ITemplateObject<IItemTemplate>
+    public class Item : KomponentObject<IItemComponent>, ITemplateObject<IItemTemplate>, IInternallyNamed
     {
         public IItemTemplate Template { get; }
         public string InternalName { get; }

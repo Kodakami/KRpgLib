@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KRpgLib.Utility.TemplateObject
+namespace KRpgLib.Utility
 {
     public sealed class Timer
     {

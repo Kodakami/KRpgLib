@@ -7,7 +7,7 @@ namespace KRpgLib.Affixes
     /// <summary>
     /// A blueprint for an Affix.
     /// </summary>
-    public class AffixTemplate : ITemplate
+    public class AffixTemplate : ITemplate, IInternallyNamed
     {
         private readonly List<ModTemplate> _modTemplates;
 
