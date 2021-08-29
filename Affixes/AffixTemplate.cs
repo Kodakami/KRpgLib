@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using KRpgLib.Utility;
 using KRpgLib.Utility.TemplateObject;
+using KRpgLib.Affixes.AffixTypes;
 
 namespace KRpgLib.Affixes
 {

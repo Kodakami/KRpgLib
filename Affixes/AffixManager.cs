@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using KRpgLib.Affixes.AffixTypes;
 
 namespace KRpgLib.Affixes
 {
@@ -254,14 +255,12 @@ namespace KRpgLib.Affixes
                     return new AffixApplicationStatus(AffixApplicationStatusType.TEMPLATE_EXISTS, "Affix manager already has an affix with the same template.");
                 }
 
-                // Check for max affixes of type.
+                // Check for restrictions on affix type (usually max quantity).
                 var affixType = affix.Template.AffixType;
-                if (_parent.Count(affixType) >= affixType.MaxAffixesOfType)
+                if (!affixType.AffixCanBeApplied(_parent))
                 {
-                    return new AffixApplicationStatus(AffixApplicationStatusType.AFFIX_TYPE_FULL, "Affix manager has no more room for affixes of the type.");
+                    return new AffixApplicationStatus(AffixApplicationStatusType.AFFIX_TYPE_RESTRICTION, "The Affix can't be applied due to a restriction on the Affix type.");
                 }
-
-                // Other limitations here.
 
                 // Custom limitations.
                 var (CanBeApplied, FailureMessage) = _parent.AffixCanBeApplied(affix);
@@ -280,14 +279,19 @@ namespace KRpgLib.Affixes
                     return false;
                 }
 
-                // Check for max affixes of type.
+                // Check for restrictions on affix type (usually max quantity).
                 var affixType = affix.Template.AffixType;
-                if (_parent.Count(affixType) >= affixType.MaxAffixesOfType)
+                if (!affixType.AffixCanBeApplied(_parent))
                 {
                     return false;
                 }
 
-                // Other limitations here.
+                // Custom limitations.
+                var (CanBeApplied, FailureMessage) = _parent.AffixCanBeApplied(affix);
+                if (!CanBeApplied)
+                {
+                    return false;
+                }
 
                 return true;
             }
@@ -325,6 +329,6 @@ namespace KRpgLib.Affixes
         SUCCESS = 0,
         OTHER = 1,
         TEMPLATE_EXISTS = 2,
-        AFFIX_TYPE_FULL = 3,
+        AFFIX_TYPE_RESTRICTION = 3,
     }
 }

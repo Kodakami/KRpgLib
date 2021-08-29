@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using KRpgLib.Affixes;
+using KRpgLib.Affixes.AffixTypes;
 using System;
 
 namespace KRpgLib.UnitTests.AffixesTests
@@ -8,7 +9,7 @@ namespace KRpgLib.UnitTests.AffixesTests
     public static class AffixManagerTests
     {
         private static readonly Random StubRandom = new Random();
-        private static readonly AffixType StubAffixType = new AffixType(1);
+        private static readonly AffixType StubAffixType = new AffixType_AdHoc();    // Empty ctor places no restrictions.
 
         [TestMethod]
         public static void CreateNewAffixInstance_WithValidArgs_ReturnsExpectedResult()

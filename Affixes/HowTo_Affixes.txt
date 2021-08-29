@@ -1,0 +1,187 @@
+﻿__KRpgLib Affixes Module__
+
+- How it works: -
+
+	Affixes:
+	Affixes are data collections representing a change to an entity, object, item, or anything. They are often called things like Enchantments, Mods, Rolled Stats, or Rolled Values, and they are often selected with some degree of randomness. Affixes are often also associated with modifying the name of the affected object by applying prefixes and suffixes to the original's name, such as modifying "Sword" to "Vorpal Sword" or "Sword of the Headhunter".
+
+	Mods:
+	The Affix module breaks down the changes to an object by an Affix into individual pieces called Mods. An Affix can contain (0~n) Mods, each of which would be considered separate itemized changes to the object under one Affix name. For example, an "of Agility" Affix could have the mod effects of "+(1-3) Dodge Rating" as well as "+(9-12)% more Movement Speed". Th object you apply this example Affix to will always be affected by both Mods and if the Affix is removed, both Mods will be removed.
+	There are Mods with and without rolled arguments. Mods without arguments will always return the same value ("of the Frenzy" -> "Your Summons are always Enraged"). When told to roll a new value, by default they will do nothing and return a value indicating no change occurred.
+
+	Affix Templates:
+	An Affix is created by an Affix Template, which contains all the information needed to create an instance of the corresponding Affix. The Affix keeps a reference to the Affix Template that created it for the purpose of identity. The Affix Template also has an internal name (for ease of localizing the affix name) an Affix Type, and a collection of the individual Mod Templates which will create the appropriate Mod instances.
+
+	Affix Types:
+	An Affix Type is an object representing an "Affix slot", including any restrictions on applying Affixes of that type to an Affix Manager (such as a maximum quantity). Typically "Prefix" or "Suffix", it can also be something like "Unique Affix" indicating an Affix Type with no restriction on the quantity applied to the object.
+
+	Affix Manager:
+	In order to best interact with the Affix Module, use an Affix Manager to apply and remove Affixes, as well as to query, manipulate, and collect the combined effects of all Mods on all the applied Affixes. An object that should be "Moddable" should be able to supply an Affix Manager for the system to manipulate.
+
+- How to interact: -
+	
+	---(Step 1)------------
+	Implement the IModEffect interface.
+	
+	These objects will act as records of the changes made by the system, and should contain data relevant to your game such as an item's stat changes.
+
+	Example:
+		public sealed class MyModEffect : IModEffect
+		{
+			public int MaxHP { get; private set; }
+			public bool IsInvulnerable { get; private set; }
+
+			public MyModEffect(int maxHP, bool isInvulnerable)
+			{
+				MaxHP = maxHP;
+				IsInvulnerable = isInvulnerable;
+			}
+		}
+
+	.Save time with existing implementations!.
+		AffixesStatsIntegration:
+			StatDeltaModEffect<TValue> (abstract)
+			StatDeltaModEffect_Int
+			StatDeltaModEffect_Float
+
+		AffixesFlagsIntegration:
+			FlagModEffect
+
+	---(Step 2)------------
+	Implement the ModTemplate and/or the ModTemplate<TArg> abstract classes.
+
+	ModTemplate is for Mods without rolled argument values. You only need to implement the GetModEffect(Mod mod) method and return an IModEffect of your custom type.
+	ModTemplate<TArg> is for Mods with rolled argument values. You need to implement both the GetModEffect(Mod<TArg> mod) method and the GetNewArg(Random rng) method, but DO NOT need to override the GetModEffect(Mod mod) method (default implementation is to type-check and call the more specific method).
+
+	Example:
+		// This template will emit a Mod<(int MaxHP, bool IsInvulnerable)> by default.
+		public sealed class MyModTemplate : ModTemplate<(int MaxHP, bool IsInvulnerable)>
+		{
+			public readonly (int, int) HpRollMinMax { get; private set; }
+
+			public MyModTemplate((int, int) hpRollMinMax)
+			{
+				HpRollMinMax = hpRollMinMax;
+			}
+			public override (int MaxHP, bool IsInvulnerable) GetNewArg(Random rng)
+			{
+				int hpRoll = rng.Next(HpRollMinMax.Item1, HpRollMinMax.Item2 + 1);
+				bool invulnRoll = rng.Next(0, 2) == 0 ? true : false;
+
+				return new (hpRoll, invulnRoll)
+			}
+			public override IModEffect GetModEffect(Mod<(int MaxHP, bool IsInvulnerable)> modInstance)
+			{
+				return new MyModEffect(modInstance.Arg.MaxHP, modInstance.Arg.IsInvulnerable);
+			}
+		}
+
+	.Save time with existing implementations!.
+		AffixesStatsIntegration:
+			StatDeltaModTemplate<TValue> (abstract)
+			StatDeltaModTemplate_Int
+			StatDeltaModTemplate_Float
+
+		AffixesFlagsIntegration:
+			FlagModTemplate
+
+	---(Step 3)------------
+	Create your own Mod Templates.
+
+	Every Mod in your game will have its own instance of ModTemplate to point to and get its values from.
+
+	Example:
+		// Stored in some arbitrary location.
+		public static readonly ModTemplate Mod_MaxHpFlat = new MyHpModTemplate(/* your implementation details */);
+		public static readonly ModTemplate Mod_MaxHpPerc = new MyHpModTemplate(/* your implementation details */);
+		public static readonly ModTemplate Mod_MaxManaFlat = new MyManaModTemplate(/* your implementation details */);
+		public static readonly ModTemplate Mod_MaxManaPerc = new MyManaModTemplate(/* your implementation details */);
+
+	---(Step 4)------------
+	Create your own Affix Types.
+
+	Typical Affix Types are "Prefix" and "Suffix" with an arbitrary maximum number of affixes of the type allowed. Path of Exile uses at least "Prefix", "Suffix", "Unique Affix", "Veiled Prefix", "Veiled Suffix", "Implicit", "Annointment", and "Enchantment" Affix Types, if not even more.
+
+	You can choose to implement your own AffixType subclasses for precise control over Affix application. If your checking code is simple, you might just use the one of the "AffixType_AdHoc" implementations, which only require a delegate reference (or null, for "no restrictions"). AffixTemplate<TManager> will return a strongly-typed AffixManager in the event that your project uses a custom AffixManager implementation.
+
+	Example:
+		// Stored in some arbitrary location.
+		
+		// As long as there are less than 3 Prefixes on the manager (on the item).
+		public static readonly AffixType Prefix = new AffixType_AdHoc(mngr => mngr.Count(Prefix) < 3);
+		
+		// As long as there are less than 3 Suffixes on the manager (on the item).
+		public static readonly AffixType Suffix = new AffixType_AdHoc(mngr => mngr.Count(Suffix) < 3);
+		
+		// As long as there is not already an Annointment on the manager (on the item), AND the custom manager has had "AllowAnnointments" set to true.
+		public static readonly AffixType Annointment = new AffixType_AdHoc<CustomAffixManager>(cMngr => cMngr.Count(Annointment) == 0 && cMngr.AllowAnnointments);
+
+	---(Step 5)------------
+	Create your own Affix Templates.
+
+	Every Affix in your game will have its own instance of AffixTemplate to point to and get its values from.
+
+	Example:
+		// Stored in some arbitrary location.
+		public static readonly AffixTemplate Prefix_Sumo = new AffixTemplate(
+			"prefix_max_hp_flat",
+			MyAffixTypes.Prefix,
+			new List<ModTemplate>() { Mod_MaxHpFlat } );
+
+		public static readonly AffixTemplate Suffix_DaVinci = new AffixTemplate(
+			"suffix_davinci",
+			MyAffixTypes.Suffix,
+			new List<ModTemplate>() { Mod_MaxHpFlat, Mod_MaxManaPerc } );
+
+	---(Step 6)------------
+	Create an Affix Manager and optionally keep it on your modifiable object.
+
+	An Affix Manager should be in charge of all Affix module interaction. You can create a subclass of the AffixManager to add more specific functionality.
+
+	Example:
+		public sealed class MyModdableWeapon
+		{
+			private readonly AffixManager _affixManager;
+			
+			private readonly int _baseDamage;
+			private readonly int _baseParry;
+
+			public int Damage { get; private set; }
+			public int Parry { get; private set; }
+
+			public Weapon(int baseDamage, int baseParry)
+			{
+				_affixManager = new AffixManager();
+				_baseDamage = baseDamage;
+				_baseParry = baseParry;
+
+				UpdateValues();
+			}
+			public void AddAffix(AffixTemplate affixTemplate)
+			{
+				_affixManager.AddAffix(affixTemplate, MyEnvironmentVariables.Rng);
+				UpdateValues();
+			}
+			public void RemoveAllAffixes()
+			{
+				_affixManager.RemoveAllAffixes();
+				UpdateValues();
+			}
+
+			private void UpdateValues()
+			{
+				var modEffectCollection = _affixManager.GetAllModEffects();
+
+				Damage = _baseDamage;
+				foreach (var dmgEffect in modEffectCollection.GetModEffects<MyWeaponDamageEffect>())
+				{
+					Damage += dmgEffect.Damage;
+				}
+
+				Parry = _baseParry;
+				foreach (var parryEffect in modEffectCollection.GetModEffects<MyWeaponParryEffect>())
+				{
+					Parry += parryEffect.Parry;
+				}
+			}
+		}
