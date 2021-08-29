@@ -16,8 +16,7 @@ namespace KRpgLib.Stats
         }
         private StatSnapshot(Dictionary<IStatTemplate<TValue>, TValue> statValueDict)
         {
-            // New dictionary.
-            _statDict = new Dictionary<IStatTemplate<TValue>, TValue>(statValueDict ?? throw new System.ArgumentNullException(nameof(statValueDict)));
+            _statDict = statValueDict;
         }
 
         /// <summary>
@@ -60,7 +59,18 @@ namespace KRpgLib.Stats
         /// <summary>
         /// Create a stat set from a dictionary of raw stat values.
         /// </summary>
-        public static StatSnapshot<TValue> Create(Dictionary<IStatTemplate<TValue>, TValue> statValueDict) => new StatSnapshot<TValue>(statValueDict);
+        public static StatSnapshot<TValue> Create(IReadOnlyDictionary<IStatTemplate<TValue>, TValue> statValueDict)
+        {
+            // For some reason, you can't automatically create a new dictionary from a read-only dictionary.
+
+            var newDict = new Dictionary<IStatTemplate<TValue>, TValue>();
+            foreach (var kvp in statValueDict ?? throw new System.ArgumentNullException(nameof(statValueDict)))
+            {
+                newDict[kvp.Key ?? throw new System.ArgumentNullException("stat template")] = kvp.Value;
+            }
+
+            return new StatSnapshot<TValue>(newDict);
+        }
 
         /// <summary>
         /// Create a stat set from a stat delta collection. Same effect as using GetStatSnapshot() on the provided collection.

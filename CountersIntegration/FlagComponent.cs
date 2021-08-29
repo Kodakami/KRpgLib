@@ -6,12 +6,13 @@ namespace KRpgLib.Counters
 {
     public class FlagComponent : CounterComponent, IFlagProvider
     {
-        protected FlagCollection FlagCollection { get; }
-        public FlagComponent(FlagCollection flagCollection)
+        protected IReadOnlyFlagCollection FlagCollection { get; }
+        public FlagComponent(IReadOnlyFlagCollection flagCollection)
         {
-            FlagCollection = flagCollection != null ? new FlagCollection() : throw new ArgumentNullException(nameof(flagCollection));
+            // Might need to make a new collection, currently unsure.
+            FlagCollection = flagCollection ?? throw new ArgumentNullException(nameof(flagCollection));
         }
-        public FlagCollection GetFlagCollection()
+        public IReadOnlyFlagCollection GetFlagCollection()
         {
             return FlagCollection;
         }

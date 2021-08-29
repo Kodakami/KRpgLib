@@ -55,7 +55,7 @@ namespace KRpgLib.UnitTests.StatsTests
             var mock = new FakeStatSet().Snapshot;
 
             void exceptionalAction() => mock.GetStatValue(null);
-            
+
             Assert.ThrowsException<System.ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]

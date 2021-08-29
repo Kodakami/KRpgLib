@@ -6,232 +6,186 @@ using KRpgLib.Utility.KomponentObject;
 
 namespace KRpgLib.Stats
 {
-    public class StatDeltaCollection<TValue> : IKomponent where TValue : struct
+    /// <summary>
+    /// A read-only collection of changes to stat values. The values inside the instance cannot be changed after instantiation. Create a new StatDeltaCollection with the desired values and combine them via a combination constructor.
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    public sealed class StatDeltaCollection<TValue> : IKomponent where TValue : struct
     {
         // Internal fields.
-        private readonly Dictionary<IStatTemplate<TValue>, DeltaTypeDictHelper> _controllerDict;
+
+        // Dictionary of dictionaries. [Key1: StatTemplate]->[Key2: StatDeltaType]->[Value: TValue].
+        private readonly Dictionary<IStatTemplate<TValue>, Dictionary<StatDeltaType<TValue>, TValue>> _superDict;
+        private readonly SnapshotCacheHelper _snapshotCache;
+
+        /// <summary>
+        /// Count the total number of stat deltas represented by the collection. Does not utilize cached values - use with some caution.
+        /// </summary>
+        public int CountValues() => _superDict.Values.Sum(subd => subd.Count);
 
         // Ctors.
-        public StatDeltaCollection() { }
-        public StatDeltaCollection(StatDeltaCollection<TValue> otherForDeepCopy)
-        {
-            if (otherForDeepCopy == null)
-            {
-                throw new ArgumentNullException(nameof(otherForDeepCopy));
-            }
 
-            _controllerDict = new Dictionary<IStatTemplate<TValue>, DeltaTypeDictHelper>();
-            foreach (var kvp in otherForDeepCopy._controllerDict)
-            {
-                _controllerDict.Add(kvp.Key, new DeltaTypeDictHelper(kvp.Value));
-            }
+        // Called by the public constructors before their own ctor code.
+        private StatDeltaCollection()
+        {
+            _snapshotCache = new SnapshotCacheHelper(this);
+            _superDict = new Dictionary<IStatTemplate<TValue>, Dictionary<StatDeltaType<TValue>, TValue>>();
         }
+        /// <summary>
+        /// Create a new StatDeltaCollection with the combined values from multiple others.
+        /// </summary>
+        /// <param name="combineFrom">a collection of other StatDeltaCollections</param>
         public StatDeltaCollection(IEnumerable<StatDeltaCollection<TValue>> combineFrom)
+            :this()
         {
-            if (combineFrom == null)
+            // If the collection of collections is not null.
+            if (combineFrom != null)
             {
-                throw new ArgumentNullException(nameof(combineFrom));
-            }
-
-            // Use that dictionary smasher!
-            _controllerDict = DictionarySmasher<IStatTemplate<TValue>, DeltaTypeDictHelper>.Smash(
-                valueSmasher: (_, values) => new DeltaTypeDictHelper(values),
-                dictionaries: combineFrom.Select(collection => collection._controllerDict).ToList());
-        }
-        public StatDeltaCollection(IEnumerable<StatTemplateAndDelta<TValue>> statTemplateAndDeltas)
-        {
-            if (statTemplateAndDeltas == null)
-            {
-                throw new ArgumentNullException(nameof(statTemplateAndDeltas));
-            }
-
-            _controllerDict = new Dictionary<IStatTemplate<TValue>, DeltaTypeDictHelper>();
-            foreach (var stad in statTemplateAndDeltas)
-            {
-                Add_Internal(stad.Template, stad.DeltaType, stad.DeltaValue);
-            }
-        }
-
-        // Protected methods.
-        protected void Add_Internal(IStatTemplate<TValue> statTemplate, StatDeltaType<TValue> deltaType, TValue deltaValue)
-        {
-            if (!_controllerDict.ContainsKey(statTemplate))
-            {
-                _controllerDict.Add(statTemplate, new DeltaTypeDictHelper());
-            }
-
-            _controllerDict[statTemplate].Add(deltaType, deltaValue);
-        }
-        protected void Remove_Internal(IStatTemplate<TValue> statTemplate, StatDeltaType<TValue> deltaType, TValue deltaValue)
-        {
-            if (_controllerDict.ContainsKey(statTemplate))
-            {
-                var controller = _controllerDict[statTemplate];
-                controller.Remove(deltaType, deltaValue);
-
-                if (!controller.HasValues)
+                // For each collection to combine.
+                foreach (var otherCollection in combineFrom)
                 {
-                    _controllerDict.Remove(statTemplate);
+                    // If calling code didn't pass a null collection for some reason.
+                    if (otherCollection != null)
+                    {
+                        // For each (template, (deltatype, value)) pair in the other's super dict...
+                        foreach (var otherSuperKvp in otherCollection._superDict)
+                        {
+                            // For each (deltatype, value) pair in the template's sub dict...
+                            foreach (var otherSubKvp in otherSuperKvp.Value)
+                            {
+                                // Add the value to this collection. (Use the delta type's combine method to combine the values)
+                                Add_Internal(otherSuperKvp.Key, otherSubKvp.Key, otherSubKvp.Value);
+                            }
+                        }
+                    }
                 }
             }
+
+            // Set the snapshot cache dirty.
+            _snapshotCache.SetDirty_FromExternal();
+        }
+        /// <summary>
+        /// Create a new StatDeltaCollection from a collection of individual stat templates and deltas. This is the manual option for creating a new instance.
+        /// </summary>
+        /// <param name="statTemplateAndDeltas"></param>
+        public StatDeltaCollection(IEnumerable<StatTemplateAndDelta<TValue>> statTemplateAndDeltas)
+            :this()
+        {
+            // If the collection of deltas is not null.
+            if (statTemplateAndDeltas != null)
+            {
+                // For each delta.
+                foreach (var stad in statTemplateAndDeltas)
+                {
+                    // If the delta value is not default(TValue),
+                    if (!stad.DeltaValue.Equals(default(TValue)))
+                    {
+                        // Stat template and delta type are both null-checked on creation of the instance.
+                        Add_Internal(stad.Template, stad.DeltaType, stad.DeltaValue);
+                    }
+
+                    // If the delta value is default, we'll silently ignore it (default delta value indicates no change).
+                }
+            }
+
+            // Set the snapshot cache dirty.
+            _snapshotCache.SetDirty_FromExternal();
+        }
+        public StatDeltaCollection(params StatTemplateAndDelta<TValue>[] statTemplateAndDeltas)
+            : this((IEnumerable<StatTemplateAndDelta<TValue>>)statTemplateAndDeltas) { }
+
+        // Private methods.
+        private void Add_Internal(IStatTemplate<TValue> statTemplate, StatDeltaType<TValue> deltaType, TValue deltaValue)
+        {
+            // Try to get the sub dict for the stat. If it wasn't found,
+            if (!_superDict.TryGetValue(statTemplate, out Dictionary<StatDeltaType<TValue>, TValue> subDict))
+            {
+                // Create a new sub dict.
+                subDict = new Dictionary<StatDeltaType<TValue>, TValue>();
+
+                // Add the sub dict to the super dict.
+                _superDict[statTemplate] = subDict;
+            }
+
+            // Try to get the value for the delta type. If it wasn't found,
+            if (!subDict.TryGetValue(deltaType, out TValue existingValue))
+            {
+                // Add the new value to the subdict.
+                subDict[deltaType] = deltaValue;
+
+                // And return.
+                return;
+            }
+
+            // If an existing value was found, combine the existing and new values with stat delta type's combination method.
+            subDict[deltaType] = deltaType.Combine(existingValue, deltaValue);
         }
 
         // Public methods.
-        public StatSnapshot<TValue> GetStatSnapshot()
+
+        /// <summary>
+        /// Get a snapshot of the stat values in the collection. Uses a cache, so lookups after the first one will be painless.
+        /// </summary>
+        public StatSnapshot<TValue> GetStatSnapshot() => _snapshotCache.GetCacheCopy();
+        public TValue GetDeltaValue(IStatTemplate<TValue> statTemplate, StatDeltaType<TValue> deltaType)
         {
-            var dict = new Dictionary<IStatTemplate<TValue>, TValue>();
-            foreach (var kvp in _controllerDict)
+            // If the stat template and delta type have an entry for the value (throwing ArgNullEx for any null args),
+            if (_superDict.TryGetValue(
+                statTemplate ?? throw new ArgumentNullException(nameof(statTemplate)),
+                out Dictionary<StatDeltaType<TValue>, TValue> subDict)
+                && subDict.TryGetValue(
+                    deltaType ?? throw new ArgumentNullException(nameof(deltaType)),
+                    out TValue value))
             {
-                // Get total stat deltas for this stat template.
-                var deltaDict = kvp.Value.GetCacheCopy();
-
-                // Start with the default value.
-                TValue statValue = kvp.Key.DefaultValue;
-
-                // For each type of stat delta (addition, multiplication)...
-                foreach (StatDeltaType<TValue> deltaType in StatDeltaType<TValue>.GetAllByPriority())
-                {
-                    // If there is a delta of that type...
-                    if (deltaDict.TryGetValue(deltaType, out TValue found))
-                    {
-                        // Get the combined value (combining baseline value and total delta value).
-                        TValue combinedDeltaValues = deltaType.Combine(deltaType.BaselineValue, found);
-
-                        // Apply the total delta value to the current stat value.
-                        statValue = deltaType.Apply(statValue, combinedDeltaValues);
-                    }
-                }
-
-                // Add the total stat value to the dictionary.
-                dict.Add(kvp.Key, statValue);
+                // Return the value.
+                return value;
             }
 
-            return StatSnapshot<TValue>.Create(dict);
+            // Otherwise return default value (not the stat template's default value, since this method returns the delta value).
+            return default;
         }
 
-        // Internal classes.
-        protected sealed class DeltaTypeDictHelper : CachedValueController<Dictionary<StatDeltaType<TValue>, TValue>>
+        // Private helper classes.
+        private sealed class SnapshotCacheHelper : CachedValueController<StatSnapshot<TValue>, StatDeltaCollection<TValue>>
         {
-            private readonly Dictionary<StatDeltaType<TValue>, ValueListHelper> _controllerDict;
+            public SnapshotCacheHelper(StatDeltaCollection<TValue> context) : base(context) { }
 
-            public bool HasValues => _controllerDict.Count > 0;
-
-            public DeltaTypeDictHelper() { }
-            public DeltaTypeDictHelper(DeltaTypeDictHelper otherForDeepCopy)
+            protected override StatSnapshot<TValue> CalculateNewCache()
             {
-                _controllerDict = new Dictionary<StatDeltaType<TValue>, ValueListHelper>();
-                foreach (var kvp in otherForDeepCopy._controllerDict)
+                // Create a new dictionary to store calculated values.
+                var dict = new Dictionary<IStatTemplate<TValue>, TValue>();
+
+                // For each stat template...
+                foreach (var kvp in Context._superDict)
                 {
-                    _controllerDict.Add(kvp.Key, new ValueListHelper(kvp.Value));
-                }
-            }
-            public DeltaTypeDictHelper(IEnumerable<DeltaTypeDictHelper> combineFrom)
-            {
-                // Use that dictionary smasher!
-                _controllerDict = DictionarySmasher<StatDeltaType<TValue>, ValueListHelper>.Smash(
-                    valueSmasher: (key, values) => new ValueListHelper(key, values),
-                    dictionaries: combineFrom.Select(controller => controller._controllerDict).ToList());
-            }
+                    // Start with the default value.
+                    TValue statValue = kvp.Key.DefaultValue;
 
-            public void Add(StatDeltaType<TValue> deltaType, TValue deltaValue)
-            {
-                if (!_controllerDict.ContainsKey(deltaType))
-                {
-                    _controllerDict.Add(deltaType, new ValueListHelper(deltaType));
-                }
-
-                _controllerDict[deltaType].Add(deltaValue);
-
-                SetDirty();
-            }
-            public void Add(StatDelta<TValue> statDelta)
-            {
-                Add(statDelta.Type, statDelta.Value);
-            }
-
-            public void Remove(StatDeltaType<TValue> deltaType, TValue deltaValue)
-            {
-                if (_controllerDict.ContainsKey(deltaType))
-                {
-                    var controller = _controllerDict[deltaType];
-
-                    controller.Remove(deltaValue);
-
-                    if (!controller.HasValues)
+                    // For each type of stat delta (addition, multiplication)...
+                    foreach (StatDeltaType<TValue> deltaType in StatDeltaType<TValue>.GetAllByPriority())
                     {
-                        _controllerDict.Remove(deltaType);
+                        // If there is a delta of that type...
+                        if (kvp.Value.TryGetValue(deltaType, out TValue deltaValue))
+                        {
+                            // Get the combined value (combining baseline value and delta value).
+                            TValue combinedValues = deltaType.Combine(deltaType.BaselineValue, deltaValue);
+
+                            // Apply the value to the current stat value.
+                            statValue = deltaType.Apply(statValue, combinedValues);
+                        }
                     }
 
-                    SetDirty();
+                    // Add the stat value to the dictionary.
+                    dict.Add(kvp.Key, statValue);
                 }
-            }
-            public void Remove(StatDelta<TValue> statDelta)
-            {
-                Remove(statDelta.Type, statDelta.Value);
-            }
 
-            protected override Dictionary<StatDeltaType<TValue>, TValue> CalculateNewCache()
-            {
-                var newDeltaDict = new Dictionary<StatDeltaType<TValue>, TValue>();
-                foreach (var controller in _controllerDict)
-                {
-                    TValue totalDelta = controller.Value.GetCacheCopy();
-                    newDeltaDict.Add(controller.Key, totalDelta);
-                }
-                return newDeltaDict;
+                return StatSnapshot<TValue>.Create(dict);
             }
 
-            protected override Dictionary<StatDeltaType<TValue>, TValue> CreateCacheCopy(Dictionary<StatDeltaType<TValue>, TValue> cache)
+            protected override StatSnapshot<TValue> CreateCacheCopy(StatSnapshot<TValue> cache)
             {
-                return new Dictionary<StatDeltaType<TValue>, TValue>(cache);
-            }
-
-            private sealed class ValueListHelper : CachedValueController<TValue, StatDeltaType<TValue>>
-            {
-                private readonly List<TValue> _valueList = new List<TValue>();
-                private StatDeltaType<TValue> RepresentedType => Context;
-
-                public bool HasValues => _valueList.Count > 0;
-
-                public ValueListHelper(StatDeltaType<TValue> representedType) : base(representedType) { }
-                public ValueListHelper(ValueListHelper otherForDeepCopy)
-                    :base(otherForDeepCopy.Context)
-                {
-                    _valueList = new List<TValue>(otherForDeepCopy._valueList);
-                }
-                public ValueListHelper(StatDeltaType<TValue> representedType, IEnumerable<ValueListHelper> combineFrom)
-                    :base(representedType)
-                {
-                    _valueList = combineFrom.SelectMany(controller => controller._valueList).ToList();
-                }
-
-                public void Add(TValue value)
-                {
-                    _valueList.Add(value);
-                    SetDirty();
-                }
-
-                public void Remove(TValue value)
-                {
-                    _valueList.Remove(value);
-                    SetDirty();
-                }
-
-                protected override TValue CalculateNewCache()
-                {
-                    TValue total = RepresentedType.BaselineValue;
-                    foreach (var val in _valueList)
-                    {
-                        RepresentedType.Combine(total, val);
-                    }
-                    return total;
-                }
-
-                protected override TValue CreateCacheCopy(TValue cache)
-                {
-                    // Since TValue is a struct.
-                    return cache;
-                }
+                // Safe to return read-only sealed class by reference.
+                return cache;
             }
         }
     }

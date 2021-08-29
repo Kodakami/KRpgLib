@@ -4,6 +4,10 @@ using System.Linq;
 
 namespace KRpgLib.Utility
 {
+    /// <summary>
+    /// A utility class that maintains a collection of items with priority values. A higher priority value will make the item appear later in the list. The order of items with a shared priority value is undefined.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class PriorityRegistry<T>
     {
         private readonly Dictionary<T, int> _registry;
@@ -33,11 +37,11 @@ namespace KRpgLib.Utility
             }
         }
         protected void SetDirty() => _cache.SetDirty_FromExternal();
-        public List<T> GetAllByPriority() => _cache.GetCacheCopy();
+        public IReadOnlyList<T> GetAllByPriority() => _cache.GetCacheCopy();
 
         protected sealed class OrderedListCacheHelper : CachedValueController<List<T>, Dictionary<T, int>>
         {
-            public OrderedListCacheHelper(Dictionary<T, int> parent) : base(parent) { }
+            public OrderedListCacheHelper(Dictionary<T, int> context) : base(context) { }
             protected override List<T> CalculateNewCache()
             {
                 return Context.OrderBy(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();

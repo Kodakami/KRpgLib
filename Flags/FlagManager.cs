@@ -25,7 +25,7 @@ namespace KRpgLib.Flags
             }
         }
 
-        public FlagCollection GetFlagCollection()
+        public IReadOnlyFlagCollection GetFlagCollection()
         {
             return FlagTotalCache.GetCacheCopy();
         }
@@ -107,7 +107,7 @@ namespace KRpgLib.Flags
             {
                 Provider = flagProvider;
             }
-            public virtual FlagCollection GetFlags()
+            public virtual IReadOnlyFlagCollection GetFlags()
             {
                 return Provider.GetFlagCollection();
             }
@@ -127,7 +127,7 @@ namespace KRpgLib.Flags
                 flagProvider.OnFlagsChanged += Cache.SetDirty_FromExternal;
             }
 
-            public override FlagCollection GetFlags()
+            public override IReadOnlyFlagCollection GetFlags()
             {
                 return Cache.GetCacheCopy();
             }
@@ -136,15 +136,15 @@ namespace KRpgLib.Flags
                 Provider.OnFlagsChanged -= Cache.SetDirty_FromExternal;
             }
 
-            protected sealed class CacheHelper : CachedValueController<FlagCollection, FlagProviderController_Dynamic>
+            protected sealed class CacheHelper : CachedValueController<IReadOnlyFlagCollection, FlagProviderController_Dynamic>
             {
                 public CacheHelper(FlagProviderController_Dynamic parent) : base(parent) { }
-                protected override FlagCollection CalculateNewCache()
+                protected override IReadOnlyFlagCollection CalculateNewCache()
                 {
                     return Context.Provider.GetFlagCollection();
                 }
 
-                protected override FlagCollection CreateCacheCopy(FlagCollection cache)
+                protected override IReadOnlyFlagCollection CreateCacheCopy(IReadOnlyFlagCollection cache)
                 {
                     return new FlagCollection(cache);
                 }
