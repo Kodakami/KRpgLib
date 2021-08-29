@@ -22,24 +22,21 @@
         public bool IsEmpty => Count == 0;
 
         /// <summary>
-        /// Create an item stack for items which have a stacking component.
+        /// Create an item stack. If the Item does not have a StackingComponent, it will be treated as having a default max stack size of 1.
         /// </summary>
-        /// <param name="item"></param>
         public ItemStack(TItem item)
         {
-            if (item == null)
-            {
-                throw new System.ArgumentNullException(nameof(item));
-            }
+            Item = item ?? throw new System.ArgumentNullException(nameof(item));
 
             var stacking = item.GetKomponent<StackingComponent>();
-            if (stacking == null)
+            if (stacking != null)
             {
-                throw new System.ArgumentException("Item must have a stacking component.", nameof(item));
+                MaxStackSize = stacking.DefaultMaxStackSize;
             }
-
-            Item = item;
-            MaxStackSize = stacking.DefaultMaxStackSize;
+            else
+            {
+                MaxStackSize = 1;
+            }
         }
         /// <summary>
         /// Create an item stack with provided max stack size.

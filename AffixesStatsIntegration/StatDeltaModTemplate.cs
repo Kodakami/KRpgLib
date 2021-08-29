@@ -42,7 +42,7 @@ namespace KRpgLib.AffixesStatsIntegration
 
         public override IModEffect GetModEffect(Mod<IReadOnlyList<TValue>> modInstance)
         {
-            var modArgValues = modInstance.StrongArg;
+            var modArgValues = modInstance.Arg;
 
             var deltaList = new List<StatTemplateAndDelta<TValue>>();
             for (int i = 0; i < ArgBounds.Count; i++)

@@ -2,24 +2,14 @@
 
 namespace KRpgLib.Items
 {
-    public class StackingComponent : ItemComponent
+    public class StackingComponent : IItemComponent
     {
-        private const string EXCEPTION_MESSAGE = "Argument must be greater than zero.";
+        private const int MINIMUM_MAX_STACK_SIZE = 1;
 
         public int DefaultMaxStackSize { get; }
         public StackingComponent(int defaultMaxStackSize)
         {
-            ClearArgOrThrow(defaultMaxStackSize, nameof(defaultMaxStackSize));
-
-            DefaultMaxStackSize = defaultMaxStackSize;
-        }
-        // There used to be more args. Now this seems like silly overengineering. Still, what if I add more args again?
-        private void ClearArgOrThrow(int argValue, string argName)
-        {
-            if (argValue < 1)
-            {
-                throw new ArgumentOutOfRangeException(argName, EXCEPTION_MESSAGE);
-            }
+            DefaultMaxStackSize = Math.Max(defaultMaxStackSize, MINIMUM_MAX_STACK_SIZE);
         }
     }
 }

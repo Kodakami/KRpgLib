@@ -11,27 +11,15 @@ namespace KRpgLib.Affixes
     {
         public ModTemplate Template { get; }
 
-        // The rolled arg value.
-        public object WeakArg { get; private set; }
-
         public Mod(ModTemplate template)
         {
             Template = template;
         }
+
         /// <summary>
-        /// Randomly (or not), roll a new argument for the mod. Return true if the value changed.
+        /// Randomly (or not), roll a new argument for the mod. Return true if the value changed. This implementation for mods without arguments always returns false.
         /// </summary>
-        public bool RollNewArg(Random rng)
-        {
-            // Save the previous value.
-            var oldArgValue = WeakArg;
-
-            // Roll and assign the new value to the property.
-            WeakArg = Template.GetNewArg(rng, this);
-
-            // Return true if the values are different.
-            return !WeakArg.Equals(oldArgValue);
-        }
+        public virtual bool RollNewArg(Random rng) => false;
 
         // Delegate to mod template.
         public IModEffect GetModEffect() => Template.GetModEffect(this);
@@ -44,9 +32,24 @@ namespace KRpgLib.Affixes
     {
         // Hides inherrited member with strong-typed access.
         public new ModTemplate<TArg> Template => (ModTemplate<TArg>)base.Template;
-        public TArg StrongArg => (TArg)WeakArg;
+        public TArg Arg { get; private set; }
 
         // Ctor
         public Mod(ModTemplate<TArg> template) : base(template) { }
+
+        /// <summary>
+        /// Randomly (or not), roll a new argument for the mod. Return true if the value changed.
+        /// </summary>
+        public override bool RollNewArg(Random rng)
+        {
+            // Save the previous value.
+            var oldArgValue = Arg;
+
+            // Roll and assign the new value to the property.
+            Arg = Template.GetNewArg(rng);
+
+            // Return true if the values are different.
+            return !Arg.Equals(oldArgValue);
+        }
     }
 }
