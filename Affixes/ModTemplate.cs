@@ -22,11 +22,6 @@ namespace KRpgLib.Affixes
         }
 
         /// <summary>
-        /// Return a new randomly-rolled arg value for the mod instance.
-        /// </summary>
-        public virtual object GetNewArg(Random rng, Mod modInstance) { return null; }
-
-        /// <summary>
         /// Create a new mod instance of the correct type and pass it back (no need for pre-rolling).
         /// </summary>
         protected virtual Mod CreateNewModInstance_Internal() => new Mod(this);
@@ -43,20 +38,7 @@ namespace KRpgLib.Affixes
         /// <summary>
         /// Return a new randomly-rolled arg value for the mod instance.
         /// </summary>
-        public abstract TArg GetNewArg(Random rng, Mod<TArg> modInstance);
-        public override object GetNewArg(Random rng, Mod modInstance)
-        {
-            var modInstaceType = modInstance.GetType();
-            var targetType = typeof(Mod<TArg>);
-
-            if (modInstaceType == targetType || modInstaceType.IsSubclassOf(targetType))
-            {
-                var castMod = (Mod<TArg>)modInstance;
-                return GetNewArg(rng, castMod);
-            }
-            throw new ArgumentException($"Argument must be of type {targetType}.", nameof(modInstance));
-        }
-
+        public abstract TArg GetNewArg(Random rng);
         public abstract IModEffect GetModEffect(Mod<TArg> modInstance);
         public override IModEffect GetModEffect(Mod modInstance)
         {

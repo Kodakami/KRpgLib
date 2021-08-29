@@ -6,15 +6,6 @@ using System.Collections.Generic;
 
 namespace KRpgLib.AffixesStatsIntegration
 {
-    public sealed class StatDeltaModEffect<TValue> : IModEffect where TValue : struct
-    {
-        public StatDeltaCollection<TValue> StatDeltas { get; }
-
-        public StatDeltaModEffect(IEnumerable<StatTemplateAndDelta<TValue>> statDeltas)
-        {
-            StatDeltas = new StatDeltaCollection<TValue>(statDeltas);
-        }
-    }
     public abstract class StatDeltaModTemplate<TValue, TStatDeltaValueBounds>: ModTemplate<IReadOnlyList<TValue>>
         where TValue : struct
         where TStatDeltaValueBounds : StatDeltaValueBounds<TValue>
@@ -40,10 +31,10 @@ namespace KRpgLib.AffixesStatsIntegration
 
         protected StatDeltaModTemplate(IReadOnlyList<TStatDeltaValueBounds> argBounds)
         {
-            ArgBounds = new List<TStatDeltaValueBounds>(argBounds);
+            ArgBounds = new List<TStatDeltaValueBounds>(argBounds ?? throw new ArgumentNullException(nameof(argBounds)));
         }
 
-        public override IReadOnlyList<TValue> GetNewArg(Random rng, Mod<IReadOnlyList<TValue>> mod)
+        public override IReadOnlyList<TValue> GetNewArg(Random rng)
         {
             return new List<TValue>(ArgBounds.Select(ab => GenerateRandomValueWithinBounds(rng, ab)));
         }
@@ -64,50 +55,8 @@ namespace KRpgLib.AffixesStatsIntegration
                 deltaList.Add(new StatTemplateAndDelta<TValue>(thisTemplate, new StatDelta<TValue>(thisDeltaType, thisValue)));
             }
 
-            return new StatDeltaModEffect<TValue>(deltaList);
+            return new StatDeltaModEffect<TValue>(new StatDeltaCollection<TValue>(deltaList));
         }
-    }
-    public abstract class StatDeltaValueBounds<TValue> where TValue : struct
-    {
-        internal StatDeltaValueBounds(IStatTemplate<TValue> statTemplate, StatDeltaType<TValue> deltaType, TValue minValue, TValue maxValue, TValue precision)
-        {
-            StatTemplate = statTemplate;
-            DeltaType = deltaType;
-            MinValue = minValue;
-            MaxValue = maxValue;
-            Precision = precision;
-        }
-
-        public IStatTemplate<TValue> StatTemplate { get; }
-        public StatDeltaType<TValue> DeltaType { get; }
-        public TValue MinValue { get; }
-        public TValue MaxValue { get; }
-        public TValue Precision { get; }
-
-    }
-    public sealed class StatDeltaValueBounds_Int : StatDeltaValueBounds<int>
-    {
-        public StatDeltaValueBounds_Int(
-            IStatTemplate<int> statTemplate,
-            StatDeltaType<int> deltaType,
-            int minValue, int maxValue, int precision
-            )
-            :base(statTemplate, deltaType, minValue, maxValue, precision)
-        { }
-    }
-    public sealed class StatDeltaValueBounds_Float : StatDeltaValueBounds<float>
-    {
-        public StatDeltaValueBounds_Float(
-            IStatTemplate<float> statTemplate,
-            StatDeltaType<float> deltaType,
-            float minValue, float maxValue, float precision, int decimalsOfPrecisionForRounding
-            )
-            : base(statTemplate, deltaType, minValue, maxValue, precision)
-        {
-            DecimalsOfPrecisionForRounding = decimalsOfPrecisionForRounding;
-        }
-
-        public int DecimalsOfPrecisionForRounding { get; }
     }
     public sealed class StatDeltaModTemplate_Int : StatDeltaModTemplate<int, StatDeltaValueBounds_Int>
     {
