@@ -14,22 +14,22 @@ namespace KRpgLib.Items
     {
         new TItem CreateItem();
     }
-    public class Item : KomponentObject<ItemComponent>, ITemplateObject<IItemTemplate>
+    public class Item : KomponentObject<IItemComponent>, ITemplateObject<IItemTemplate>
     {
         public IItemTemplate Template { get; }
-        public string ExternalName { get; }
+        public string InternalName { get; }
 
         /// <summary>
         /// Create an item with a name and no stacking component.
         /// </summary>
-        public Item(IItemTemplate template, string externalName, IEnumerable<ItemComponent> komponents)
+        public Item(IItemTemplate template, string internalName, IEnumerable<IItemComponent> komponents)
             :base(komponents)
         {
             Template = template;
-            ExternalName = externalName;
+            InternalName = internalName;
         }
-        public Item(IItemTemplate template, string externalName, StackingComponent stackingComponent, IEnumerable<ItemComponent> komponents)
-            :this(template, externalName, komponents)
+        public Item(IItemTemplate template, string internalName, StackingComponent stackingComponent, IEnumerable<IItemComponent> komponents)
+            :this(template, internalName, komponents)
         {
             // Will throw on registration if null or invalid.
             RegisterKomponent(stackingComponent);

@@ -63,10 +63,10 @@ namespace KRpgLib.UnitTests.AffixesTests
 
         public override IModEffect GetModEffect(Mod<int> modInstance)
         {
-            return new FakeModEffect() { Value = modInstance.StrongArg };
+            return new FakeModEffect() { Value = modInstance.Arg };
         }
 
-        public override int GetNewArg(Random rng, Mod<int> modInstance)
+        public override int GetNewArg(Random rng)
         {
             // Dodge random for testing.
 

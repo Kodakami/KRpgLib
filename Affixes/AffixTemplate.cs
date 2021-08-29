@@ -11,7 +11,7 @@ namespace KRpgLib.Affixes
     {
         private readonly List<ModTemplate> _modTemplates;
 
-        public string InternaName { get; }
+        public string InternalName { get; }
         public AffixType AffixType { get; }
 
         public int ModTemplateCount => _modTemplates.Count;
@@ -20,7 +20,7 @@ namespace KRpgLib.Affixes
 
         public AffixTemplate(string internalName, AffixType affixType, IEnumerable<ModTemplate> modTemplates)
         {
-            InternaName = internalName ?? throw new ArgumentNullException(nameof(internalName));
+            InternalName = internalName ?? throw new ArgumentNullException(nameof(internalName));
             AffixType = affixType ?? throw new ArgumentNullException(nameof(affixType));
             _modTemplates = new List<ModTemplate>(modTemplates ?? throw new ArgumentNullException(nameof(modTemplates)));
         }

@@ -17,7 +17,7 @@ namespace KRpgLib.AffixesFlagsIntegration
 
         public override IModEffect GetModEffect(Mod<Flag> modInstance)
         {
-            return new FlagModEffect(modInstance.StrongArg);
+            return new FlagModEffect(modInstance.Arg);
         }
 
         public override Flag GetNewArg(Random rng)
