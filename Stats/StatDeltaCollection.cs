@@ -10,7 +10,7 @@ namespace KRpgLib.Stats
     /// A read-only collection of changes to stat values. The values inside the instance cannot be changed after instantiation. Create a new StatDeltaCollection with the desired values and combine them via a combination constructor.
     /// </summary>
     /// <typeparam name="TValue"></typeparam>
-    public sealed class StatDeltaCollection<TValue> : IKomponent where TValue : struct
+    public sealed class StatDeltaCollection<TValue> where TValue : struct
     {
         // Internal fields.
 

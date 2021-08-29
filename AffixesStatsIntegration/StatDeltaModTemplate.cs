@@ -21,11 +21,20 @@ namespace KRpgLib.AffixesStatsIntegration
     {
         // List of info to create stat deltas within a range.
         // Example list might contain:
-        //      (MaxLife, Additional, (min: 3, max: 7, prec: 1))
-        //      (ArmourEvasionLocal, Multiply, (min: 5, max: 10, prec: 1))
+        //      (MinWeaponDmgPhysicalLocal, Additional, (min: 3, max: 7, prec: 1))
+        //      (MaxWeaponDmgPhysicalLocal, Additional, (min: 12, max: 20, prec: 1))
+        // In PoE would look like:
+        //      [Explicit Prefix "Sharp"]
+        //      Adds (3-7) to (12-20) Physical Damage;
+
+        // This class uses an arg collection (instead of just one) specifically for mods that act as one like in the above example. It is not intended to be used for multiple mods that are part of one Affix. As a counter-example:
+        //      (MaxLife, Multiply, (min: 3, max: 5, prec: 1))
+        //      (MaxMana, SuperMultiply, (min: 10, max: 12, prec: 1))
         // In PoE would look like (one mod):
-        //      +(3-7) Maximum Life
-        //      +(5-10)% increased Armour and Evasion Rating
+        //      [Explicit Prefix "Perfected"]
+        //      (3-5)% increased Maximum Life
+        //      (10-12)% more Maximum Mana
+        // For this type of functionality, you should make multiple mods and put them all on one Affix.
 
         public IReadOnlyList<TStatDeltaValueBounds> ArgBounds { get; }
 
@@ -60,7 +69,7 @@ namespace KRpgLib.AffixesStatsIntegration
     }
     public abstract class StatDeltaValueBounds<TValue> where TValue : struct
     {
-        protected StatDeltaValueBounds(IStatTemplate<TValue> statTemplate, StatDeltaType<TValue> deltaType, TValue minValue, TValue maxValue, TValue precision)
+        internal StatDeltaValueBounds(IStatTemplate<TValue> statTemplate, StatDeltaType<TValue> deltaType, TValue minValue, TValue maxValue, TValue precision)
         {
             StatTemplate = statTemplate;
             DeltaType = deltaType;
