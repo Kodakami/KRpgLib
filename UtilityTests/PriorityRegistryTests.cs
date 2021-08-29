@@ -8,6 +8,13 @@ namespace KRpgLib.UnitTests.UtilityTests
     [TestClass]
     public class PriorityRegistryTests
     {
+        private void AssertReadOnlyListsAreEqual<T>(IReadOnlyList<T> expected, IReadOnlyList<T> result)
+        {
+            for (int i = 0; i < expected.Count; i++)
+            {
+                Assert.AreEqual(expected[i], result[i]);
+            }
+        }
         [TestMethod]
         public void RegisterItem_WithAlreadyRegisteredItem_ThrowsArgEx()
         {
@@ -46,7 +53,7 @@ namespace KRpgLib.UnitTests.UtilityTests
             var resultList = mockRegistry.GetAllByPriority();
 
             // Assert.
-            CollectionAssert.AreEqual(expectedList, resultList);
+            AssertReadOnlyListsAreEqual(expectedList, resultList);
         }
         [TestMethod]
         public void GetAllByPriority_AfterUnregisteringItem_ReturnsCorrectResult()
@@ -70,7 +77,7 @@ namespace KRpgLib.UnitTests.UtilityTests
             var resultListBefore = mockRegistry.GetAllByPriority();
 
             // Assert.
-            CollectionAssert.AreEqual(expectedListBefore, resultListBefore);
+            AssertReadOnlyListsAreEqual(expectedListBefore, resultListBefore);
 
             // Assemble.
             var expectedListAfter = new List<string>()
@@ -83,7 +90,7 @@ namespace KRpgLib.UnitTests.UtilityTests
             var resultListAfter = mockRegistry.GetAllByPriority();
 
             // Assert.
-            CollectionAssert.AreEqual(expectedListAfter, resultListAfter);
+            AssertReadOnlyListsAreEqual(expectedListAfter, resultListAfter);
         }
     }
 }

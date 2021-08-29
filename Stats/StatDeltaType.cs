@@ -28,7 +28,7 @@ namespace KRpgLib.Stats
         /// Get all registered stat delta types in order of priority.
         /// </summary>
         /// <returns>new list of stat delta types</returns>
-        public static List<StatDeltaType<TValue>> GetAllByPriority()
+        public static IReadOnlyList<StatDeltaType<TValue>> GetAllByPriority()
         {
             return _registry.GetAllByPriority();
         }
@@ -39,8 +39,8 @@ namespace KRpgLib.Stats
         /// <param name="function">the operation applied by the delta type</param>
         /// <param name="baselineValue">the neutral value of the delta (ex. 0 for additive, 1 for multiplicative)</param>
         /// <param name="combineFunction">the operation used to combine deltas of the same type (usually deltas are added together)</param>
-        /// <param name="priority">the priority value of the delta type</param>
-        public static void RegisterStatDeltaType(DeltaTypeFunc function, TValue baselineValue, DeltaTypeFunc combineFunction, int priority)
+        /// <param name="priority">the priority value of the delta type (lower values appear earlier)</param>
+        public static StatDeltaType<TValue> RegisterStatDeltaType(DeltaTypeFunc function, TValue baselineValue, DeltaTypeFunc combineFunction, int priority)
         {
             var newInstance = new StatDeltaType<TValue>(
                 function ?? throw new ArgumentNullException(nameof(function)),
@@ -48,6 +48,8 @@ namespace KRpgLib.Stats
                 combineFunction ?? throw new ArgumentNullException(nameof(combineFunction)));
 
             _registry.RegisterItem(newInstance, priority);
+
+            return newInstance;
         }
         /// <summary>
         /// In the event that you might want to unregister a stat delta type, the function exists and works. The delta type will no longer be considered when performing stat calculations.
