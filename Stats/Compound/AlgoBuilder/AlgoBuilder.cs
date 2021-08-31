@@ -126,7 +126,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             BuildResult = Result.OK;
             return true;
         }
-        public void RegisterStat(string identifier, IStatTemplate<TValue> statTemplate)
+        public void RegisterStat(string identifier, IStat<TValue> statTemplate)
         {
             StatTemplateRegistry.Add(identifier, statTemplate);
         }

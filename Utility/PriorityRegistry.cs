@@ -25,6 +25,7 @@ namespace KRpgLib.Utility
                 throw new ArgumentException($"Item is already in the priority registry (priority = {existingPriority}).");
             }
 
+            // Null is an accepted value.
             _registry.Add(item, priority);
 
             SetDirty();

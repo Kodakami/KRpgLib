@@ -35,17 +35,17 @@ namespace KRpgLib.Stats
             _statDeltaCollectionCache.SetDirty_FromExternal();
         }
         public bool HasProvider(IStatProvider<TValue> statProvider) => _providers.Contains(statProvider);
-        public StatDeltaCollection<TValue> GetStatDeltaCollection() => _statDeltaCollectionCache.GetCacheCopy();
+        public DeltaCollection<TValue> GetDeltaCollection() => _statDeltaCollectionCache.GetCacheCopy();
 
-        private class DeltaCollectionCacheHelper : CachedValueController<StatDeltaCollection<TValue>, List<IStatProvider<TValue>>>
+        private class DeltaCollectionCacheHelper : CachedValueController<DeltaCollection<TValue>, List<IStatProvider<TValue>>>
         {
             public DeltaCollectionCacheHelper(List<IStatProvider<TValue>> context) : base(context) { }
 
-            protected override StatDeltaCollection<TValue> CalculateNewCache()
+            protected override DeltaCollection<TValue> CalculateNewCache()
             {
-                return new StatDeltaCollection<TValue>(Context.ConvertAll(p => p.GetStatDeltaCollection()));
+                return new DeltaCollection<TValue>(Context.ConvertAll(p => p.GetDeltaCollection()));
             }
-            protected override StatDeltaCollection<TValue> CreateCacheCopy(StatDeltaCollection<TValue> cache)
+            protected override DeltaCollection<TValue> CreateCacheCopy(DeltaCollection<TValue> cache)
             {
                 // Safe to pass read-only collection by reference.
                 return cache;

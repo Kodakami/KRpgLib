@@ -11,14 +11,14 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
     {
         private static string GetIllegalIdentifierMessage(string rejectedIdentifier) => $"\"{rejectedIdentifier}\" is not a legal identifier. Identifiers may not be null or empty, and may only contain letters (no white-space characters or numbers).";
 
-        private readonly Dictionary<string, IStatTemplate<TValue>> _dict = new Dictionary<string, IStatTemplate<TValue>>();
+        private readonly Dictionary<string, IStat<TValue>> _dict = new Dictionary<string, IStat<TValue>>();
 
         /// <summary>
         /// Add a stat template to the registry. Identifier must consist only of letters (no numbers, symbols, punctuation, white-space, or control characters). Throws ArgumentException if the identifier is invalid or taken by another stat template.
         /// </summary>
         /// <param name="identifier">case-insensitive identifier for the stat template</param>
         /// <param name="statTemplate">stat template represented by the identifier</param>
-        public void Add(string identifier, IStatTemplate<TValue> statTemplate)
+        public void Add(string identifier, IStat<TValue> statTemplate)
         {
             // Stat template is null.
             if (statTemplate == null)
@@ -49,7 +49,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         /// <param name="identifier">case-insensitive identifier for the desired stat template</param>
         /// <param name="statTemplate">the found stat template</param>
         /// <returns>true if a stat template is registered with the provided identifier</returns>
-        public bool TryGetStatTemplate(string identifier, out IStatTemplate<TValue> statTemplate)
+        public bool TryGetStatTemplate(string identifier, out IStat<TValue> statTemplate)
         {
             if (!IdentifierIsLegal(identifier))
             {

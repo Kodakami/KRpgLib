@@ -16,7 +16,7 @@ namespace KRpgLib.UnitTests.StatsTests.Compound.AlgoBuilder
         [DataRow(".", DisplayName = "Non-letter")]
         public void Add_WithInvalidIdentifier_ThrowsArgEx(string identifier)
         {
-            var stubStat = new FakeStatTemplate(null, null, null, 0);
+            var stubStat = new FakeStat(null, null, null, 0);
             var mockReg = new StatTemplateRegistry<int>();
 
             void exceptionalAction() => mockReg.Add(identifier, stubStat);
@@ -28,7 +28,7 @@ namespace KRpgLib.UnitTests.StatsTests.Compound.AlgoBuilder
         [DataRow("a", "A", DisplayName = "Different cases")]
         public void Add_WithTakenIdentifier_ThrowsArgEx(string identifier, string otherIdentifier)
         {
-            var stubStat = new FakeStatTemplate(null, null, null, 0);
+            var stubStat = new FakeStat(null, null, null, 0);
             var mockReg = new StatTemplateRegistry<int>();
             mockReg.Add(identifier, stubStat);
 
@@ -53,7 +53,7 @@ namespace KRpgLib.UnitTests.StatsTests.Compound.AlgoBuilder
         [DataRow(".", DisplayName = "Non-letter")]
         public void TryGetStatTemplate_WithInvalidIdentifier_ThrowsArgEx(string identifier)
         {
-            var stubStat = new FakeStatTemplate(null, null, null, 0);
+            var stubStat = new FakeStat(null, null, null, 0);
             var mockReg = new StatTemplateRegistry<int>();
 
             void exceptionalAction() => mockReg.TryGetStatTemplate(identifier, out _);

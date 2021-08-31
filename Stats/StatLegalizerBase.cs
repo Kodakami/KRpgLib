@@ -5,8 +5,8 @@ namespace KRpgLib.Stats
     /// <summary>
     /// Abstract base class for an object that legalizes a stat value by a minimum, maximum, and precision value.
     /// </summary>
-    /// <typeparam name="TValue"></typeparam>
-    public abstract class AbstractStatLegalizer<TValue> where TValue : struct
+    /// <typeparam name="TValue">stat backing type</typeparam>
+    public abstract class StatLegalizerBase<TValue> where TValue : struct
     {
         /// <summary>
         /// Optional minimum legal value for the stat.
@@ -21,19 +21,22 @@ namespace KRpgLib.Stats
         /// </summary>
         public TValue? Precision { get; }
 
-        protected AbstractStatLegalizer(TValue? min, TValue? max, TValue? precision)
+        protected StatLegalizerBase(TValue? min, TValue? max, TValue? precision)
         {
             MinValue = min;
             MaxValue = max;
             Precision = precision;
         }
 
+        /// <summary>
+        /// Given a value, get the value as legalized by the provided minimum, maximum, and precision values, if any.
+        /// </summary>
         public abstract TValue GetLegalizedValue(TValue rawValue);
     }
     /// <summary>
     /// Concrete class for an object that legalizes an int (System.Int32) value by a minimum, maximum, and precision value.
     /// </summary>
-    public sealed class StatLegalizer_Int : AbstractStatLegalizer<int>
+    public sealed class StatLegalizer_Int : StatLegalizerBase<int>
     {
         public StatLegalizer_Int(int? min, int? max, int? precision)
             : base(min, max, precision) { }
@@ -46,7 +49,7 @@ namespace KRpgLib.Stats
     /// <summary>
     /// Concrete class for an object that legalizes a float (System.Single) value by a minimum, maximum, and precision value. Additionally requires specifying a number of decimals of precision while rounding.
     /// </summary>
-    public sealed class StatLegalizer_Float : AbstractStatLegalizer<float>
+    public sealed class StatLegalizer_Float : StatLegalizerBase<float>
     {
         /// <summary>
         /// Number of decimal places to consider for rounding purposes. Number is internally clamped between 0 and 8.
@@ -58,6 +61,9 @@ namespace KRpgLib.Stats
             DecimalsOfPrecisionForRounding = decimalsOfPrecisionForRounding;
         }
 
+        /// <summary>
+        /// Get the value legalized by the provided minimum, maximum, and precision values, if any, and uses the provided decimal count for rounding.
+        /// </summary>
         public override float GetLegalizedValue(float rawValue)
         {
             return StatUtilities.LegalizeFloatValue(rawValue, MinValue, MaxValue, Precision, DecimalsOfPrecisionForRounding);

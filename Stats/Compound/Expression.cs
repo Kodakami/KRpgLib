@@ -51,17 +51,17 @@ namespace KRpgLib.Stats.Compound
     /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class StatLiteral<TValue> : ValueExpression<TValue> where TValue : struct
     {
-        private readonly IStatTemplate<TValue> _template;
+        private readonly IStat<TValue> _stat;
         private readonly bool _useLegalizedValue;
-        public StatLiteral(IStatTemplate<TValue> template, bool useLegalizedValue)
+        public StatLiteral(IStat<TValue> stat, bool useLegalizedValue)
         {
-            _template = template ?? throw new System.ArgumentNullException(nameof(template));
+            _stat = stat ?? throw new System.ArgumentNullException(nameof(stat));
             _useLegalizedValue = useLegalizedValue;
         }
         protected override TValue Evaluate_Internal(IStatSet<TValue> safeStatSet)
         {
-            TValue raw = safeStatSet.GetStatValue(_template);
-            return _useLegalizedValue ? _template.GetLegalizedValue(raw) : raw;
+            TValue raw = safeStatSet.GetStatValue(_stat);
+            return _useLegalizedValue ? _stat.GetLegalizedValue(raw) : raw;
         }
     }
     /// <summary>

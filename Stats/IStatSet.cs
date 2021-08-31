@@ -9,8 +9,8 @@
         /// <summary>
         /// Get the raw value of a stat. If the stat has no recorded value, returns the stat's default value.
         /// </summary>
-        /// <param name="statTemplate">any stat template</param>
+        /// <param name="stat">any stat</param>
         /// <returns>current stat value, accurate to the represented moment in time</returns>
-        TValue GetStatValue(IStatTemplate<TValue> statTemplate);
+        TValue GetStatValue(IStat<TValue> stat);
     }
 }

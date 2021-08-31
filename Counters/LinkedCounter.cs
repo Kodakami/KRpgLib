@@ -25,7 +25,7 @@ namespace KRpgLib.Counters
 
         protected bool RollForTrigger()
         {
-            return Utility.Environment.Rng.NextDouble() < ChanceToTrigger;
+            return Utility.KRpgEnvironment.Instance.Rng.NextDouble() < ChanceToTrigger;
         }
         protected void PerformAction(CounterManager counterManager, object origin)
         {

@@ -12,11 +12,11 @@ namespace KRpgLib.Stats
 
         private readonly CachedSnapshotHelper _cachedSnapshot;  //always starts dirty.
 
-        //ctor
+        /// <summary>
+        /// Create a new stat manager. Use AddStatProvider() to pass in components that are stat providers such as class/race managers, affix managers, status effect managers, and passive ability managers.
+        /// </summary>
         public StatManager()
         {
-            // Pass in other components that are stat providers such as class/race managers, arpg-style modifier managers, status effect managers, and passive ability managers.
-
             _statProviders = new StatProviderCollection<TValue>();
             _cachedSnapshot = new CachedSnapshotHelper(this);
         }
@@ -76,13 +76,13 @@ namespace KRpgLib.Stats
         /// </summary>
         /// <param name="statTemplate">any stat template</param>
         /// <returns>raw value of the stat</returns>
-        public TValue GetStatValue(IStatTemplate<TValue> statTemplate) => _cachedSnapshot.GetCacheCopy().GetStatValue(statTemplate);
+        public TValue GetStatValue(IStat<TValue> statTemplate) => _cachedSnapshot.GetCacheCopy().GetStatValue(statTemplate);
         /// <summary>
         /// Get the current legalized value of a single stat.
         /// </summary>
         /// <param name="statTemplate">any stat template</param>
         /// <returns>legalized value of the stat</returns>
-        public TValue GetStatValueLegalized(IStatTemplate<TValue> statTemplate) => _cachedSnapshot.GetCacheCopy().GetStatValueLegalized(statTemplate);
+        public TValue GetStatValueLegalized(IStat<TValue> statTemplate) => _cachedSnapshot.GetCacheCopy().GetStatValueLegalized(statTemplate);
 
         /// <summary>
         /// Get a snapshot of all current stat values.
@@ -107,7 +107,7 @@ namespace KRpgLib.Stats
             public CachedSnapshotHelper(StatManager<TValue> context) : base(context) { }
             protected override StatSnapshot<TValue> CalculateNewCache()
             {
-                return StatSnapshot<TValue>.Create(Context._statProviders.GetStatDeltaCollection());
+                return StatSnapshot<TValue>.Create(Context._statProviders.GetDeltaCollection());
             }
             protected override StatSnapshot<TValue> CreateCacheCopy(StatSnapshot<TValue> cache)
             {

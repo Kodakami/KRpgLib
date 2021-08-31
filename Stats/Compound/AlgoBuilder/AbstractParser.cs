@@ -176,7 +176,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             {
                 return false;
             }
-            if (!StatTemplateRegistry.TryGetStatTemplate(identifier, out IStatTemplate<TValue> statTemplate))
+            if (!StatTemplateRegistry.TryGetStatTemplate(identifier, out IStat<TValue> statTemplate))
             {
                 Error($"\"{identifier.ToLowerInvariant()}\" is not a registered stat template identifier.");
                 return false;

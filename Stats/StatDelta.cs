@@ -1,26 +1,39 @@
-﻿namespace KRpgLib.Stats
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace KRpgLib.Stats
 {
     /// <summary>
-    /// A change to a stat such as an addition or multiplication. Stat template in question is not included in this object.
+    /// A combination of a stat and a delta for that stat.
     /// </summary>
     /// <typeparam name="TValue">stat backing type</typeparam>
     public struct StatDelta<TValue> where TValue : struct
     {
         /// <summary>
-        /// The value to change the stat by (leave reductions negative).
+        /// The affected stat.
         /// </summary>
-        public TValue Value { get; }
-
+        public IStat<TValue> Stat { get; }
         /// <summary>
-        /// The type of change (addition, multiplication, etc...). Use static instances of StatDeltaType.
+        /// The delta affecting the stat.
         /// </summary>
-        public StatDeltaType<TValue> Type { get; }
+        public Delta<TValue> Delta { get; }
+        /// <summary>
+        /// The delta type of the delta affecting the stat. Shorthand for Delta.Type.
+        /// </summary>
+        public DeltaType<TValue> DeltaType => Delta.Type;
+        /// <summary>
+        /// The delta value of the delta affecting the stat. Shorthand for Delta.Value.
+        /// </summary>
+        public TValue DeltaValue => Delta.Value;
 
-        // ctor
-        public StatDelta(StatDeltaType<TValue> type, TValue value)
+        public StatDelta(IStat<TValue> stat, Delta<TValue> delta)
         {
-            Value = value;
-            Type = type ?? throw new System.ArgumentNullException(nameof(type));
+            Stat = stat ?? throw new ArgumentNullException(nameof(stat));
+            Delta = delta;
         }
+        public StatDelta(IStat<TValue> stat, DeltaType<TValue> deltaType, TValue deltaValue)
+            :this(stat, new Delta<TValue>(deltaType, deltaValue))
+        { }
     }
 }

@@ -28,7 +28,7 @@ namespace KRpgLib.Utility.Gaccha
 
         public bool RollForProc()
         {
-            return Environment.Rng.NextDouble() < CurrentProbability;
+            return KRpgEnvironment.Instance.Rng.NextDouble() < CurrentProbability;
         }
     }
     public class GacchaLifeguard<TCapsule, TPredicateChain> : GacchaLifeguard<TCapsule>

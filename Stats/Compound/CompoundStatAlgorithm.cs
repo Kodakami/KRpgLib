@@ -6,10 +6,11 @@
     /// <typeparam name="TValue">stat backing type</typeparam>
     public sealed class CompoundStatAlgorithm<TValue> where TValue : struct
     {
+        // The root tree node.
         private readonly ValueExpression<TValue> _expression;
 
         /// <summary>
-        /// Constructor.
+        /// Create a new compound stat given the root node of an expresion tree.
         /// </summary>
         /// <param name="expression">a tree of expression objects that, when evaluated, results in a value of the stat backing type</param>
         public CompoundStatAlgorithm(ValueExpression<TValue> expression)
@@ -20,7 +21,7 @@
         /// Evaluates the algorithm in the context of the provided stat set.
         /// </summary>
         /// <param name="statSet">a stat set to provide stat values to the algorithm</param>
-        /// <returns>result of algorithm in the context of the provided stat set (raw compound stat value)</returns>
+        /// <returns>the result of the algorithm in the context of the provided stat set (raw compound stat value)</returns>
         public TValue CalculateValue(IStatSet<TValue> statSet)
         {
             if (statSet == null)
