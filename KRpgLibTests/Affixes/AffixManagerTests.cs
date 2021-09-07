@@ -2,7 +2,6 @@
 using KRpgLib.Affixes;
 using KRpgLib.Affixes.AffixTypes;
 using System;
-using KRpgLib.UnitTests.AffixesTests;
 
 namespace KRpgLibTests.Affixes
 {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using KRpgLib.Stats;
 using System;
-using KRpgLib.UnitTests.StatsTests;
 
 namespace KRpgLibTests.Stats
 {

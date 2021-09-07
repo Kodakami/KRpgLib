@@ -1,5 +1,4 @@
-﻿using KRpgLib.UnitTests.StatsTests.Compound;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
 namespace KRpgLibTests.Stats.Compound

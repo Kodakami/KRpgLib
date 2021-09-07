@@ -16,13 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AffixesFlagsIntegration\AffixesFlagsIntegration.csproj" />
-    <ProjectReference Include="..\AffixesItemsIntegration\AffixesItemsIntegration.csproj" />
-    <ProjectReference Include="..\AffixesStatsIntegration\AffixesStatsIntegration.csproj" />
     <ProjectReference Include="..\Affixes\Affixes.csproj" />
-    <ProjectReference Include="..\CountersIntegration\CountersIntegration.csproj" />
     <ProjectReference Include="..\Counters\Counters.csproj" />
     <ProjectReference Include="..\Flags\Flags.csproj" />
+    <ProjectReference Include="..\FullStack\FullStack.csproj" />
     <ProjectReference Include="..\Investments\Investments.csproj" />
     <ProjectReference Include="..\Items\Items.csproj" />
     <ProjectReference Include="..\Stats\Stats.csproj" />
