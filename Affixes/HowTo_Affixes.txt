@@ -39,12 +39,7 @@
 		}
 
 	.Save time with existing implementations!.
-		AffixesStatsIntegration:
-			StatDeltaModEffect<TValue> (abstract)
-			StatDeltaModEffect_Int
-			StatDeltaModEffect_Float
-
-		AffixesFlagsIntegration:
+			StatDeltaModEffect
 			FlagModEffect
 
 	---(Step 2)------------
@@ -77,12 +72,7 @@
 		}
 
 	.Save time with existing implementations!.
-		AffixesStatsIntegration:
-			StatDeltaModTemplate<TValue> (abstract)
-			StatDeltaModTemplate_Int
-			StatDeltaModTemplate_Float
-
-		AffixesFlagsIntegration:
+			StatDeltaModTemplate
 			FlagModTemplate
 
 	---(Step 3)------------

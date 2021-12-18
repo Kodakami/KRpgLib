@@ -4,16 +4,15 @@ using System.Collections.Generic;
 namespace KRpgLib.Stats.Compound.AlgoBuilder
 {
     /// <summary>
-    /// Base class for Algo parsers. Make a new subclass of this if your stat system uses non-int, non-float backing values. Override TryParserNumber() with your backing value's string-to-number parsing function.
+    /// The Algo parser.
     /// </summary>
-    /// <typeparam name="TValue">stat backing value</typeparam>
-    public abstract class AbstractParser<TValue> where TValue : struct
+    public sealed class Parser
     {
-        protected List<Token> Tokens { get; }
-        protected int CurrentTokenIndex { get; private set; }   // Don't set this to Tokens.Count, use Count - 1.
-        protected ExpressionRegistry<TValue> ExpressionRegistry { get; }
-        protected StatTemplateRegistry<TValue> StatTemplateRegistry { get; }
-        protected Stack<object> TheStack { get; } = new Stack<object>();
+        private readonly IReadOnlyList<Token> _tokens;
+        private int _currentTokenIndex;   // Don't set this to Tokens.Count, use Count - 1.
+        private readonly ExpressionRegistry _expressionRegistry;
+        private readonly StatRegistry _statRegistry;
+        private readonly Stack<object> _theStack = new Stack<object>();
 
         /// <summary>
         /// The state of the parser after the last call to TryParseTokens().
@@ -24,27 +23,27 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         /// </summary>
         public string StatusMessage { get; private set; } = "Incomplete.";
 
-        protected AbstractParser(List<Token> tokens, ExpressionRegistry<TValue> expressionRegistry, StatTemplateRegistry<TValue> statTemplateRegistry)
+        public Parser(IReadOnlyList<Token> tokens, ExpressionRegistry expressionRegistry, StatRegistry statRegistry)
         {
-            Tokens = tokens ?? throw new ArgumentNullException(nameof(tokens));
-            ExpressionRegistry = expressionRegistry ?? throw new ArgumentNullException(nameof(expressionRegistry));
-            StatTemplateRegistry = statTemplateRegistry ?? throw new ArgumentNullException(nameof(statTemplateRegistry));
+            _tokens = tokens ?? throw new ArgumentNullException(nameof(tokens));
+            _expressionRegistry = expressionRegistry ?? throw new ArgumentNullException(nameof(expressionRegistry));
+            _statRegistry = statRegistry ?? throw new ArgumentNullException(nameof(statRegistry));
         }
-        public bool TryParseTokens(out ValueExpression<TValue> algo)
+        public bool TryParseTokens(out ValueExpression algoExpressionTree)
         {
-            algo = null;
+            algoExpressionTree = null;
             ParseResult = Result.UNDEFINED;
             StatusMessage = "Incomplete.";
 
             // Reset to end.
-            CurrentTokenIndex = Tokens.Count - 1;
+            _currentTokenIndex = _tokens.Count - 1;
 
             // We parse backwards.
             // Each loop decrements CurrentTokenIndex until it falls below 0.
-            for (; CurrentTokenIndex >= 0;
-                CurrentTokenIndex--)
+            for (; _currentTokenIndex >= 0;
+                _currentTokenIndex--)
             {
-                Token current = Tokens[CurrentTokenIndex];
+                Token current = _tokens[_currentTokenIndex];
 
                 switch (current.TokenType)
                 {
@@ -90,13 +89,13 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
                 }
             }
 
-            if (!TryPopAsType("Value expression", out ValueExpression<TValue> finalValueExpression))
+            if (!TryPopAsType("Value expression", out ValueExpression finalValueExpression))
             {
                 Error("Expression tree does not resolve to a value expression.");
                 return false;
             }
 
-            if (TheStack.Count > 1)
+            if (_theStack.Count > 1)
             {
                 Error("Script ended with leftover objects on the stack. Check for extraneous characters at end.");
                 return false;
@@ -104,16 +103,14 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
 
             StatusMessage = "Parse completed without errors.";
             ParseResult = Result.OK;
-            algo = finalValueExpression;
+            algoExpressionTree = finalValueExpression;
             return true;
         }
-        /// <summary>
-        /// Call this when your custom parser functions encounter an unrecoverable error, then return false from the function if applicable.
-        /// </summary>
-        /// <param name="message">error message</param>
-        protected void Error(string message)
+
+        // Error message method.
+        private void Error(string message)
         {
-            string currentIndexStr = CurrentTokenIndex >= 0 && CurrentTokenIndex < Tokens.Count ? Tokens[CurrentTokenIndex].CharIndex.ToString() : "[Invalid index]";
+            string currentIndexStr = _currentTokenIndex >= 0 && _currentTokenIndex < _tokens.Count ? _tokens[_currentTokenIndex].CharIndex.ToString() : "[Invalid index]";
             StatusMessage = $"Parse error at index {currentIndexStr}. {message}";
             ParseResult = Result.FAIL;
         }
@@ -121,7 +118,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         {
             try
             {
-                obj = TheStack.Pop();
+                obj = _theStack.Pop();
                 return true;
             }
             catch (InvalidOperationException)
@@ -160,14 +157,14 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
                 return false;
             }
 
-            if (!TryParseNumber(literalString, out TValue value))
+            if (!TryParseNumber(literalString, out int value))
             {
-                Error($"Unable to parse number ({literalString}).");
+                Error($"Unable to parse number ({literalString}) as an integer.");
                 return false;
             }
 
             // Push literal expression onto the stack.
-            TheStack.Push(new Literal<TValue>(value));
+            _theStack.Push(new Literal(value));
             return true;
         }
         private bool DoPushStatLiteral(bool useLegalizedValue)
@@ -176,19 +173,19 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             {
                 return false;
             }
-            if (!StatTemplateRegistry.TryGetStatTemplate(identifier, out IStat<TValue> statTemplate))
+            if (!_statRegistry.TryGetStat(identifier, out Stat stat))
             {
                 Error($"\"{identifier.ToLowerInvariant()}\" is not a registered stat template identifier.");
                 return false;
             }
 
             // Push stat literal expression onto the stack.
-            TheStack.Push(new StatLiteral<TValue>(statTemplate, useLegalizedValue));
+            _theStack.Push(new StatLiteral(stat, useLegalizedValue));
             return true;
         }
         private bool DoPushIdentifier(Token token)
         {
-            TheStack.Push(token.Literal);
+            _theStack.Push(token.Literal);
             return true;
         }
         private bool DoBeginExpression()
@@ -202,7 +199,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             }
 
             // Expression processing and end-of-expression consumption.
-            if (!ExpressionRegistry.TryBuildAndPushExpression(expressionKeyword, this, out string message))
+            if (!_expressionRegistry.TryBuildAndPushExpression(expressionKeyword, this, out string message))
             {
                 if (message != null)
                 {
@@ -217,16 +214,13 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         }
         private bool DoEndExpression()
         {
-            TheStack.Push(null);
+            _theStack.Push(null);
             return true;
         }
-        /// <summary>
-        /// Override this with your backing value's own string-to-number function.
-        /// </summary>
-        /// <param name="str">the number string (numerals and decimal points)</param>
-        /// <param name="value">the parsed value</param>
-        /// <returns>true if parse was successful</returns>
-        protected abstract bool TryParseNumber(string str, out TValue value);
+
+        // Pass the buck to System.Int32.
+        private bool TryParseNumber(string str, out int value) => int.TryParse(str, out value);
+
         /// <summary>
         /// Tries to pop the top object off the stack and cast to provided type. Calls to Error() beforehand if returning false.
         /// </summary>
@@ -262,10 +256,10 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             // Out list.
             args = new List<T>();
 
-            while (TheStack.Count != 0)
+            while (_theStack.Count != 0)
             {
                 // Check to see if the next object on the stack is null.
-                if (TheStack.Peek() == null)
+                if (_theStack.Peek() == null)
                 {
                     // If null, then this is the end of the expression (don't consume the null object).
                     return true;
@@ -317,33 +311,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         /// <param name="obj">any object</param>
         public void DoPushObject(object obj)
         {
-            TheStack.Push(obj);
-        }
-    }
-    /// <summary>
-    /// Concrete parser class for stats with int (System.Int32) backing values.
-    /// </summary>
-    public sealed class Parser_Int : AbstractParser<int>
-    {
-        public Parser_Int(List<Token> tokens, ExpressionRegistry<int> expressionRegistry, StatTemplateRegistry<int> statTemplateRegistry)
-            :base(tokens, expressionRegistry, statTemplateRegistry) { }
-
-        protected override bool TryParseNumber(string str, out int value)
-        {
-            return int.TryParse(str, out value);
-        }
-    }
-    /// <summary>
-    /// Concrete parser class for stats with float (System.Single) backing values.
-    /// </summary>
-    public sealed class Parser_Float : AbstractParser<float>
-    {
-        public Parser_Float(List<Token> tokens, ExpressionRegistry<float> expressionRegistry, StatTemplateRegistry<float> statTemplateRegistry)
-            : base(tokens, expressionRegistry, statTemplateRegistry) { }
-
-        protected override bool TryParseNumber(string str, out float value)
-        {
-            return float.TryParse(str, out value);
+            _theStack.Push(obj);
         }
     }
 }

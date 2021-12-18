@@ -10,24 +10,16 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
     [TestClass]
     public class ScannerTests
     {
-        [TestMethod]
-        public void Constructor_WithNullScript_ReturnsArgEx()
+        [DataRow(null, "NULL")]
+        [DataRow("", "Empty String")]
+        [DataRow(" ", "White Space")]
+        [DataRow("\n", "Newline")]
+        [DataRow("\r", "Carriage Return")]
+        [DataRow("\t", "Tab")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
+        private static void Constructor_WithSimpleInvalidScript_ThrowsArgNullEx()
         {
-            void exceptionalAction() => new Scanner(null);
-
-            Assert.ThrowsException<ArgumentException>(exceptionalAction);
-        }
-        [TestMethod]
-        public void Constructor_WithEmptyScript_ReturnsArgEx()
-        {
-            void exceptionalAction() => new Scanner("");
-
-            Assert.ThrowsException<ArgumentException>(exceptionalAction);
-        }
-        [TestMethod]
-        public void Constructor_WithWhiteSpaceScript_ReturnsArgEx()
-        {
-            void exceptionalAction() => new Scanner(" ");
+            static void exceptionalAction() => new Scanner("");
 
             Assert.ThrowsException<ArgumentException>(exceptionalAction);
         }
@@ -42,7 +34,7 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
         {
             var mockScanner = new Scanner(singleCharScript);
 
-            if (!mockScanner.TryScanTokens(out List<Token> resultTokens))
+            if (!mockScanner.TryScanTokens(out IReadOnlyList<Token> resultTokens))
             {
                 Assert.Fail("Scanner reported a failure to parse the script.");
             }
@@ -76,7 +68,7 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
 
             var mockScanner = new Scanner(SIMPLE_SCRIPT);
 
-            if (!mockScanner.TryScanTokens(out List<Token> resultTokens))
+            if (!mockScanner.TryScanTokens(out IReadOnlyList<Token> resultTokens))
             {
                 Assert.Fail("Scanner reported a failure to parse the script.");
             }

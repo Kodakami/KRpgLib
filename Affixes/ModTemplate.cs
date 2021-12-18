@@ -1,6 +1,7 @@
-﻿using KRpgLib.Utility.KomponentObject;
+﻿using KRpgLib.Utility;
 using KRpgLib.Utility.TemplateObject;
 using System;
+using KRpgLib.Utility.Serialization;
 
 namespace KRpgLib.Affixes
 {
@@ -11,11 +12,14 @@ namespace KRpgLib.Affixes
     {
         // TODO: Tags.
 
+        // Only subclasses in Utility can implement.
+        protected internal ModTemplate() { }
+
         public Mod CreateNewModInstance(Random rng)
         {
             var mod = CreateNewModInstance_Internal();
 
-            // Bad developers may return null.
+            // Bad developers might return null.
             mod?.RollNewArg(rng);
 
             return mod;
@@ -24,9 +28,11 @@ namespace KRpgLib.Affixes
         /// <summary>
         /// Create a new mod instance of the correct type and pass it back (no need for pre-rolling).
         /// </summary>
-        protected virtual Mod CreateNewModInstance_Internal() => new Mod(this);
+        protected virtual Mod CreateNewModInstance_Internal() => default;
 
         public abstract IModEffect GetModEffect(Mod modInstance);
+
+        public abstract ModSerializer GetModSerializer();
     }
     /// <summary>
     /// Base class for mod templates with arguments (rolls).
@@ -35,6 +41,8 @@ namespace KRpgLib.Affixes
     public abstract class ModTemplate<TArg> : ModTemplate
         // TArg is an arbitrary type.
     {
+        private static ModSerializer<TArg> _modSerializerFlyweight;
+
         /// <summary>
         /// Return a new randomly-rolled arg value for the mod instance.
         /// </summary>
@@ -54,5 +62,14 @@ namespace KRpgLib.Affixes
         }
 
         protected override Mod CreateNewModInstance_Internal() => new Mod<TArg>(this);
+
+        // TODO: Find a balance between the number of parallel mod inheritence lines. Branch serializing between arg and no-arg mods is ugly.
+        // Need to remember that mods are getting serialized, not mod templates.
+
+        public override ModSerializer GetModSerializer()
+        {
+            return _modSerializerFlyweight ?? (_modSerializerFlyweight = new ModSerializer<TArg>());
+        }
+        public abstract Serializer<TArg> GetArgSerializer();
     }
 }

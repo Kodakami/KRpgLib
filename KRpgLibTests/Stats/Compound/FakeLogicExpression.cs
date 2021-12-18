@@ -6,7 +6,7 @@ using KRpgLib.Stats.Compound;
 
 namespace KRpgLibTests.Stats.Compound
 {
-    public class FakeLogicExpression : LogicExpression<int>
+    public class FakeLogicExpression : LogicExpression
     {
         private readonly bool _literal;
         public FakeLogicExpression(bool literal)
@@ -14,7 +14,7 @@ namespace KRpgLibTests.Stats.Compound
             _literal = literal;
         }
 
-        protected override bool Evaluate_Internal(IStatSet<int> safeStatSet)
+        protected override bool Evaluate_Internal(IStatSet safeStatSet)
         {
             return _literal;
         }

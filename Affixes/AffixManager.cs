@@ -3,18 +3,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using KRpgLib.Affixes.AffixTypes;
+using KRpgLib.Stats;
+using KRpgLib.Flags;
 
 namespace KRpgLib.Affixes
 {
     /// <summary>
     /// A collector and manipulator of Affixes considered "applied" to something moddable.
     /// </summary>
-    public class AffixManager
+    public class AffixManager : IDynamicStatProvider, IDynamicFlagProvider
     {
         private readonly List<Affix> _appliedAffixes;
 
         private readonly AffixApplicationHelper _affixApplicationHelper;
         private readonly ModEffectCacheHelper _effectCacheHelper;
+
+        // Invoked by SetDirty().
+        public event Action OnStatsChanged;
+        public event Action OnFlagsChanged;
 
         public AffixManager()
         {
@@ -51,7 +57,7 @@ namespace KRpgLib.Affixes
             if (changeOccurred)
             {
                 // Set this effect collection dirty.
-                _effectCacheHelper.SetDirty_FromExternal();
+                SetDirty();
             }
 
             return changeOccurred;
@@ -197,7 +203,7 @@ namespace KRpgLib.Affixes
             _appliedAffixes.Add(affix);
 
             // Set this effect collection dirty.
-            _effectCacheHelper.SetDirty_FromExternal();
+            SetDirty();
         }
         private void AddAffixes_Internal(IEnumerable<Affix> affixes)
         {
@@ -206,7 +212,7 @@ namespace KRpgLib.Affixes
             _appliedAffixes.AddRange(affixes);
 
             // Set this effect collection dirty.
-            _effectCacheHelper.SetDirty_FromExternal();
+            SetDirty();
         }
         private void RemoveAffix_Internal(Affix affix)
         {
@@ -215,7 +221,7 @@ namespace KRpgLib.Affixes
             _appliedAffixes.Remove(affix);
 
             // Set this effect collection dirty.
-            _effectCacheHelper.SetDirty_FromExternal();
+            SetDirty();
         }
         private void RemoveAffixes_Internal(IEnumerable<Affix> affixes)
         {
@@ -227,7 +233,7 @@ namespace KRpgLib.Affixes
             }
 
             // Set this effect collection dirty.
-            _effectCacheHelper.SetDirty_FromExternal();
+            SetDirty();
         }
         private void ClearAffixes_Internal()
         {
@@ -236,8 +242,27 @@ namespace KRpgLib.Affixes
             _appliedAffixes.Clear();
 
             // Set this effect collection dirty.
-            _effectCacheHelper.SetDirty_FromExternal();
+            SetDirty();
         }
+        // Sets the ModEffectCacheHelper dirty and invokes the OnStatsChanged event.
+        private void SetDirty()
+        {
+            _effectCacheHelper.SetDirty_FromExternal();
+            OnStatsChanged.Invoke();
+        }
+
+        public virtual DeltaCollection GetDeltaCollection()
+        {
+            // Implicit conversion on StatDeltaModEffect.
+            return new DeltaCollection(_effectCacheHelper.GetCacheCopy().GetModEffects<StatDeltaModEffect>().Cast<DeltaCollection>());
+        }
+        public IReadOnlyFlagCollection GetFlagCollection()
+        {
+            // Implicit conversion on FlagModEffect.
+            return new FlagCollection(_effectCacheHelper.GetCacheCopy().GetModEffects<FlagModEffect>().Cast<FlagCollection>());
+        }
+
+        //Flags
 
         private class AffixApplicationHelper
         {
@@ -287,13 +312,8 @@ namespace KRpgLib.Affixes
                 }
 
                 // Custom limitations.
-                var (CanBeApplied, FailureMessage) = _parent.AffixCanBeApplied(affix);
-                if (!CanBeApplied)
-                {
-                    return false;
-                }
-
-                return true;
+                var (CanBeApplied, _) = _parent.AffixCanBeApplied(affix);
+                return CanBeApplied;
             }
         }
         private class ModEffectCacheHelper : CachedValueController<ModEffectCollection, AffixManager>

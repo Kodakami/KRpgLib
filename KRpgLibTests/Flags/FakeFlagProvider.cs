@@ -19,7 +19,7 @@ namespace KRpgLibTests.Flags
             return new FlagCollection(_flagsProvided);
         }
     }
-    public class FakeFlagProvider_Dynamic : IFlagProvider_Dynamic
+    public class FakeFlagProvider_Dynamic : IDynamicFlagProvider
     {
         public static readonly FakeFlagTemplate FlagTemplateProvided_InTrueState = new FakeFlagTemplate();
         public static readonly FakeFlagTemplate FlagTemplateProvided_InFalseState = new FakeFlagTemplate();

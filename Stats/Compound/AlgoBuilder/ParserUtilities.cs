@@ -5,31 +5,29 @@ using System.Text;
 namespace KRpgLib.Stats.Compound.AlgoBuilder
 {
     /// <summary>
-    /// A delegate for functions which pop objects off the top of an AbstractParser's stack and push to an existing queue of parameters.
+    /// A delegate for functions which pop objects off the top of a Parser's stack and push to an existing queue of parameters.
     /// </summary>
-    /// <typeparam name="TValue">stat backing type</typeparam>
     /// <param name="parser">parser instance with object stack</param>
     /// <param name="queue">parameter queue</param>
     /// <returns>true if process encountered no errors</returns>
-    public delegate bool PopParamsDelegate<TValue>(AbstractParser<TValue> parser, Queue<object> queue) where TValue : struct;
+    public delegate bool PopParamsFunc(Parser parser, Queue<object> queue);
     /// <summary>
-    /// A delegate for functions which return a new instance of an object (usually an Expression object) to be placed on an AbstractParser's object stack.
+    /// A delegate for functions which return a new instance of an object (usually an Expression object) to be placed on a Parser's object stack.
     /// </summary>
-    /// <typeparam name="TValue">stat backing type</typeparam>
     /// <param name="queue">parameter queue</param>
     /// <returns>new object</returns>
-    public delegate object ExpressionCtorDelegate<TValue>(Queue<object> queue) where TValue : struct;
+    public delegate object ExpressionCtorDelegate(Queue<object> queue);
 
     /// <summary>
     /// Methods for building Expression objects inside a parser.
     /// </summary>
     /// <typeparam name="TValue">stat backing type</typeparam>
-    public static class ParserUtilities<TValue> where TValue : struct
+    public static class ParserUtilities
     {
         private static bool PopCountedParams_Internal<TExpression>(
             int count,
             string expectedObjName,
-            AbstractParser<TValue> parser,
+            Parser parser,
             Queue<object> queue)
         {
             for (int i = 0; i < count; i++)
@@ -42,7 +40,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             }
             return true;
         }
-        private static bool PopMultiaryParams_Internal<TExpression>(string expectedObjName, AbstractParser<TValue> parser, Queue<object> paramQueue)
+        private static bool PopMultiaryParams_Internal<TExpression>(string expectedObjName, Parser parser, Queue<object> paramQueue)
         {
             if (parser.TryPopManyAsType(expectedObjName, out List<TExpression> list))
             {
@@ -57,17 +55,17 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         /// <summary>
         /// Pop the expected parameters for a conditional expression (condition (LogicExpression), consequent (ValueExpression), alternative (ValueExpression)).
         /// </summary>
-        public static bool PopConditionalParams(AbstractParser<TValue> parser, Queue<object> paramQueue)
+        public static bool PopConditionalParams(Parser parser, Queue<object> paramQueue)
         {
-            if (parser.TryPopAsType("Logic expression", out LogicExpression<TValue> condition))
+            if (parser.TryPopAsType("Logic expression", out LogicExpression condition))
             {
                 paramQueue.Enqueue(condition);
 
-                if (parser.TryPopAsType("Value expression", out ValueExpression<TValue> consequent))
+                if (parser.TryPopAsType("Value expression", out ValueExpression consequent))
                 {
                     paramQueue.Enqueue(consequent);
 
-                    if (parser.TryPopAsType("Value expression", out ValueExpression<TValue> alternative))
+                    if (parser.TryPopAsType("Value expression", out ValueExpression alternative))
                     {
                         paramQueue.Enqueue(alternative);
                         return true;
@@ -77,55 +75,55 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             return false;
         }
 
-        private static bool PopCountedLogicParams_Internal(int count, AbstractParser<TValue> parser, Queue<object> paramQueue)
+        private static bool PopCountedLogicParams_Internal(int count, Parser parser, Queue<object> paramQueue)
         {
-            return PopCountedParams_Internal<LogicExpression<TValue>>(count, "Logic Expression", parser, paramQueue);
+            return PopCountedParams_Internal<LogicExpression>(count, "Logic Expression", parser, paramQueue);
         }
-        private static bool PopCountedValueParams_Internal(int count, AbstractParser<TValue> parser, Queue<object> paramQueue)
+        private static bool PopCountedValueParams_Internal(int count, Parser parser, Queue<object> paramQueue)
         {
-            return PopCountedParams_Internal<ValueExpression<TValue>>(count, "Value Expression", parser, paramQueue);
+            return PopCountedParams_Internal<ValueExpression>(count, "Value Expression", parser, paramQueue);
         }
         /// <summary>
-        /// Pop the expected parameter for a unary logic operation (input (logic expression)).
+        /// Pop the expected parameter for a unary logic operation (input (LogicExpression)).
         /// </summary>
-        public static bool PopUnaryLogicParams(AbstractParser<TValue> parser, Queue<object> paramQueue)
+        public static bool PopUnaryLogicParams(Parser parser, Queue<object> paramQueue)
         {
             return PopCountedLogicParams_Internal(1, parser, paramQueue);
         }
         /// <summary>
         /// Pop the expected parameters for a binary logic operation (leftHandValue (LogicExpression), rightHandValue (LogicExpression)).
         /// </summary>
-        public static bool PopBinaryLogicParams(AbstractParser<TValue> parser, Queue<object> paramQueue)
+        public static bool PopBinaryLogicParams(Parser parser, Queue<object> paramQueue)
         {
             return PopCountedLogicParams_Internal(2, parser, paramQueue);
         }
         /// <summary>
-        /// Pop the expected parameters for a multiary logic operation (list (List<LogicExpression>)).
+        /// Pop the expected parameters for a multiary logic operation (params (IEnumerable<LogicExpression>)).
         /// </summary>
-        public static bool PopMultiaryLogicParams(AbstractParser<TValue> parser, Queue<object> paramQueue)
+        public static bool PopMultiaryLogicParams(Parser parser, Queue<object> paramQueue)
         {
-            return PopMultiaryParams_Internal<LogicExpression<TValue>>("Logic expression", parser, paramQueue);
+            return PopMultiaryParams_Internal<LogicExpression>("Logic Expression", parser, paramQueue);
         }
         /// <summary>
-        /// Pop the expected parameter for a unary value operation (input (value expression)).
+        /// Pop the expected parameter for a unary value operation (input (ValueExpression)).
         /// </summary>
-        public static bool PopUnaryValueParams(AbstractParser<TValue> parser, Queue<object> paramQueue)
+        public static bool PopUnaryValueParams(Parser parser, Queue<object> paramQueue)
         {
             return PopCountedValueParams_Internal(1, parser, paramQueue);
         }
         /// <summary>
         /// Pop the expected parameters for a binary value operation (leftHandValue (ValueExpression), rightHandValue (ValueExpression)).
         /// </summary>
-        public static bool PopBinaryValueParams(AbstractParser<TValue> parser, Queue<object> paramQueue)
+        public static bool PopBinaryValueParams(Parser parser, Queue<object> paramQueue)
         {
             return PopCountedValueParams_Internal(2, parser, paramQueue);
         }
         /// <summary>
-        /// Pop the expected parameters for a multiary value operation (list (List<ValueExpression>)).
+        /// Pop the expected parameters for a multiary value operation (params (IEnumerable<ValueExpression>)).
         /// </summary>
-        public static bool PopMultiaryValueParams(AbstractParser<TValue> parser, Queue<object> paramQueue)
+        public static bool PopMultiaryValueParams(Parser parser, Queue<object> paramQueue)
         {
-            return PopMultiaryParams_Internal<ValueExpression<TValue>>("Value expression", parser, paramQueue);
+            return PopMultiaryParams_Internal<ValueExpression>("Value Expression", parser, paramQueue);
         }
 
         /// <summary>
@@ -178,12 +176,12 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         /// <param name="paramQueue">queue of parameters from PopParamsDelegate</param>
         /// <param name="comparisonType">comparison type</param>
         /// <returns>new comparison expression object</returns>
-        public static object ConstructComparison(Queue<object> paramQueue, ComparisonType<TValue> comparisonType)
+        public static object ConstructComparison(Queue<object> paramQueue, ComparisonType comparisonType)
         {
-            var left = (ValueExpression<TValue>)paramQueue.Dequeue();
-            var right = (ValueExpression<TValue>)paramQueue.Dequeue();
+            var left = (ValueExpression)paramQueue.Dequeue();
+            var right = (ValueExpression)paramQueue.Dequeue();
 
-            return new Comparison<TValue>(comparisonType, left, right);
+            return new Comparison(comparisonType, left, right);
         }
         /// <summary>
         /// Given a parameter queue, construct a conditional expression object.
@@ -192,11 +190,11 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         /// <returns>new conditional expression object</returns>
         public static object ConstructConditional(Queue<object> paramQueue)
         {
-            var condition = (LogicExpression<TValue>)paramQueue.Dequeue();
-            var consequent = (ValueExpression<TValue>)paramQueue.Dequeue();
-            var alternative = (ValueExpression<TValue>)paramQueue.Dequeue();
+            var condition = (LogicExpression)paramQueue.Dequeue();
+            var consequent = (ValueExpression)paramQueue.Dequeue();
+            var alternative = (ValueExpression)paramQueue.Dequeue();
 
-            return new ConditionalExpression<TValue>(condition, consequent, alternative);
+            return new ConditionalExpression(condition, consequent, alternative);
         }
     }
 }

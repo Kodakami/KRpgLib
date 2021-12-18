@@ -19,7 +19,7 @@ namespace KRpgLibTests.Stats.Compound
 
             var stubStatSet = new FakeStatSet().Snapshot;
             var stubLiteral = new FakeLogicExpression(LITERAL_INPUT);
-            var mockOperation = new LogicOperation_Not<int>(stubLiteral);
+            var mockOperation = new LogicOperation_Not(stubLiteral);
 
             var resultValue = mockOperation.Evaluate(stubStatSet);
 
@@ -27,8 +27,8 @@ namespace KRpgLibTests.Stats.Compound
         }
 
         // Binary Operations.
-        private void BinaryLogicTest(
-            Func<LogicExpression<int>, LogicExpression<int>, LogicOperation_Binary<int>> mockOperationGetter,
+        private static void BinaryLogicTest(
+            Func<LogicExpression, LogicExpression, LogicOperation_Binary> mockOperationGetter,
             bool left, bool right, bool expected)
         {
             var stubStatSet = new FakeStatSet().Snapshot;
@@ -46,7 +46,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(false, false, false, DisplayName = "F && F == F")]
         public void And_Evaluate_ReturnsCorrectValue(bool left, bool right, bool expected)
         {
-            LogicOperation_Binary<int> mockOperationGetter(LogicExpression<int> l, LogicExpression<int> r) => new LogicOperation_And<int>(l, r);
+            static LogicOperation_Binary mockOperationGetter(LogicExpression l, LogicExpression r) => new LogicOperation_And(l, r);
 
             BinaryLogicTest(mockOperationGetter, left, right, expected);
         }
@@ -56,7 +56,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(false, false, false, DisplayName = "F || F == F")]
         public void Or_Evaluate_ReturnsCorrectValue(bool left, bool right, bool expected)
         {
-            LogicOperation_Binary<int> mockOperationGetter(LogicExpression<int> l, LogicExpression<int> r) => new LogicOperation_Or<int>(l, r);
+            static LogicOperation_Binary mockOperationGetter(LogicExpression l, LogicExpression r) => new LogicOperation_Or(l, r);
 
             BinaryLogicTest(mockOperationGetter, left, right, expected);
         }
@@ -66,21 +66,21 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(false, false, false, DisplayName = "F ^ F == F")]
         public void Xor_Evaluate_ReturnsCorrectValue(bool left, bool right, bool expected)
         {
-            LogicOperation_Binary<int> mockOperationGetter(LogicExpression<int> l, LogicExpression<int> r) => new LogicOperation_Xor<int>(l, r);
+            static LogicOperation_Binary mockOperationGetter(LogicExpression l, LogicExpression r) => new LogicOperation_Xor(l, r);
 
             BinaryLogicTest(mockOperationGetter, left, right, expected);
         }
 
         // Multiary Operations.
-        private void MultiaryLogicTest(
-            Func<List<LogicExpression<int>>, LogicOperation_Multiary<int>> mockOperationGetter,
+        private static void MultiaryLogicTest(
+            Func<IEnumerable<LogicExpression>, LogicOperation_Multiary> mockOperationGetter,
             bool item1, bool item2, bool item3, bool expected)
         {
             var stubStatSet = new FakeStatSet().Snapshot;
             var stubLiteral1 = new FakeLogicExpression(item1);
             var stubLiteral2 = new FakeLogicExpression(item2);
             var stubLiteral3 = new FakeLogicExpression(item3);
-            var stubExpressionList = new List<LogicExpression<int>>() { stubLiteral1, stubLiteral2, stubLiteral3 };
+            var stubExpressionList = new List<LogicExpression>() { stubLiteral1, stubLiteral2, stubLiteral3 };
             var mockOperation = mockOperationGetter(stubExpressionList);
 
             var resultValue = mockOperation.Evaluate(stubStatSet);
@@ -92,7 +92,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(false, true, true, false, DisplayName = "All(FTT) == F")]
         public void All_Evaluate_ReturnsCorrectValue(bool item1, bool item2, bool item3, bool expected)
         {
-            LogicOperation_Multiary<int> mockOperationGetter(List<LogicExpression<int>> list) => new LogicOperation_All<int>(list);
+            static LogicOperation_Multiary mockOperationGetter(IEnumerable<LogicExpression> list) => new LogicOperation_All(list);
 
             MultiaryLogicTest(mockOperationGetter, item1, item2, item3, expected);
         }
@@ -101,7 +101,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(false, false, false, false, DisplayName = "Any(FFF) == F")]
         public void Any_Evaluate_ReturnsCorrectValue(bool item1, bool item2, bool item3, bool expected)
         {
-            LogicOperation_Multiary<int> mockOperationGetter(List<LogicExpression<int>> list) => new LogicOperation_Any<int>(list);
+            static LogicOperation_Multiary mockOperationGetter(IEnumerable<LogicExpression> list) => new LogicOperation_Any(list);
 
             MultiaryLogicTest(mockOperationGetter, item1, item2, item3, expected);
         }
@@ -111,17 +111,17 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(false, false, false, false, DisplayName = "One(FFF) == F")]
         public void One_Evaluate_ReturnsCorrectValue(bool item1, bool item2, bool item3, bool expected)
         {
-            LogicOperation_Multiary<int> mockOperationGetter(List<LogicExpression<int>> list) => new LogicOperation_One<int>(list);
+            static LogicOperation_Multiary mockOperationGetter(IEnumerable<LogicExpression> list) => new LogicOperation_One(list);
 
             MultiaryLogicTest(mockOperationGetter, item1, item2, item3, expected);
         }
 
-        private void ComparisonTest(ComparisonType<int> comparisonType, int left, int right, bool expected)
+        private static void ComparisonTest(ComparisonType comparisonType, int left, int right, bool expected)
         {
             var stubStatSet = new FakeStatSet().Snapshot;
-            var stubLiteralLeft = new Literal<int>(left);
-            var stubLiteralRight = new Literal<int>(right);
-            var mockOperation = new KRpgLib.Stats.Compound.Comparison<int>(comparisonType, stubLiteralLeft, stubLiteralRight);
+            var stubLiteralLeft = new Literal(left);
+            var stubLiteralRight = new Literal(right);
+            var mockOperation = new Comparison(comparisonType, stubLiteralLeft, stubLiteralRight);
 
             var resultBool = mockOperation.Evaluate(stubStatSet);
 
@@ -132,7 +132,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(0, 1, false, DisplayName = "0 == 1 [F]")]
         public void EqualTo_Evaluate_ReturnsCorrectValue(int left, int right, bool expected)
         {
-            var mockComparisonType = CommonInstances.Int.EqualTo;
+            var mockComparisonType = CommonInstances.EqualTo;
 
             ComparisonTest(mockComparisonType, left, right, expected);
         }
@@ -141,7 +141,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(0, 0, false, DisplayName = "0 != 0 [F]")]
         public void NotEqualTo_Evaluate_ReturnsCorrectValue(int left, int right, bool expected)
         {
-            var mockComparisonType = CommonInstances.Int.NotEqualTo;
+            var mockComparisonType = CommonInstances.NotEqualTo;
 
             ComparisonTest(mockComparisonType, left, right, expected);
         }
@@ -151,7 +151,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(0, 1, false, DisplayName = "0 > 1 [F]")]
         public void GreaterThan_Evaluate_ReturnsCorrectValue(int left, int right, bool expected)
         {
-            var mockComparisonType = CommonInstances.Int.GreaterThan;
+            var mockComparisonType = CommonInstances.GreaterThan;
 
             ComparisonTest(mockComparisonType, left, right, expected);
         }
@@ -161,7 +161,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(0, 1, false, DisplayName = "0 >= 1 [F]")]
         public void GreaterThanOrEqualTo_Evaluate_ReturnsCorrectValue(int left, int right, bool expected)
         {
-            var mockComparisonType = CommonInstances.Int.GreaterThanOrEqualTo;
+            var mockComparisonType = CommonInstances.GreaterThanOrEqualTo;
 
             ComparisonTest(mockComparisonType, left, right, expected);
         }
@@ -171,7 +171,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(1, 0, false, DisplayName = "1 < 0 [F]")]
         public void LessThan_Evaluate_ReturnsCorrectValue(int left, int right, bool expected)
         {
-            var mockComparisonType = CommonInstances.Int.LessThan;
+            var mockComparisonType = CommonInstances.LessThan;
 
             ComparisonTest(mockComparisonType, left, right, expected);
         }
@@ -181,7 +181,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(1, 0, false, DisplayName = "1 <= 0 [F]")]
         public void LessThanOrEqualTo_Evaluate_ReturnsCorrectValue(int left, int right, bool expected)
         {
-            var mockComparisonType = CommonInstances.Int.LessThanOrEqualTo;
+            var mockComparisonType = CommonInstances.LessThanOrEqualTo;
 
             ComparisonTest(mockComparisonType, left, right, expected);
         }

@@ -6,9 +6,10 @@ namespace KRpgLib.Stats
     /// <summary>
     /// An object that manages the stats for something. This may be owned by an RPG character, an enemy, etc.
     /// </summary>
-    public class StatManager<TValue> : IStatSet<TValue> where TValue : struct
+    public class StatManager : IStatSet
     {
-        private readonly StatProviderCollection<TValue> _statProviders;
+        // The actual collection of providers (static and dynamic) as well as the delta collection cache.
+        private readonly StatProviderCollection _statProviders;
 
         private readonly CachedSnapshotHelper _cachedSnapshot;  //always starts dirty.
 
@@ -17,99 +18,96 @@ namespace KRpgLib.Stats
         /// </summary>
         public StatManager()
         {
-            _statProviders = new StatProviderCollection<TValue>();
+            _statProviders = new StatProviderCollection();
             _cachedSnapshot = new CachedSnapshotHelper(this);
         }
 
         /// <summary>
         /// Add a stat provider to the stat manager.
         /// </summary>
-        /// <param name="statProvider">an IStatProvider</param>
-        public void AddStatProvider(IStatProvider<TValue> statProvider)
+        /// <param name="provider">an IStatProvider</param>
+        public bool AddStatProvider(IStatProvider provider)
         {
             // Null check.
-            AddStatProvider_Internal(statProvider ?? throw new System.ArgumentNullException(nameof(statProvider)));
+            return AddStatProvider_Internal(provider ?? throw new System.ArgumentNullException(nameof(provider)));
         }
         /// <summary>
-        /// Add a list of stat providers to the stat manager.
+        /// Add a dynamic stat provider to the stat manager. Subscribes to the OnStatsChanged event.
         /// </summary>
-        /// <param name="statProviders">an IStatProvider list</param>
-        public void AddStatProviders(IEnumerable<IStatProvider<TValue>> statProviders)
+        /// <param name="provider">an IDynamicStatProvider</param>
+        public bool AddStatProvider(IDynamicStatProvider provider)
         {
-            // Null check.
-            foreach (var provider in statProviders ?? throw new System.ArgumentNullException(nameof(statProviders)))
-            {
-                // Null list item check after the jump.
-                AddStatProvider(provider);
-            }
+            return AddStatProvider_Internal(provider ?? throw new System.ArgumentNullException(nameof(provider)));
         }
+
         /// <summary>
-        /// Remove a stat provider from the stat manager (will no longer be queried for stat deltas when updating stat cache).
+        /// Remove a stat provider from the stat manager (will no longer be queried for deltas when updating stat cache).
         /// </summary>
         /// <param name="statProvider">an IStatProvider</param>
-        public void RemoveStatProvider(IStatProvider<TValue> statProvider)
+        public void RemoveStatProvider(IStatProvider statProvider)
         {
             // Null check.
             RemoveStatProvider_Internal(statProvider ?? throw new System.ArgumentNullException(nameof(statProvider)));
         }
         /// <summary>
-        /// Remove a list of stat providers from the stat manager (will no longer be queried for stat deltas when updating stat cache).
+        /// Remove a dynamic stat provider from the stat manager (will no longer be queried for deltas when updating stat cache). Unsubscribes from the OnStatsChanged event.
         /// </summary>
-        /// <param name="statProviders">an IStatProvider list</param>
-        public void RemoveStatProviders(IEnumerable<IStatProvider<TValue>> statProviders)
+        /// <param name="statProvider">an IDynamicStatProvider</param>
+        public void RemoveStatProvider(IDynamicStatProvider statProvider)
         {
             // Null check.
-            if (statProviders == null)
-            {
-                throw new System.ArgumentNullException(nameof(statProviders));
-            }
-
-            foreach (var provider in statProviders)
-            {
-                // Null list item check after the jump.
-                RemoveStatProvider(provider);
-            }
+            RemoveStatProvider_Internal(statProvider ?? throw new System.ArgumentNullException(nameof(statProvider)));
         }
 
         /// <summary>
         /// Get the current raw value of a single stat.
         /// </summary>
-        /// <param name="statTemplate">any stat template</param>
+        /// <param name="stat">any stat</param>
         /// <returns>raw value of the stat</returns>
-        public TValue GetStatValue(IStat<TValue> statTemplate) => _cachedSnapshot.GetCacheCopy().GetStatValue(statTemplate);
+        public int GetStatValue(Stat stat) => _cachedSnapshot.GetCacheCopy().GetStatValue(stat);
         /// <summary>
         /// Get the current legalized value of a single stat.
         /// </summary>
-        /// <param name="statTemplate">any stat template</param>
+        /// <param name="stat">any stat</param>
         /// <returns>legalized value of the stat</returns>
-        public TValue GetStatValueLegalized(IStat<TValue> statTemplate) => _cachedSnapshot.GetCacheCopy().GetStatValueLegalized(statTemplate);
+        public int GetStatValueLegalized(Stat stat) => _cachedSnapshot.GetCacheCopy().GetStatValueLegalized(stat);
 
         /// <summary>
         /// Get a snapshot of all current stat values.
         /// </summary>
-        public StatSnapshot<TValue> GetStatSnapshot() => _cachedSnapshot.GetCacheCopy();
+        public StatSnapshot GetStatSnapshot() => _cachedSnapshot.GetCacheCopy();
 
-        private void AddStatProvider_Internal(IStatProvider<TValue> safeStatProvider)
+        private bool AddStatProvider_Internal(IStatProvider safeProvider)
         {
             // Checks done in public accessor methods.
 
-            _statProviders.AddProvider(safeStatProvider);
+            return _statProviders.AddProvider(safeProvider);
         }
-        private void RemoveStatProvider_Internal(IStatProvider<TValue> safeStatProvider)
+        private bool AddStatProvider_Internal(IDynamicStatProvider safeProvider)
+        {
+            return _statProviders.AddProvider(safeProvider);
+        }
+        private bool RemoveStatProvider_Internal(IStatProvider safeProvider)
         {
             // Checks done in public accessor methods.
 
-            _statProviders.RemoveProvider(safeStatProvider);
+            return _statProviders.RemoveProvider(safeProvider);
+        }
+        private bool RemoveStatProvider_Internal(IDynamicStatProvider safeProvider)
+        {
+            // Checks done in public accessor methods.
+
+            return _statProviders.RemoveProvider(safeProvider);
         }
 
-        protected class CachedSnapshotHelper : CachedValueController<StatSnapshot<TValue>, StatManager<TValue>>
+        protected class CachedSnapshotHelper : CachedValueController<StatSnapshot, StatManager>
         {
-            public CachedSnapshotHelper(StatManager<TValue> context) : base(context) { }
-            protected override StatSnapshot<TValue> CalculateNewCache()
+            public CachedSnapshotHelper(StatManager context) : base(context) { }
+            protected override StatSnapshot CalculateNewCache()
             {
-                return StatSnapshot<TValue>.Create(Context._statProviders.GetDeltaCollection());
+                return Context._statProviders.GetDeltaCollection().GetSnapshot();
             }
-            protected override StatSnapshot<TValue> CreateCacheCopy(StatSnapshot<TValue> cache)
+            protected override StatSnapshot CreateCacheCopy(StatSnapshot cache)
             {
                 // Stat snapshots are not modifiable after instantiation. Safe to pass by reference.
                 return cache;

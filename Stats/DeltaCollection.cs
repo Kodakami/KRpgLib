@@ -9,18 +9,18 @@ namespace KRpgLib.Stats
     /// <summary>
     /// A read-only collection of changes to stat values. The values inside the instance cannot be changed after instantiation. Create a new DeltaCollection with the desired values and combine them via a combination constructor.
     /// </summary>
-    /// <typeparam name="TValue">stat backing type</typeparam>
-    public sealed class DeltaCollection<TValue> where TValue : struct
+    public sealed class DeltaCollection
     {
         // Internal fields.
 
         // Dictionary of dictionaries. [Key1: Stat]->[Key2: DeltaType]->[Value: TValue].
-        private readonly Dictionary<IStat<TValue>, Dictionary<DeltaType<TValue>, TValue>> _superDict;
+        private readonly Dictionary<Stat, Dictionary<DeltaType, int>> _superDict;
         private readonly SnapshotCacheHelper _snapshotCache;
 
         /// <summary>
         /// Count the total number of stat deltas represented by the collection. Does not utilize cached values - use with some caution.
         /// </summary>
+        // TODO: Do we need this?
         public int CountValues() => _superDict.Values.Sum(subd => subd.Count);
 
         // Ctors.
@@ -29,13 +29,13 @@ namespace KRpgLib.Stats
         private DeltaCollection()
         {
             _snapshotCache = new SnapshotCacheHelper(this);
-            _superDict = new Dictionary<IStat<TValue>, Dictionary<DeltaType<TValue>, TValue>>();
+            _superDict = new Dictionary<Stat, Dictionary<DeltaType, int>>();
         }
         /// <summary>
         /// Create a new DeltaCollection with the combined values from multiple others.
         /// </summary>
         /// <param name="combineFrom">a collection of other DeltaCollections</param>
-        public DeltaCollection(IEnumerable<DeltaCollection<TValue>> combineFrom)
+        public DeltaCollection(IEnumerable<DeltaCollection> combineFrom)
             :this()
         {
             // If the collection of collections is not null.
@@ -68,23 +68,23 @@ namespace KRpgLib.Stats
         /// Create a new DeltaCollection from a collection of individual stats and deltas. This is the manual option for creating a new instance.
         /// </summary>
         /// <param name="statDeltas">a collection of StatDeltas</param>
-        public DeltaCollection(IEnumerable<StatDelta<TValue>> statDeltas)
+        public DeltaCollection(IEnumerable<StatDelta> statDeltas)
             :this()
         {
             // If the collection of deltas is not null.
             if (statDeltas != null)
             {
                 // For each delta.
-                foreach (var stad in statDeltas)
+                foreach (var sd in statDeltas)
                 {
-                    // If the delta value is not default(TValue),
-                    if (!stad.DeltaValue.Equals(default(TValue)))
+                    // If the delta value is not 0,
+                    if (!sd.DeltaValue.Equals(0))
                     {
                         // Stat and delta type are both null-checked on creation of the instance.
-                        Add_Internal(stad.Stat, stad.DeltaType, stad.DeltaValue);
+                        Add_Internal(sd.Stat, sd.DeltaType, sd.DeltaValue);
                     }
 
-                    // If the delta value is default, we'll silently ignore it (default delta value indicates no change).
+                    // If the delta value is default, we'll silently ignore it (delta value of 0 indicates no change).
                 }
             }
 
@@ -94,24 +94,24 @@ namespace KRpgLib.Stats
         /// <summary>
         /// Create a new DeltaCollection from a collection of individual stats and deltas. This is the manual option for creating a new instance.
         /// </summary>
-        public DeltaCollection(params StatDelta<TValue>[] statDeltas)
-            : this((IEnumerable<StatDelta<TValue>>)statDeltas) { }
+        public DeltaCollection(params StatDelta[] statDeltas)
+            : this((IEnumerable<StatDelta>)statDeltas) { }
 
         // Private methods.
-        private void Add_Internal(IStat<TValue> stat, DeltaType<TValue> deltaType, TValue deltaValue)
+        private void Add_Internal(Stat stat, DeltaType deltaType, int deltaValue)
         {
             // Try to get the sub dict for the stat. If it wasn't found,
-            if (!_superDict.TryGetValue(stat, out Dictionary<DeltaType<TValue>, TValue> subDict))
+            if (!_superDict.TryGetValue(stat, out Dictionary<DeltaType, int> subDict))
             {
                 // Create a new sub dict.
-                subDict = new Dictionary<DeltaType<TValue>, TValue>();
+                subDict = new Dictionary<DeltaType, int>();
 
                 // Add the sub dict to the super dict.
                 _superDict[stat] = subDict;
             }
 
             // Try to get the value for the delta type. If it wasn't found,
-            if (!subDict.TryGetValue(deltaType, out TValue existingValue))
+            if (!subDict.TryGetValue(deltaType, out int existingValue))
             {
                 // Add the new value to the subdict.
                 subDict[deltaType] = deltaValue;
@@ -120,8 +120,8 @@ namespace KRpgLib.Stats
                 return;
             }
 
-            // If an existing value was found, combine the existing and new values with delta type's combination method.
-            subDict[deltaType] = deltaType.Combine(existingValue, deltaValue);
+            // If an existing value was found, combine the existing and new values.
+            subDict[deltaType] = existingValue + deltaValue;
         }
 
         // Public methods.
@@ -129,16 +129,16 @@ namespace KRpgLib.Stats
         /// <summary>
         /// Get a snapshot of all the stat values in the collection. Uses a cache, so lookups after the first one will be painless.
         /// </summary>
-        public StatSnapshot<TValue> GetSnapshot() => _snapshotCache.GetCacheCopy();
-        public TValue GetDeltaValue(IStat<TValue> stat, DeltaType<TValue> deltaType)
+        public StatSnapshot GetSnapshot() => _snapshotCache.GetCacheCopy();
+        public int GetDeltaValue(Stat stat, DeltaType deltaType)
         {
             // If the stat and delta type have an entry for the value (throwing ArgNullEx for any null args),
             if (_superDict.TryGetValue(
                 stat ?? throw new ArgumentNullException(nameof(stat)),
-                out Dictionary<DeltaType<TValue>, TValue> subDict)
+                out Dictionary<DeltaType, int> subDict)
                 && subDict.TryGetValue(
                     deltaType ?? throw new ArgumentNullException(nameof(deltaType)),
-                    out TValue value))
+                    out int value))
             {
                 // Return the value.
                 return value;
@@ -149,32 +149,32 @@ namespace KRpgLib.Stats
         }
 
         // Private helper classes.
-        private sealed class SnapshotCacheHelper : CachedValueController<StatSnapshot<TValue>, DeltaCollection<TValue>>
+        private sealed class SnapshotCacheHelper : CachedValueController<StatSnapshot, DeltaCollection>
         {
-            public SnapshotCacheHelper(DeltaCollection<TValue> context) : base(context) { }
+            public SnapshotCacheHelper(DeltaCollection context) : base(context) { }
 
-            protected override StatSnapshot<TValue> CalculateNewCache()
+            protected override StatSnapshot CalculateNewCache()
             {
                 // Create a new dictionary to store calculated values.
-                var dict = new Dictionary<IStat<TValue>, TValue>();
+                var dict = new Dictionary<Stat, int>();
 
                 // Grab a handle to the deltaTypes list by priority.
-                var orderedDeltaTypes = StatEnvironment<TValue>.Instance.DeltaTypes.GetAllByPriority();
+                var orderedDeltaTypes = StatEnvironment.Instance.DeltaTypes.GetAllByPriority();
 
                 // For each stat...
                 foreach (var kvp in Context._superDict)
                 {
                     // Start with the default value.
-                    TValue statTotal = kvp.Key.DefaultValue;
+                    int statTotal = kvp.Key.DefaultValue;
 
                     // For each registered delta type (addition, multiplication)...
-                    foreach (DeltaType<TValue> deltaType in orderedDeltaTypes)
+                    foreach (DeltaType deltaType in orderedDeltaTypes)
                     {
                         // If there is a delta of that type...
-                        if (kvp.Value.TryGetValue(deltaType, out TValue deltaValue))
+                        if (kvp.Value.TryGetValue(deltaType, out int deltaValue))
                         {
                             // Get the combined value (combining baseline and delta).
-                            TValue combinedValues = deltaType.Combine(deltaType.BaselineValue, deltaValue);
+                            int combinedValues = deltaType.BaselineValue + deltaValue;
 
                             // Apply the value to the current total.
                             statTotal = deltaType.Apply(statTotal, combinedValues);
@@ -185,10 +185,10 @@ namespace KRpgLib.Stats
                     dict.Add(kvp.Key, statTotal);
                 }
 
-                return StatSnapshot<TValue>.Create(dict);
+                return new StatSnapshot(dict);
             }
 
-            protected override StatSnapshot<TValue> CreateCacheCopy(StatSnapshot<TValue> cache)
+            protected override StatSnapshot CreateCacheCopy(StatSnapshot cache)
             {
                 // Safe to return read-only sealed class by reference.
                 return cache;

@@ -4,10 +4,10 @@ namespace KRpgLib.Stats
 {
     public static class KRpgLibEnvironmentExtensions
     {
-        public static StatEnvironment<TValue> Stats<TValue>(this KRpgEnvironment e) where TValue : struct => StatEnvironment<TValue>.Instance;
-        public static void SetStatEnvironmentInstance<TValue>(this KRpgEnvironment e, StatEnvironment<TValue> instance) where TValue : struct
+        public static StatEnvironment Stats(this KRpgEnvironment e) => StatEnvironment.Instance;
+        public static void SetStatEnvironmentInstance(this KRpgEnvironment e, StatEnvironment instance)
         {
-            StatEnvironment<TValue>.SetInstance(instance);
+            StatEnvironment.SetInstance(instance);
         }
     }
 }

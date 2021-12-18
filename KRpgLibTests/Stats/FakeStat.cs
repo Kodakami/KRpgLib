@@ -2,9 +2,9 @@
 
 namespace KRpgLibTests.Stats
 {
-    public class FakeStat : Stat_Int
+    public class FakeStat : Stat
     {
-        public FakeStat(int? min, int? max, int? precision, int defaultValue)
-            : base(min, max, precision, defaultValue) { }
+        public FakeStat(int defaultValue, int? min, int? max, int? precision)
+            : base(defaultValue, min, max, precision) { }
     }
 }

@@ -5,7 +5,7 @@ namespace KRpgLib.Investments
 {
     public abstract class AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
         where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
-        where TInvestmentValue : struct, IInvestmentValue
+        where TInvestmentValue : IInvestmentValue
     {
         public TInvestmentTemplate Template { get; }
         public abstract TInvestmentValue Value { get; }
@@ -17,7 +17,7 @@ namespace KRpgLib.Investments
     }
     public abstract class StaticInvestment<TInvestmentTemplate, TInvestmentValue> : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
         where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
-        where TInvestmentValue : struct, IInvestmentValue
+        where TInvestmentValue : IInvestmentValue
     {
         protected TInvestmentValue _staticValue;
 
@@ -31,7 +31,7 @@ namespace KRpgLib.Investments
     }
     public abstract class TieredInvestment<TInvestmentTemplate, TInvestmentValue> : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
         where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
-        where TInvestmentValue : struct, IInvestmentValue
+        where TInvestmentValue : IInvestmentValue
     {
         private readonly List<TInvestmentValue> _valueList;
         private int _tier;

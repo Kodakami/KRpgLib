@@ -20,152 +20,158 @@ namespace KRpgLibTests.Stats.Compound
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void StatLiteral_Constructor_WithNullTemplate_ThrowsArgNullEx()
         {
-            void exceptionalAction() => new StatLiteral<int>(null, false);
+            static void exceptionalAction() => new StatLiteral(null, false);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void UnaryOperationType_Constructor_WithNullFunc_ThrowsArgNullEx()
         {
-            void exceptionalAction() => new UnaryOperationType<int>(null);
+            static void exceptionalAction() => new UnaryOperationType(null);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void BinaryOperationType_Constructor_WithNullFunc_ThrowsArgNullEx()
         {
-            void exceptionalAction() => new BinaryOperationType<int>(null);
+            static void exceptionalAction() => new BinaryOperationType(null);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void MultiaryOperationType_Constructor_WithNullFunc_ThrowsArgNullEx()
         {
-            void exceptionalAction() => new MultiaryOperationType<int>(null);
+            static void exceptionalAction() => new MultiaryOperationType(null);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ComparisonType_Constructor_WithNullFunc_ThrowsArgNullEx()
         {
-            void exceptionalAction() => new ComparisonType<int>(null);
+            static void exceptionalAction() => new ComparisonType(null);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ValueOperation_Unary_Constructor_WithNullOperationType_ThrowsArgNullEx()
         {
             var stubValueExpression = new FakeValueExpression(0);
 
-            void exceptionalAction() => new ValueOperation_Unary<int>(null, stubValueExpression);
+            void exceptionalAction() => new ValueOperation_Unary(null, stubValueExpression);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ValueOperation_Unary_Constructor_WithNullValueExpression_ThrowsArgNullEx()
         {
-            var stubOperationType = CommonInstances.Int.Negative;
+            var stubOperationType = CommonInstances.Negative;
 
-            void exceptionalAction() => new ValueOperation_Unary<int>(stubOperationType, null);
+            void exceptionalAction() => new ValueOperation_Unary(stubOperationType, null);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ValueOperation_Binary_Constructor_WithNullOperationType_ThrowsArgNullEx()
         {
             var stubValueExpression = new FakeValueExpression(0);
 
-            void exceptionalAction() => new ValueOperation_Binary<int>(null, stubValueExpression, stubValueExpression);
+            void exceptionalAction() => new ValueOperation_Binary(null, stubValueExpression, stubValueExpression);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ValueOperation_Binary_Constructor_WithNullLeftOperand_ThrowsArgNullEx()
         {
-            var stubOperationType = CommonInstances.Int.PowerOf;
+            var stubOperationType = CommonInstances.PowerOf;
             var stubValueExpression = new FakeValueExpression(0);
 
-            void exceptionalAction() => new ValueOperation_Binary<int>(stubOperationType, null, stubValueExpression);
+            void exceptionalAction() => new ValueOperation_Binary(stubOperationType, null, stubValueExpression);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ValueOperation_Binary_Constructor_WithNullRightOperand_ThrowsArgNullEx()
         {
-            var stubOperationType = CommonInstances.Int.PowerOf;
+            var stubOperationType = CommonInstances.PowerOf;
             var stubValueExpression = new FakeValueExpression(0);
 
-            void exceptionalAction() => new ValueOperation_Binary<int>(stubOperationType, stubValueExpression, null);
+            void exceptionalAction() => new ValueOperation_Binary(stubOperationType, stubValueExpression, null);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ValueOperation_Multiary_Constructor_WithNullOperationType_ThrowsArgNullEx()
         {
-            var stubValueExpressionList = new List<ValueExpression<int>>() { new FakeValueExpression(0) };
+            var stubValueExpressionList = new List<ValueExpression>() { new FakeValueExpression(0) };
 
-            void exceptionalAction() => new ValueOperation_Multiary<int>(null, stubValueExpressionList);
+            void exceptionalAction() => new ValueOperation_Multiary(null, stubValueExpressionList);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ValueOperation_Multiary_Constructor_WithNullExpressionList_ThrowsArgNullEx()
         {
-            var stubOperationType = CommonInstances.Int.Add;
-            List<ValueExpression<int>> stubNullList = null;
+            var stubOperationType = CommonInstances.Add;
+            List<ValueExpression> stubNullList = null;
 
-            void exceptionalAction() => new ValueOperation_Multiary<int>(stubOperationType, stubNullList);
+            void exceptionalAction() => new ValueOperation_Multiary(stubOperationType, stubNullList);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
-        public void ValueOperation_Multiary_Constructor_WithEmptyExpressionList_ThrowsArgEx()
-        {
-            var stubOperationType = CommonInstances.Int.Add;
-            var stubEmptyList = new List<ValueExpression<int>>();
-
-            void exceptionalAction() => new ValueOperation_Multiary<int>(stubOperationType, stubEmptyList);
-
-            Assert.ThrowsException<ArgumentException>(exceptionalAction);
-        }
-        [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ValueOperation_Multiary_Constructor_WithNullExpressionInList_ThrowsArgEx()
         {
-            var stubOperationType = CommonInstances.Int.Add;
-            var stubListWithNullEntry = new List<ValueExpression<int>>() { null };
+            var stubOperationType = CommonInstances.Add;
+            var stubListWithNullEntry = new List<ValueExpression>() { null };
 
-            void exceptionalAction() => new ValueOperation_Multiary<int>(stubOperationType, stubListWithNullEntry);
+            void exceptionalAction() => new ValueOperation_Multiary(stubOperationType, stubListWithNullEntry);
 
             Assert.ThrowsException<ArgumentException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ConditionalExpression_Constructor_WithNullCondition_ThrowsArgNullEx()
         {
             var stubValueExpression = new FakeValueExpression(0);
 
-            void exceptionalAction() => new ConditionalExpression<int>(null, stubValueExpression, stubValueExpression);
+            void exceptionalAction() => new ConditionalExpression(null, stubValueExpression, stubValueExpression);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ConditionalExpression_Constructor_WithNullConsequent_ThrowsArgNullEx()
         {
             var stubCondition = new FakeLogicExpression(true);
             var stubValueExpression = new FakeValueExpression(0);
 
-            void exceptionalAction() => new ConditionalExpression<int>(stubCondition, null, stubValueExpression);
+            void exceptionalAction() => new ConditionalExpression(stubCondition, null, stubValueExpression);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void ConditionalExpression_Constructor_WithNullAlternative_ThrowsArgNullEx()
         {
             var stubCondition = new FakeLogicExpression(true);
             var stubValueExpression = new FakeValueExpression(0);
 
-            void exceptionalAction() => new ConditionalExpression<int>(stubCondition, stubValueExpression, null);
+            void exceptionalAction() => new ConditionalExpression(stubCondition, stubValueExpression, null);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }

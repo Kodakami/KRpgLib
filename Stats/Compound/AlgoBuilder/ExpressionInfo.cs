@@ -3,21 +3,21 @@
 namespace KRpgLib.Stats.Compound.AlgoBuilder
 {
     // Internal class ExpressionRegistry uses to build individual expressions from an AbstractParser's stack.
-    internal sealed class ExpressionInfo<TValue> where TValue : struct
+    internal sealed class ExpressionInfo
     {
-        private readonly PopParamsDelegate<TValue> _pop;
-        private readonly ExpressionCtorDelegate<TValue> _expCtor;
+        private readonly PopParamsFunc _pop;
+        private readonly ExpressionCtorDelegate _expCtor;
 
-        public List<string> Keywords { get; }
+        public IEnumerable<string> Keywords { get; }
 
-        public ExpressionInfo(List<string> keywords, PopParamsDelegate<TValue> popDelegate, ExpressionCtorDelegate<TValue> expCtor)
+        public ExpressionInfo(IEnumerable<string> keywords, PopParamsFunc popFunc, ExpressionCtorDelegate expCtor)
         {
             Keywords = keywords;
-            _pop = popDelegate;
+            _pop = popFunc;
             _expCtor = expCtor;
         }
 
-        public bool TryBuildAndPushExpression(AbstractParser<TValue> parser)
+        public bool TryBuildAndPushExpression(Parser parser)
         {
             var paramQueue = new Queue<object>();
             if (_pop(parser, paramQueue))

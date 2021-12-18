@@ -7,17 +7,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace KRpgLibTests.Stats.Compound.AlgoBuilder
 {
     [TestClass]
-    public class StatTemplateRegistryTests
+    public class StatRegistryTests
     {
         [TestMethod]
         [DataRow(null, DisplayName = "Null")]
         [DataRow("", DisplayName = "Empty string")]
         [DataRow(" ", DisplayName = "White-space only")]
-        [DataRow(".", DisplayName = "Non-letter")]
+        [DataRow("\a", DisplayName = "Control Character (\\a)")]
+        [DataRow(".", DisplayName = "Non-letter, non-underscore")]
         public void Add_WithInvalidIdentifier_ThrowsArgEx(string identifier)
         {
-            var stubStat = new FakeStat(null, null, null, 0);
-            var mockReg = new StatTemplateRegistry<int>();
+            var stubStat = new FakeStat(0, null, null, null);
+            var mockReg = new StatRegistry();
 
             void exceptionalAction() => mockReg.Add(identifier, stubStat);
 
@@ -28,8 +29,8 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
         [DataRow("a", "A", DisplayName = "Different cases")]
         public void Add_WithTakenIdentifier_ThrowsArgEx(string identifier, string otherIdentifier)
         {
-            var stubStat = new FakeStat(null, null, null, 0);
-            var mockReg = new StatTemplateRegistry<int>();
+            var stubStat = new FakeStat(0, null, null, null);
+            var mockReg = new StatRegistry();
             mockReg.Add(identifier, stubStat);
 
             void exceptionalAction() => mockReg.Add(otherIdentifier, stubStat);
@@ -39,7 +40,7 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
         [TestMethod]
         public void Add_WithNullStatTemplate_ThrowsArgNullEx()
         {
-            var mockReg = new StatTemplateRegistry<int>();
+            var mockReg = new StatRegistry();
             const string ANY_VALID_IDENTIFIER = "a";
 
             void exceptionalAction() => mockReg.Add(ANY_VALID_IDENTIFIER, null);
@@ -50,13 +51,14 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
         [DataRow(null, DisplayName = "Null")]
         [DataRow("", DisplayName = "Empty string")]
         [DataRow(" ", DisplayName = "White-space only")]
-        [DataRow(".", DisplayName = "Non-letter")]
-        public void TryGetStatTemplate_WithInvalidIdentifier_ThrowsArgEx(string identifier)
+        [DataRow("\a", DisplayName = "Control Character (\\a)")]
+        [DataRow(".", DisplayName = "Non-letter, non-underscore")]
+        public void TryGetStat_WithInvalidIdentifier_ThrowsArgEx(string identifier)
         {
-            var stubStat = new FakeStat(null, null, null, 0);
-            var mockReg = new StatTemplateRegistry<int>();
+            var stubStat = new FakeStat(0, null, null, null);
+            var mockReg = new StatRegistry();
 
-            void exceptionalAction() => mockReg.TryGetStatTemplate(identifier, out _);
+            void exceptionalAction() => mockReg.TryGetStat(identifier, out _);
 
             Assert.ThrowsException<ArgumentException>(exceptionalAction);
         }

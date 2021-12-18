@@ -12,7 +12,7 @@ namespace KRpgLibTests.Stats.Compound
         {
             var stubSet = new FakeStatSet().Snapshot;
             var stubExpression = new FakeValueExpression(0);
-            var mockAlgorithm = new CompoundStatAlgorithm<int>(stubExpression);
+            var mockAlgorithm = new CompoundStatAlgorithm(stubExpression);
 
             var resultValue = mockAlgorithm.CalculateValue(stubSet);
 
@@ -23,7 +23,7 @@ namespace KRpgLibTests.Stats.Compound
         {
             FakeValueExpression stubNullExpression = null;
 
-            void exceptionalAction() => new CompoundStatAlgorithm<int>(stubNullExpression);
+            void exceptionalAction() => new CompoundStatAlgorithm(stubNullExpression);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
@@ -31,8 +31,8 @@ namespace KRpgLibTests.Stats.Compound
         public void CalculateValue_WithNullStatSet_ThrowsArgNullEx()
         {
             var stubValueExpression = new FakeValueExpression(0);
-            var mockAlgorithm = new CompoundStatAlgorithm<int>(stubValueExpression);
-            KRpgLib.Stats.StatSnapshot<int> stubNullSet = null;
+            var mockAlgorithm = new CompoundStatAlgorithm(stubValueExpression);
+            KRpgLib.Stats.StatSnapshot stubNullSet = null;
 
             void exceptionalAction() => mockAlgorithm.CalculateValue(stubNullSet);
 

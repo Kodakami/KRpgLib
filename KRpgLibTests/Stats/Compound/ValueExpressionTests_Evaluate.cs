@@ -10,7 +10,7 @@ namespace KRpgLibTests.Stats.Compound
     [TestClass]
     public class ValueExpressionTests_Evaluate
     {
-        private void ValueExpressionTest(ValueExpression<int> testedExpression, int expectedValue)
+        private static void ValueExpressionTest(ValueExpression testedExpression, int expectedValue)
         {
             var stubSet = new FakeStatSet().Snapshot;
 
@@ -21,14 +21,14 @@ namespace KRpgLibTests.Stats.Compound
         [TestMethod]
         public void Literal_Evaluate_ReturnsCorrectValue()
         {
-            var mockLiteral = new Literal<int>(0);
+            var mockLiteral = new Literal(0);
 
             ValueExpressionTest(mockLiteral, 0);
         }
         [TestMethod]
         public void StatLiteral_NonLegalized_Evaluate_ReturnsCorrectValue()
         {
-            var mockLiteral = new StatLiteral<int>(FakeStatSet.TestStat_Raw3_Legal2_Provided, false);
+            var mockLiteral = new StatLiteral(FakeStatSet.TestStat_Raw3_Legal2_Provided, false);
             const int RAW_VALUE = 3;
 
             ValueExpressionTest(mockLiteral, RAW_VALUE);
@@ -36,16 +36,16 @@ namespace KRpgLibTests.Stats.Compound
         [TestMethod]
         public void StatLiteral_Legalized_Evaluate_ReturnsCorrectValue()
         {
-            var mockLiteral = new StatLiteral<int>(FakeStatSet.TestStat_Raw3_Legal2_Provided, true);
+            var mockLiteral = new StatLiteral(FakeStatSet.TestStat_Raw3_Legal2_Provided, true);
             const int LEGAL_VALUE = 2;
 
             ValueExpressionTest(mockLiteral, LEGAL_VALUE);
         }
-        private void UnaryOpTest(UnaryOperationType<int> operationType, int input, int expected)
+        private static void UnaryOpTest(UnaryOperationType operationType, int input, int expected)
         {
             var stubStatSet = new FakeStatSet().Snapshot;
-            var stubValueExpression = new Literal<int>(input);
-            var mockExpression = new ValueOperation_Unary<int>(operationType, stubValueExpression);
+            var stubValueExpression = new Literal(input);
+            var mockExpression = new ValueOperation_Unary(operationType, stubValueExpression);
 
             var resultValue = mockExpression.Evaluate(stubStatSet);
 
@@ -54,18 +54,18 @@ namespace KRpgLibTests.Stats.Compound
         [TestMethod]
         public void Negative_Evaluate_ReturnsCorrectResult()
         {
-            var operationType = CommonInstances.Int.Negative;
+            var operationType = CommonInstances.Negative;
             const int INPUT_VALUE = 1;
             const int EXPECTED_RESULT = -1;
 
             UnaryOpTest(operationType, INPUT_VALUE, EXPECTED_RESULT);
         }
-        private void BinaryOpTest(BinaryOperationType<int> operationType, int left, int right, int expected)
+        private static void BinaryOpTest(BinaryOperationType operationType, int left, int right, int expected)
         {
             var stubStatSet = new FakeStatSet().Snapshot;
-            var stubValueExpressionLeft = new Literal<int>(left);
-            var stubValueExpressionRight = new Literal<int>(right);
-            var mockExpression = new ValueOperation_Binary<int>(operationType, stubValueExpressionLeft, stubValueExpressionRight);
+            var stubValueExpressionLeft = new Literal(left);
+            var stubValueExpressionRight = new Literal(right);
+            var mockExpression = new ValueOperation_Binary(operationType, stubValueExpressionLeft, stubValueExpressionRight);
 
             var resultValue = mockExpression.Evaluate(stubStatSet);
 
@@ -76,7 +76,7 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(1, 0, 0, DisplayName = "Safe Division by Zero: (1 / 0) == 0")]
         public void Divide_Evaluate_ReturnsCorrectResult(int left, int right, int expected)
         {
-            var operationType = CommonInstances.Int.Divide;
+            var operationType = CommonInstances.Divide;
 
             BinaryOpTest(operationType, left, right, expected);
         }
@@ -85,25 +85,25 @@ namespace KRpgLibTests.Stats.Compound
         [DataRow(1, 0, 0, DisplayName = "Safe Modulo by Zero: (1 % 0) == 0")]
         public void Modulo_Evaluate_ReturnsCorrectResult(int left, int right, int expected)
         {
-            var operationType = CommonInstances.Int.Modulo;
+            var operationType = CommonInstances.Modulo;
 
             BinaryOpTest(operationType, left, right, expected);
         }
         [TestMethod]
         public void PowerOf_Evaluate_ReturnsCorrectResult()
         {
-            var operationType = CommonInstances.Int.PowerOf;
+            var operationType = CommonInstances.PowerOf;
             const int BASE = 2;
             const int EXPONENT = 2;
             const int EXPECTED_RESULT = 4;
 
             BinaryOpTest(operationType, BASE, EXPONENT, EXPECTED_RESULT);
         }
-        private void MultiaryOpTest(MultiaryOperationType<int> operationType, int item1, int item2, int item3, int expected)
+        private static void MultiaryOpTest(MultiaryOperationType operationType, int item1, int item2, int item3, int expected)
         {
             var stubStatSet = new FakeStatSet().Snapshot;
-            var stubValueExpressionList = new List<ValueExpression<int>>() { new Literal<int>(item1), new Literal<int>(item2), new Literal<int>(item3) };
-            var mockExpression = new ValueOperation_Multiary<int>(operationType, stubValueExpressionList);
+            var stubValueExpressionList = new List<ValueExpression>() { new Literal(item1), new Literal(item2), new Literal(item3) };
+            var mockExpression = new ValueOperation_Multiary(operationType, stubValueExpressionList);
 
             var resultValue = mockExpression.Evaluate(stubStatSet);
 
@@ -112,7 +112,7 @@ namespace KRpgLibTests.Stats.Compound
         [TestMethod]
         public void Add_Evaluate_ReturnsCorrectResult()
         {
-            var operationType = CommonInstances.Int.Add;
+            var operationType = CommonInstances.Add;
             const int INPUT_VALUE = 1;
             const int EXPECTED_RESULT = 3;
 
@@ -121,7 +121,7 @@ namespace KRpgLibTests.Stats.Compound
         [TestMethod]
         public void Subtract_Evaluate_ReturnsCorrectResult()
         {
-            var operationType = CommonInstances.Int.Subtract;
+            var operationType = CommonInstances.Subtract;
             const int INPUT_VALUE = 1;
             const int EXPECTED_RESULT = -1;
 
@@ -130,7 +130,7 @@ namespace KRpgLibTests.Stats.Compound
         [TestMethod]
         public void Multiply_Evaluate_ReturnsCorrectResult()
         {
-            var operationType = CommonInstances.Int.Multiply;
+            var operationType = CommonInstances.Multiply;
             const int INPUT_VALUE = 2;
             const int EXPECTED_RESULT = 8;
 
@@ -139,7 +139,7 @@ namespace KRpgLibTests.Stats.Compound
         [TestMethod]
         public void Min_Evaluate_ReturnsCorrectResult()
         {
-            var operationType = CommonInstances.Int.Min;
+            var operationType = CommonInstances.Smallest;
             const int INPUT_VALUE_1 = 1;
             const int INPUT_VALUE_2 = 2;
             const int INPUT_VALUE_3 = 3;
@@ -150,7 +150,7 @@ namespace KRpgLibTests.Stats.Compound
         [TestMethod]
         public void Max_Evaluate_ReturnsCorrectResult()
         {
-            var operationType = CommonInstances.Int.Max;
+            var operationType = CommonInstances.Biggest;
             const int INPUT_VALUE_1 = 1;
             const int INPUT_VALUE_2 = 2;
             const int INPUT_VALUE_3 = 3;
@@ -167,10 +167,10 @@ namespace KRpgLibTests.Stats.Compound
             var stubStatSet = new FakeStatSet().Snapshot;
             var stubCondition = new FakeLogicExpression(conditionResult);
             const int ANY_VALUE = 0;
-            var stubLiteralValueConsequent = new Literal<int>(ANY_VALUE);
+            var stubLiteralValueConsequent = new Literal(ANY_VALUE);
             const int ANY_OTHER_VALUE = 1;
-            var stubLiteralValueAlternative = new Literal<int>(ANY_OTHER_VALUE);
-            var mockConditionalExpression = new ConditionalExpression<int>(stubCondition, stubLiteralValueConsequent, stubLiteralValueAlternative);
+            var stubLiteralValueAlternative = new Literal(ANY_OTHER_VALUE);
+            var mockConditionalExpression = new ConditionalExpression(stubCondition, stubLiteralValueConsequent, stubLiteralValueAlternative);
 
             var resultValue = mockConditionalExpression.Evaluate(stubStatSet);
 

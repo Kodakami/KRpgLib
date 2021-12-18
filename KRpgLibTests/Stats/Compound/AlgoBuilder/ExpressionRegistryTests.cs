@@ -10,36 +10,36 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
     [TestClass]
     public class ExpressionRegistryTests
     {
-        private List<string> GetValidKeywordList()
+        private static List<string> GetValidKeywordList()
         {
             return new List<string>() { "add" };
         }
-        private PopParamsDelegate<int> GetValidPopParamsDelegate()
+        private static PopParamsFunc GetValidPopParamsDelegate()
         {
-            return ParserUtilities<int>.PopMultiaryValueParams;
+            return ParserUtilities.PopMultiaryValueParams;
         }
-        private ExpressionCtorDelegate<int> GetValidExpressionCtorDelegate()
+        private static ExpressionCtorDelegate GetValidExpressionCtorDelegate()
         {
-            return q => ParserUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(q,
-                list => new ValueOperation_Multiary<int>(CommonInstances.Int.Add, list));
+            return q => ParserUtilities.ConstructMultiaryOperation<ValueExpression>(q,
+                list => new ValueOperation_Multiary(CommonInstances.Add, list));
         }
         [TestMethod]
         public void Add_WithNullKeywordList_ThrowsArgEx()
         {
             var stubPopDelegate = GetValidPopParamsDelegate();
             var stubCtorDelegate = GetValidExpressionCtorDelegate();
-            var mockRegistry = new ExpressionRegistry<int>();
+            var mockRegistry = new ExpressionRegistry();
 
             void exceptionalAction() => mockRegistry.Add(null, stubPopDelegate, stubCtorDelegate);
 
-            Assert.ThrowsException<ArgumentException>(exceptionalAction);
+            Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
         public void Add_WithNullPopDelegate_ThrowsArgNullEx()
         {
             var stubKeywordList = GetValidKeywordList();
             var stubCtorDelegate = GetValidExpressionCtorDelegate();
-            var mockRegistry = new ExpressionRegistry<int>();
+            var mockRegistry = new ExpressionRegistry();
 
             void exceptionalAction() => mockRegistry.Add(stubKeywordList, null, stubCtorDelegate);
 
@@ -50,23 +50,11 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
         {
             var stubKeywordList = GetValidKeywordList();
             var stubPopDelegate = GetValidPopParamsDelegate();
-            var mockRegistry = new ExpressionRegistry<int>();
+            var mockRegistry = new ExpressionRegistry();
 
             void exceptionalAction() => mockRegistry.Add(stubKeywordList, stubPopDelegate, null);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
-        }
-        [TestMethod]
-        public void Add_WithEmptyKeywordList_ThrowsArgEx()
-        {
-            var keywordList = new List<string>();
-            var stubPopDelegate = GetValidPopParamsDelegate();
-            var stubCtorDelegate = GetValidExpressionCtorDelegate();
-            var mockRegistry = new ExpressionRegistry<int>();
-
-            void exceptionalAction() => mockRegistry.Add(keywordList, stubPopDelegate, stubCtorDelegate);
-
-            Assert.ThrowsException<ArgumentException>(exceptionalAction);
         }
         [TestMethod]
         public void Add_WithNullKeywordInList_ThrowsArgEx()
@@ -74,7 +62,7 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
             var keywordList = new List<string>() { null };
             var stubPopDelegate = GetValidPopParamsDelegate();
             var stubCtorDelegate = GetValidExpressionCtorDelegate();
-            var mockRegistry = new ExpressionRegistry<int>();
+            var mockRegistry = new ExpressionRegistry();
 
             void exceptionalAction() => mockRegistry.Add(keywordList, stubPopDelegate, stubCtorDelegate);
 
@@ -89,7 +77,7 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
             var keywordList = new List<string>() { invalidKeyword };
             var stubPopDelegate = GetValidPopParamsDelegate();
             var stubCtorDelegate = GetValidExpressionCtorDelegate();
-            var mockRegistry = new ExpressionRegistry<int>();
+            var mockRegistry = new ExpressionRegistry();
 
             void exceptionalAction() => mockRegistry.Add(keywordList, stubPopDelegate, stubCtorDelegate);
 
@@ -101,7 +89,7 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
             var stubKeywordList = GetValidKeywordList();
             var stubPopDelegate = GetValidPopParamsDelegate();
             var stubCtorDelegate = GetValidExpressionCtorDelegate();
-            var mockRegistry = new ExpressionRegistry<int>();
+            var mockRegistry = new ExpressionRegistry();
             void addToRegistry() => mockRegistry.Add(stubKeywordList, stubPopDelegate, stubCtorDelegate);
             addToRegistry();
 

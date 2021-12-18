@@ -6,14 +6,14 @@ namespace KRpgLibTests.Stats
 {
     public class FakeStatSet
     {
-        public static readonly FakeStat TestStat_Raw3_Legal2_Provided = new FakeStat(null, null, 2, 0);
-        public static readonly FakeStat TestStat_Default7_Legal6_Missing = new FakeStat(null, null, 2, 7);
+        public static readonly FakeStat TestStat_Raw3_Legal2_Provided = new(0, null, null, 2);
+        public static readonly FakeStat TestStat_Default7_Legal6_Missing = new(7, null, null, 2);
 
-        public StatSnapshot<int> Snapshot { get; }
+        public StatSnapshot Snapshot { get; }
 
         public FakeStatSet()
         {
-            Snapshot = StatSnapshot<int>.Create(new Dictionary<IStat<int>, int>() { { TestStat_Raw3_Legal2_Provided, 3 } });
+            Snapshot = new StatSnapshot(new Dictionary<Stat, int>() { { TestStat_Raw3_Legal2_Provided, 3 } });
         }
     }
 }

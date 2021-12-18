@@ -24,32 +24,35 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
         };
 
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void Constructor_WithNullTokenList_ThrowsArgNullEx()
         {
-            var stubExpReg = new ExpressionRegistry<int>();
-            var stubStatReg = new StatTemplateRegistry<int>();
+            var stubExpReg = new ExpressionRegistry();
+            var stubStatReg = new StatRegistry();
 
-            void exceptionalAction() => new Parser_Int(null, stubExpReg, stubStatReg);
+            void exceptionalAction() => new Parser(null, stubExpReg, stubStatReg);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void Constructor_WithNullExpressionRegistry_ThrowsArgNullEx()
         {
             var stubTokens = GetStubTokenList();
-            var stubStatReg = new StatTemplateRegistry<int>();
+            var stubStatReg = new StatRegistry();
 
-            void exceptionalAction() => new Parser_Int(stubTokens, null, stubStatReg);
+            void exceptionalAction() => new Parser(stubTokens, null, stubStatReg);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void Constructor_WithNullStatTemplateRegistry_ThrowsArgNullEx()
         {
             var stubTokens = GetStubTokenList();
-            var stubExpReg = new ExpressionRegistry<int>();
+            var stubExpReg = new ExpressionRegistry();
 
-            void exceptionalAction() => new Parser_Int(stubTokens, stubExpReg, null);
+            void exceptionalAction() => new Parser(stubTokens, stubExpReg, null);
 
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
@@ -57,17 +60,17 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
         public void TryParseTokens_WithValidTokenList_ReturnsCorrectResult()
         {
             var stubTokens = GetStubTokenList();
-            var stubExpReg = new ExpressionRegistry<int>();
+            var stubExpReg = new ExpressionRegistry();
             stubExpReg.Add(new List<string>() { "add" },
-                ParserUtilities<int>.PopMultiaryValueParams,
-                q => ParserUtilities<int>.ConstructMultiaryOperation<ValueExpression<int>>(
-                    q, list => new ValueOperation_Multiary<int>(CommonInstances.Int.Add, list))
+                ParserUtilities.PopMultiaryValueParams,
+                q => ParserUtilities.ConstructMultiaryOperation<ValueExpression>(
+                    q, list => new ValueOperation_Multiary(CommonInstances.Add, list))
                 );
-            var stubStatReg = new StatTemplateRegistry<int>();
+            var stubStatReg = new StatRegistry();
             var stubStatSet = new FakeStatSet().Snapshot;
-            var mockParser = new Parser_Int(stubTokens, stubExpReg, stubStatReg);
+            var mockParser = new Parser(stubTokens, stubExpReg, stubStatReg);
 
-            if (!mockParser.TryParseTokens(out ValueExpression<int> resultAlgo))
+            if (!mockParser.TryParseTokens(out ValueExpression resultAlgo))
             {
                 Assert.Fail("Did not parse. Parser returned message: {0}", mockParser.StatusMessage);
             }

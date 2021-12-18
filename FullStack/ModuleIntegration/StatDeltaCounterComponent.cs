@@ -2,14 +2,14 @@
 
 namespace KRpgLib.Counters
 {
-    public class StatDeltaCounterComponent<TValue> : CounterComponent, IStatProvider<TValue> where TValue : struct
+    public class StatDeltaCounterComponent : CounterComponent, IStatProvider
     {
-        protected DeltaCollection<TValue> StatDeltaCollection { get; }
-        public StatDeltaCounterComponent(DeltaCollection<TValue> statDeltaCollection)
+        protected DeltaCollection StatDeltaCollection { get; }
+        public StatDeltaCounterComponent(DeltaCollection statDeltaCollection)
         {
             StatDeltaCollection = statDeltaCollection ?? throw new System.ArgumentNullException(nameof(statDeltaCollection));
         }
-        public DeltaCollection<TValue> GetDeltaCollection()
+        public DeltaCollection GetDeltaCollection()
         {
             return StatDeltaCollection;
         }
