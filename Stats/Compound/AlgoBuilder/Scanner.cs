@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("StatsUnitTests")]
+[assembly: InternalsVisibleTo("KRpgLibTests")]
 namespace KRpgLib.Stats.Compound.AlgoBuilder
 {
     // Scans an Algo script string and emits Tokens.
@@ -30,7 +30,7 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             StatusMessage = $"Scanner error at token: {(_currentIndex < _tokens.Count ? _tokens[_currentIndex].ToString() : "Invalid token index.")}. {message}";
             ScanResult = Result.FAIL;
         }
-        public bool TryScanTokens(out List<Token> tokens)
+        public bool TryScanTokens(out IReadOnlyList<Token> tokens)
         {
             tokens = _tokens;
             _currentIndex = 0;
@@ -46,7 +46,6 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             }
 
             // Anything else to do before end of scan goes here.
-            tokens = _tokens;
             return true;
         }
         private bool ScanNextToken()
@@ -55,32 +54,40 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
             char c = Advance();
             switch (c)
             {
+                // Skip over whitespace.
                 case ' ':
                 case '\n':
                 case '\t':
                     break;
+                // Begin new expression.
                 case '(':
                     AddToken(TokenType.PAREN_OPEN);
                     break;
+                // End of expression.
                 case ')':
                     AddToken(TokenType.PAREN_CLOSED);
                     break;
+                // Raw stat value literal.
                 case '$':
                     AddToken(TokenType.CASH);
                     break;
+                // Legalized stat value literal.
                 case '*':
                     AddToken(TokenType.ASTERISK);
                     break;
 
                 default:
+                    // Number literal.
                     if (char.IsDigit(c))
                     {
                         Number();
                     }
-                    else if (char.IsLetter(c))
+                    // Expression keyword or stat identifier.
+                    else if (char.IsLetter(c) || c == '_')
                     {
                         Identifier();
                     }
+                    // Unrecognized or syntax error.
                     else
                     {
                         Error($"Unrecognized character \"{c}\"");
@@ -114,21 +121,21 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         }
         private void Number()
         {
-            // Numbers are not parsed here, only scanned and left as strings. The parser will need to do type-specific parsing for the numbers.
+            // Numbers are not parsed here, only scanned and left as strings.
 
             while (!IsAtEnd())
             {
                 // Look ahead to the next char.
                 char c = Peek();
 
-                // If it is not a number or decimal point, then it is past the end of the number lexeme.
-                if (!char.IsDigit(c) && c != '.')
+                // If it is not a number, then it is past the end of the number lexeme.
+                if (!char.IsDigit(c))
                 {
                     // Break the loop.
                     break;
                 }
-                
-                //If it is a number or decimal point, then it is part of the number lexeme and we need to consume the character.
+
+                // If it is a number, then it is part of the number lexeme and we need to consume the character.
                 Advance();
             }
 
@@ -136,11 +143,11 @@ namespace KRpgLib.Stats.Compound.AlgoBuilder
         }
         private void Identifier()
         {
-            // Something like an expression name, stat name, or macro name.
+            // Something like an expression name or stat name.
             while (!IsAtEnd())
             {
                 char c = Peek();
-                if (!char.IsLetter(c))
+                if (!char.IsLetter(c) && c != '_')
                 {
                     break;
                 }

@@ -6,13 +6,13 @@ namespace KRpgLib.AffixesStatsIntegration
 {
     public sealed class StatDeltaModEffect<TValue> : IModEffect where TValue : struct
     {
-        public StatDeltaCollection<TValue> StatDeltaCollection { get; }
+        public DeltaCollection<TValue> StatDeltaCollection { get; }
 
-        public StatDeltaModEffect(StatDeltaCollection<TValue> statDeltaCollection)
+        public StatDeltaModEffect(DeltaCollection<TValue> statDeltaCollection)
         {
             StatDeltaCollection = statDeltaCollection;
         }
 
-        public static implicit operator StatDeltaCollection<TValue>(StatDeltaModEffect<TValue> modEffect) => modEffect.StatDeltaCollection;
+        public static implicit operator DeltaCollection<TValue>(StatDeltaModEffect<TValue> modEffect) => modEffect.StatDeltaCollection;
     }
 }

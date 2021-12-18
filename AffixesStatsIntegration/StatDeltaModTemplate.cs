@@ -44,7 +44,7 @@ namespace KRpgLib.AffixesStatsIntegration
         {
             var modArgValues = modInstance.Arg;
 
-            var deltaList = new List<StatTemplateAndDelta<TValue>>();
+            var deltaList = new List<StatDelta<TValue>>();
             for (int i = 0; i < ArgBounds.Count; i++)
             {
                 var thisSubArg = ArgBounds[i];
@@ -52,10 +52,10 @@ namespace KRpgLib.AffixesStatsIntegration
                 var thisDeltaType = thisSubArg.DeltaType;
                 var thisValue = modArgValues[i];
 
-                deltaList.Add(new StatTemplateAndDelta<TValue>(thisTemplate, new StatDelta<TValue>(thisDeltaType, thisValue)));
+                deltaList.Add(new StatDelta<TValue>(thisTemplate, new Delta<TValue>(thisDeltaType, thisValue)));
             }
 
-            return new StatDeltaModEffect<TValue>(new StatDeltaCollection<TValue>(deltaList));
+            return new StatDeltaModEffect<TValue>(new DeltaCollection<TValue>(deltaList));
         }
     }
     public sealed class StatDeltaModTemplate_Int : StatDeltaModTemplate<int, StatDeltaValueBounds_Int>

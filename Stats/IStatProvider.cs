@@ -3,11 +3,14 @@
 namespace KRpgLib.Stats
 {
     /// <summary>
-    /// Interface for an object which provides stat value deltas to a stat manager.
+    /// Interface for an object which provides a delta collection to a stat manager.
     /// </summary>
-    /// <typeparam name="TValue">stat backing type</typeparam>
-    public interface IStatProvider<TValue> where TValue : struct
+    public interface IStatProvider
     {
-        StatDeltaCollection<TValue> GetStatDeltaCollection();
+        DeltaCollection GetDeltaCollection();
+    }
+    public interface IDynamicStatProvider : IStatProvider
+    {
+        event System.Action OnStatsChanged;
     }
 }

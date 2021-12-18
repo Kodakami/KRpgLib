@@ -4,48 +4,71 @@ using KRpgLib.Utility;
 
 namespace KRpgLib.Stats
 {
-    public sealed class StatProviderCollection<TValue> : IStatProvider<TValue> where TValue : struct
+    /// <summary>
+    /// A collection of stat providers (static and dynamic) that also maintains a cached delta collection.
+    /// </summary>
+    public sealed class StatProviderCollection : IStatProvider
     {
-        private readonly List<IStatProvider<TValue>> _providers;
-        private readonly DeltaCollectionCacheHelper _statDeltaCollectionCache;
+        private readonly List<IStatProvider> _providers;
+
+        private readonly DeltaCollectionCacheHelper _deltaCollectionCache;
 
         public StatProviderCollection()
         {
-            _providers = new List<IStatProvider<TValue>>();
-            _statDeltaCollectionCache = new DeltaCollectionCacheHelper(_providers);
+            _providers = new List<IStatProvider>();
+
+            _deltaCollectionCache = new DeltaCollectionCacheHelper(_providers);
         }
-        public void AddProvider(IStatProvider<TValue> provider)
+        public bool AddProvider(IStatProvider provider)
         {
-            if (provider == null || _providers.Contains(provider))
+            if (provider != null && !_providers.Contains(provider))
             {
-                return;
+                _providers.Add(provider);
+                _deltaCollectionCache.SetDirty_FromExternal();
+                return true;
             }
-
-            _providers.Add(provider);
-            _statDeltaCollectionCache.SetDirty_FromExternal();
+            return false;
         }
-        public void RemoveProvider(IStatProvider<TValue> provider)
+        public bool AddProvider(IDynamicStatProvider provider)
         {
-            if (provider == null || !_providers.Contains(provider))
+            if (AddProvider((IStatProvider)provider))
             {
-                return;
+                provider.OnStatsChanged += _deltaCollectionCache.SetDirty_FromExternal;
+                return true;
             }
-
-            _providers.Remove(provider);
-            _statDeltaCollectionCache.SetDirty_FromExternal();
+            return false;
         }
-        public bool HasProvider(IStatProvider<TValue> statProvider) => _providers.Contains(statProvider);
-        public StatDeltaCollection<TValue> GetStatDeltaCollection() => _statDeltaCollectionCache.GetCacheCopy();
-
-        private class DeltaCollectionCacheHelper : CachedValueController<StatDeltaCollection<TValue>, List<IStatProvider<TValue>>>
+        public bool RemoveProvider(IStatProvider provider)
         {
-            public DeltaCollectionCacheHelper(List<IStatProvider<TValue>> context) : base(context) { }
-
-            protected override StatDeltaCollection<TValue> CalculateNewCache()
+            if (provider != null && _providers.Contains(provider))
             {
-                return new StatDeltaCollection<TValue>(Context.ConvertAll(p => p.GetStatDeltaCollection()));
+                _providers.Remove(provider);
+                _deltaCollectionCache.SetDirty_FromExternal();
+                return true;
             }
-            protected override StatDeltaCollection<TValue> CreateCacheCopy(StatDeltaCollection<TValue> cache)
+            return false;
+        }
+        public bool RemoveProvider(IDynamicStatProvider provider)
+        {
+            if (RemoveProvider((IStatProvider)provider))
+            {
+                provider.OnStatsChanged -= _deltaCollectionCache.SetDirty_FromExternal;
+                return true;
+            }
+            return false;
+        }
+        public bool HasProvider(IStatProvider statProvider) => _providers.Contains(statProvider);
+        public DeltaCollection GetDeltaCollection() => _deltaCollectionCache.GetCacheCopy();
+
+        private class DeltaCollectionCacheHelper : CachedValueController<DeltaCollection, List<IStatProvider>>
+        {
+            public DeltaCollectionCacheHelper(List<IStatProvider> context) : base(context) { }
+
+            protected override DeltaCollection CalculateNewCache()
+            {
+                return new DeltaCollection(Context.ConvertAll(dsp => dsp.GetDeltaCollection()));
+            }
+            protected override DeltaCollection CreateCacheCopy(DeltaCollection cache)
             {
                 // Safe to pass read-only collection by reference.
                 return cache;

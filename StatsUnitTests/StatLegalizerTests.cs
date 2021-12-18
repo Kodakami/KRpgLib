@@ -27,7 +27,7 @@ namespace KRpgLib.UnitTests.StatsTests
 
             LegalizationTest(mockLegalizer, 2, 3);
         }
-        private void LegalizationTest<TValue>(AbstractStatLegalizer<TValue> statLegalizer, TValue expected, TValue inputValue) where TValue : struct
+        private void LegalizationTest<TValue>(StatLegalizerBase<TValue> statLegalizer, TValue expected, TValue inputValue) where TValue : struct
         {
             var resultValue = statLegalizer.GetLegalizedValue(inputValue);
 

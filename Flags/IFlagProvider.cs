@@ -9,7 +9,7 @@ namespace KRpgLib.Flags
         /// </summary>
         IReadOnlyFlagCollection GetFlagCollection();
     }
-    public interface IFlagProvider_Dynamic : IFlagProvider
+    public interface IDynamicFlagProvider : IFlagProvider
     {
         event System.Action OnFlagsChanged;
     }

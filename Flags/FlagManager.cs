@@ -4,7 +4,7 @@ using KRpgLib.Utility;
 
 namespace KRpgLib.Flags
 {
-    public class FlagManager : IFlagProvider_Dynamic
+    public class FlagManager : IDynamicFlagProvider
     {
         protected List<FlagProviderController> _controllers = new List<FlagProviderController>();
 
@@ -33,7 +33,7 @@ namespace KRpgLib.Flags
         {
             AddFlagProvider_Internal(new FlagProviderController(flagProvider ?? throw new ArgumentNullException(nameof(flagProvider))));
         }
-        public void AddFlagProvider(IFlagProvider_Dynamic dynamicFlagProvider)
+        public void AddFlagProvider(IDynamicFlagProvider dynamicFlagProvider)
         {
             AddFlagProvider_Internal(new FlagProviderController_Dynamic(dynamicFlagProvider ?? throw new ArgumentNullException(nameof(dynamicFlagProvider))));
             dynamicFlagProvider.OnFlagsChanged += SetDirty;
@@ -56,7 +56,7 @@ namespace KRpgLib.Flags
                 RemoveFlagProvider_Internal(found);
             }
         }
-        public void RemoveFlagProvider(IFlagProvider_Dynamic dynamicFlagProvider)
+        public void RemoveFlagProvider(IDynamicFlagProvider dynamicFlagProvider)
         {
             if (dynamicFlagProvider == null)
             {
@@ -116,10 +116,10 @@ namespace KRpgLib.Flags
 
         protected class FlagProviderController_Dynamic : FlagProviderController
         {
-            new protected IFlagProvider_Dynamic Provider => (IFlagProvider_Dynamic)base.Provider;
+            new protected IDynamicFlagProvider Provider => (IDynamicFlagProvider)base.Provider;
             protected CacheHelper Cache { get; }
 
-            public FlagProviderController_Dynamic(IFlagProvider_Dynamic flagProvider)
+            public FlagProviderController_Dynamic(IDynamicFlagProvider flagProvider)
                 :base(flagProvider)
             {
                 Cache = new CacheHelper(this);

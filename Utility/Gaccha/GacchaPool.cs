@@ -112,7 +112,7 @@ namespace KRpgLib.Utility.Gaccha
             }
 
             // Exclusive upper bound.
-            int randomCapsuleIndex = Environment.Rng.Next(0, totalNumberOfApplicableCapsules);
+            int randomCapsuleIndex = KRpgEnvironment.Instance.Rng.Next(0, totalNumberOfApplicableCapsules);
 
             foreach (var kvp in _pool)       // Random retrieval from weighted list courtesy of The Internet.
             {

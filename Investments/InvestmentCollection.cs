@@ -7,10 +7,11 @@ using KRpgLib.Utility;
 
 namespace KRpgLib.Investments
 {
-    public abstract class InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue> : IEnumerable<TInvestment>
-        where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
-        where TInvestment : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
-        where TInvestmentValue : struct, IInvestmentValue
+    public abstract class InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>
+        : IReadOnlyInvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>
+            where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
+            where TInvestment : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
+            where TInvestmentValue : IInvestmentValue
     {
         private readonly List<TInvestment> _investments = new List<TInvestment>();
 
@@ -48,7 +49,7 @@ namespace KRpgLib.Investments
         }
         public TInvestmentValue GetCombinedInvestmentValue() => InvestmentValueCache.GetCacheCopy();
 
-        protected void AddIfNotInSet(TInvestment investment)
+        public void AddIfNotInSet(TInvestment investment)
         {
             if (investment != null)
             {
@@ -57,7 +58,7 @@ namespace KRpgLib.Investments
                 InvestmentValueCache.SetDirty_FromExternal();
             }
         }
-        protected void RemoveIfNotInSet(TInvestment investment)
+        public void RemoveIfNotInSet(TInvestment investment)
         {
             if (investment != null && _investments.Remove(investment))
             {
@@ -82,14 +83,5 @@ namespace KRpgLib.Investments
         {
             protected InvestmentValueCacheHelper(InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue> parent) : base(parent) { }
         }
-    }
-    public abstract class WriteableInvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>
-        : InvestmentCollection<TInvestmentTemplate, TInvestment, TInvestmentValue>
-        where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
-        where TInvestment : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
-        where TInvestmentValue : struct, IInvestmentValue
-    {
-        public void Add(TInvestment investment) => AddIfNotInSet(investment);
-        public void Remove(TInvestment investment) => RemoveIfNotInSet(investment);
     }
 }

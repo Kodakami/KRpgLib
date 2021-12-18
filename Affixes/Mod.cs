@@ -7,11 +7,13 @@ namespace KRpgLib.Affixes
     /// <summary>
     /// Base class with shared functionality for mod instances with and without rolled arg values.
     /// </summary>
-    public class Mod : ITemplateObject<ModTemplate>
+    public abstract class Mod : ITemplateObject<ModTemplate>
     {
+        // NOTE: Do not make this class non-abstract. Make a subclass with no modifications if desired. Important for serialization.
+
         public ModTemplate Template { get; }
 
-        public Mod(ModTemplate template)
+        protected internal Mod(ModTemplate template)
         {
             Template = template;
         }
@@ -24,6 +26,9 @@ namespace KRpgLib.Affixes
         // Delegate to mod template.
         public IModEffect GetModEffect() => Template.GetModEffect(this);
     }
+
+    // TODO: Make concrete Mod class with no args.
+
     /// <summary>
     /// A mod instance with a rolled arg value.
     /// </summary>
@@ -36,17 +41,28 @@ namespace KRpgLib.Affixes
 
         // Ctor
         public Mod(ModTemplate<TArg> template) : base(template) { }
+        public Mod(ModTemplate<TArg> template, TArg initialArgValue) : base(template)
+        {
+            SetArgValueManually(initialArgValue);
+        }
 
         /// <summary>
         /// Randomly (or not), roll a new argument for the mod. Return true if the value changed.
         /// </summary>
         public override bool RollNewArg(Random rng)
         {
+            // Roll the new value.
+            var newArgValue = Template.GetNewArg(rng);
+
+            return SetArgValueManually(newArgValue);
+        }
+        public bool SetArgValueManually(TArg arg)
+        {
             // Save the previous value.
             var oldArgValue = Arg;
 
-            // Roll and assign the new value to the property.
-            Arg = Template.GetNewArg(rng);
+            // Assign the new value to the property.
+            Arg = arg;
 
             // Return true if the values are different.
             return !Arg.Equals(oldArgValue);

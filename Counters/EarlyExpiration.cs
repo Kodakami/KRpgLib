@@ -37,7 +37,7 @@ namespace KRpgLib.Counters
             }
 
             // Roll for it!
-            bool successfulExpire = Utility.Environment.Rng.NextDouble() < adjustedChance;
+            bool successfulExpire = Utility.KRpgEnvironment.Instance.Rng.NextDouble() < adjustedChance;
 
             if (successfulExpire)
             {

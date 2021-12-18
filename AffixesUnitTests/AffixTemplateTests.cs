@@ -2,15 +2,15 @@
 using System;
 using System.Collections.Generic;
 using KRpgLib.Affixes;
+using KRpgLib.Affixes.AffixTypes;
 
 namespace KRpgLib.UnitTests.AffixesTests
 {
     [TestClass]
     public class AffixTemplateTests
     {
-        private const int STUB_MAX_AFFIXES_OF_TYPE = 1;
         private const string STUB_NAME = "";
-        private static AffixType StubAffixType { get; } = new AffixType(STUB_MAX_AFFIXES_OF_TYPE);
+        private static AffixType StubAffixType { get; } = new AffixType_AdHoc();
         private static IEnumerable<ModTemplate> StubModTemplates { get; } = new ModTemplate[0];
 
         [TestMethod]
