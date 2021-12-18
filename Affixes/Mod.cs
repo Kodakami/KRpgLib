@@ -7,65 +7,62 @@ namespace KRpgLib.Affixes
     /// <summary>
     /// Base class with shared functionality for mod instances with and without rolled arg values.
     /// </summary>
-    public abstract class Mod : ITemplateObject<ModTemplate>
+    public class Mod : ITemplateObject<ModTemplate>
     {
-        // NOTE: Do not make this class non-abstract. Make a subclass with no modifications if desired. Important for serialization.
-
         public ModTemplate Template { get; }
+        public object ArgValue { get; private set; }
+        public bool HasArg => Template.HasArg;
 
-        protected internal Mod(ModTemplate template)
+        internal Mod(ModTemplate template, object argValue)
         {
-            Template = template;
-        }
+            Template = template ?? throw new ArgumentNullException(nameof(template));
 
-        /// <summary>
-        /// Randomly (or not), roll a new argument for the mod. Return true if the value changed. This implementation for mods without arguments always returns false.
-        /// </summary>
-        public virtual bool RollNewArg(Random rng) => false;
-
-        // Delegate to mod template.
-        public IModEffect GetModEffect() => Template.GetModEffect(this);
-    }
-
-    // TODO: Make concrete Mod class with no args.
-
-    /// <summary>
-    /// A mod instance with a rolled arg value.
-    /// </summary>
-    public sealed class Mod<TArg> : Mod
-        // TArg is an arbitrary Type
-    {
-        // Hides inherrited member with strong-typed access.
-        public new ModTemplate<TArg> Template => (ModTemplate<TArg>)base.Template;
-        public TArg Arg { get; private set; }
-
-        // Ctor
-        public Mod(ModTemplate<TArg> template) : base(template) { }
-        public Mod(ModTemplate<TArg> template, TArg initialArgValue) : base(template)
-        {
-            SetArgValueManually(initialArgValue);
+            SetArgManually(argValue);
         }
 
         /// <summary>
         /// Randomly (or not), roll a new argument for the mod. Return true if the value changed.
         /// </summary>
-        public override bool RollNewArg(Random rng)
+        public bool RollNewArg(Random rng)
         {
             // Roll the new value.
-            var newArgValue = Template.GetNewArg(rng);
+            var newArgValue = Template.GetNewArgValue(rng);
 
-            return SetArgValueManually(newArgValue);
+            return SetArgManually(newArgValue);
         }
-        public bool SetArgValueManually(TArg arg)
+        public bool SetArgManually(object argValue)
         {
-            // Save the previous value.
-            var oldArgValue = Arg;
+            if (Template.HasArg)
+            {
+                // Save the previous value.
+                var oldArgValue = ArgValue;
 
-            // Assign the new value to the property.
-            Arg = arg;
+                // Assign the new value to the property.
+                ArgValue = argValue;
 
-            // Return true if the values are different.
-            return !Arg.Equals(oldArgValue);
+                // Return true if the values are different.
+                return !ArgValue.Equals(oldArgValue);
+            }
+            return false;
         }
+
+        // Delegate to mod template.
+        public IModEffect GetModEffect() => Template.GetModEffect(this);
+    }
+
+    /// <summary>
+    /// A mod instance with a rolled arg value.
+    /// </summary>
+    public sealed class Mod<T> : Mod
+    {
+        // Hides inherrited member with strong-typed access.
+        public new ModTemplate<T> Template => (ModTemplate<T>)base.Template;
+        public new T ArgValue => (T)base.ArgValue;
+
+        public Mod(ModTemplate<T> template, T arg) : base(template, arg) { }
+    }
+    public sealed class Mod_NoArg : Mod
+    {
+        public Mod_NoArg(ModTemplate template) : base(template, null) { }
     }
 }

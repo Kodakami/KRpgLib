@@ -4,7 +4,7 @@ namespace KRpgLib.Utility.Serialization
 {
     // AT SOME POINT: Serializer could be further genericized to Serializer<TObject, TOutput>.
 
-    public abstract class Serializer<T>
+    public abstract class Serializer<T> : ISerializer<T>
     {
         public bool TrySerialize(T obj, out IReadOnlyList<byte> bytes, int capacitySuggestion = 0)
         {

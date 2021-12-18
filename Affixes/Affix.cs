@@ -51,6 +51,7 @@ namespace KRpgLib.Affixes
         }
         public ModEffectCollection GetAllModEffects() => _effectCacheHelper.GetCacheCopy();
         public void ForceCacheUpdate() => _effectCacheHelper.ForceCacheUpdate();
+        public IReadOnlyList<Mod> GetAllModsForSerialization() => _modInstances;
 
         private sealed class ModEffectCacheHelper : CachedValueController<ModEffectCollection, Affix>
         {

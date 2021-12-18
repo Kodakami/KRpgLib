@@ -1,6 +1,7 @@
 ﻿using KRpgLib.Utility;
 using KRpgLib.Utility.Serialization;
 using System;
+using System.Collections.Generic;
 
 namespace KRpgLib.Affixes
 {
@@ -10,8 +11,9 @@ namespace KRpgLib.Affixes
         // Uint32 AffixTemplate Unique ID Little-Endian     (0 ~ 3)
         // List of ModTemplates                             (4 ~ ?)
 
-        private readonly UInt32Serializer _uniqueIdSerializer = new UInt32Serializer();
-        private readonly List
+        public static readonly AffixSerializer Singleton = new AffixSerializer();
+
+        private readonly ListSerializer<Mod> _modListSerializer = new UniformListSerializer<Mod>(ModSerializer.Singleton);
 
         protected override bool TrySerialize_Internal(Affix affix, ByteWriter writerInProgress)
         {
@@ -19,31 +21,35 @@ namespace KRpgLib.Affixes
             if (AffixEnvironment.Instance.AffixTemplateRepo.TryGetUniqueID(affix.Template, out uint templateID))
             {
                 // Try and write the affix unique ID.
-                if (_uniqueIdSerializer.TrySerialize(templateID, writerInProgress))
+                if (UInt32Serializer.Singleton.TrySerialize(templateID, writerInProgress))
                 {
-
+                    // Try and write the list of mods.
+                    return _modListSerializer.TrySerialize(affix.GetAllModsForSerialization(), writerInProgress);
                 }
             }
+
+            return false;
         }
 
         protected override bool TryDeserialize_Internal(ByteReader readerInProgress, out Affix obj)
         {
+            // Try and read the affix template ID.
+            if (UInt32Serializer.Singleton.TryDeserialize(readerInProgress, out uint templateID))
+            {
+                // Try and find the affix template in the repo.
+                if (AffixEnvironment.Instance.AffixTemplateRepo.TryGetObject(templateID, out AffixTemplate template))
+                {
+                    // Try and read the list of mods.
+                    if (_modListSerializer.TryDeserialize(readerInProgress, out IReadOnlyList<Mod> modList))
+                    {
+                        obj = new Affix(template, modList);
+                        return true;
+                    }
+                }
+            }
 
-        }
-    }
-    public sealed class ModListSerializer : ListSerializer<Mod>
-    {
-        protected override bool TrySerializeSingleValue(Mod value, ByteWriter writerInProgress)
-        {
-            // Get the mod serializer from the mod and toss it back.
-            return value.Template.GetModSerializer().TrySerialize(value, writerInProgress);
-        }
-        protected override bool TryDeserializeSingleValue(ByteReader readerInProgress, out Mod singleValue)
-        {
-            var templateIdPeek = readerInProgress.GetNextButDoNotAdvance()
-            
-            // Get the mod serializer from the mod and toss it back.
-            return value.Template.GetModSerializer().TryDeserialize(readerInProgress, out singleValue);
+            obj = default;
+            return false;
         }
     }
 }
