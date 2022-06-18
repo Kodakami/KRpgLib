@@ -8,25 +8,20 @@ namespace KRpgLibTests.Affixes
     [TestClass]
     public static class AffixManagerTests
     {
-        private static readonly Random StubRandom = new Random();
+        private static readonly Random StubRandom = new();
         private static readonly AffixType StubAffixType = new AffixType_AdHoc();    // Empty ctor places no restrictions.
+        private static readonly ModTemplate[] StubModTemplates = Array.Empty<ModTemplate>();
 
         [TestMethod]
         public static void CreateNewAffixInstance_WithValidArgs_ReturnsExpectedResult()
         {
-            var mockTemplate = new FakeAffixTemplate(StubAffixType);
+            var mockTemplate = new AffixTemplate(StubAffixType, StubModTemplates);
             var resultAffix = mockTemplate.CreateNewAffixInstance(StubRandom);
 
             var mockAffixManager = new AffixManager();
             mockAffixManager.AddAffix(resultAffix);
 
-            Assert.AreEqual(FakeModTemplateNoArgs.EXPECTED_VALUE, mockAffixManager.HasAffix(mockTemplate));
+            Assert.IsTrue(mockAffixManager.HasAffix(mockTemplate));
         }
-    }
-    public sealed class FakeAffixTemplate : AffixTemplate
-    {
-        public FakeAffixTemplate(AffixType affixType)
-            : base("Test", affixType, new ModTemplate[] { new FakeModTemplateNoArgs() })
-        { }
     }
 }

@@ -7,34 +7,27 @@ namespace KRpgLib.Affixes
 {
     public sealed class FlagModTemplate : ModTemplate<Flag>
     {
-        private static FlagSerializer _serializerFlyweight;
-
         // We don't use a FlagCollection because the functionality of implied flags is of no use here.
         public IReadOnlyList<Flag> Flags { get; }
 
         public FlagModTemplate(IReadOnlyList<Flag> flags)
+            : base(new ModArgType<Flag>(FlagSerializer.Singleton))
         {
             Flags = flags ?? throw new ArgumentNullException(nameof(flags));
         }
+
+        // This ctor casts and passes to the other.
         public FlagModTemplate(params Flag[] flags)
-        {
-            Flags = new List<Flag>(flags);
-        }
+            : this((IReadOnlyList<Flag>)flags) { }
 
-        public override IModEffect GetModEffect(Mod<Flag> modInstance)
-        {
-            return new FlagModEffect(modInstance.Arg);
-        }
-
-        public override Flag GetNewArg(Random rng)
+        protected override Flag GetNewArgStrongValue(Random rng)
         {
             return Flags[rng.Next(0, Flags.Count)];
         }
 
-        public override Serializer<Flag> GetArgSerializer()
+        protected override IModEffect GetModEffect_Internal(Mod safeModInstance)
         {
-            // Lazy initialization.
-            return _serializerFlyweight ?? (_serializerFlyweight = new FlagSerializer());
+            return new FlagModEffect((Flag)safeModInstance.ArgValue);
         }
     }
 }

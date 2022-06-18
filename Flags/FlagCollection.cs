@@ -15,6 +15,8 @@ namespace KRpgLib.Flags
 
         public int Count => _topLevelSet.Count;
 
+        // TODO: Rewrite as immutable collection just like Stats.
+
         public FlagCollection() { }
         public FlagCollection(IEnumerable<Flag> flags)
         {

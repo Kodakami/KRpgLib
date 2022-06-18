@@ -53,20 +53,34 @@ namespace KRpgLib.Utility.Serialization
     }
     public sealed class Int32Serializer : PrimitiveSerializer<int>
     {
+        public static readonly Int32Serializer Singleton = new Int32Serializer();
+
         public override int SizeOfValueType() => sizeof(int);
         protected override BitConverterGetBytesDelegate GetBytesDelegate() => BitConverter.GetBytes;
         protected override BitConverterToValueTypeDelegate ToValueTypeDelegate() => BitConverter.ToInt32;
     }
     public sealed class Float32Serializer : PrimitiveSerializer<float>
     {
+        public static readonly Float32Serializer Singleton = new Float32Serializer();
+
         public override int SizeOfValueType() => sizeof(float);
         protected override BitConverterGetBytesDelegate GetBytesDelegate() => BitConverter.GetBytes;
         protected override BitConverterToValueTypeDelegate ToValueTypeDelegate() => BitConverter.ToSingle;
     }
     public sealed class UInt32Serializer : PrimitiveSerializer<uint>
     {
+        public static readonly UInt32Serializer Singleton = new UInt32Serializer();
+
         public override int SizeOfValueType() => sizeof(uint);
         protected override BitConverterGetBytesDelegate GetBytesDelegate() => BitConverter.GetBytes;
         protected override BitConverterToValueTypeDelegate ToValueTypeDelegate() => BitConverter.ToUInt32;
+    }
+    public sealed class BoolSerializer : PrimitiveSerializer<bool>
+    {
+        public static readonly BoolSerializer Singleton = new BoolSerializer();
+
+        public override int SizeOfValueType() => sizeof(bool);
+        protected override BitConverterGetBytesDelegate GetBytesDelegate() => BitConverter.GetBytes;
+        protected override BitConverterToValueTypeDelegate ToValueTypeDelegate() => BitConverter.ToBoolean;
     }
 }

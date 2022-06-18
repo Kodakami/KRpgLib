@@ -9,19 +9,12 @@ namespace KRpgLib.Utility.Serialization
         // Int32 List Count                 (0 ~ 3)
         // 1~N T Values                     (4 ~ X)     // X = ((N * sizeof(T)) - 1) + 4
 
-        private readonly Int32Serializer _listCountSerializer;
-
-        protected ListSerializer()
-        {
-            _listCountSerializer = new Int32Serializer();
-        }
-
         protected override bool TrySerialize_Internal(IReadOnlyList<T> values, ByteWriter writerInProgress)
         {
             if (values != null)
             {
                 // First, write the list count.
-                _listCountSerializer.SerializeImmediate(values.Count, writerInProgress);
+                Int32Serializer.Singleton.SerializeImmediate(values.Count, writerInProgress);
 
                 // Then, write all the values in the list.
                 foreach (var value in values)
@@ -49,7 +42,7 @@ namespace KRpgLib.Utility.Serialization
             values = valueList;
 
             // Try and deserialize a list count. If it works and the value is not negative,
-            if (_listCountSerializer.TryDeserialize(readerInProgress, out int listCount) && listCount >= 0)
+            if (Int32Serializer.Singleton.TryDeserialize(readerInProgress, out int listCount) && listCount >= 0)
             {
                 // Unable to determine if enough bytes remain at this time (values may have variable byte sizes).
 

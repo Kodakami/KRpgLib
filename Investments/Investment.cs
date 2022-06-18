@@ -3,38 +3,36 @@ using System.Collections.Generic;
 
 namespace KRpgLib.Investments
 {
-    public abstract class AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
-        where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
-        where TInvestmentValue : IInvestmentValue
+    // Shared code between the two most common types of investment: static and tiered.
+    public abstract class AbstractInvestment<TValue>
     {
-        public TInvestmentTemplate Template { get; }
-        public abstract TInvestmentValue Value { get; }
-
-        protected AbstractInvestment(TInvestmentTemplate template)
-        {
-            Template = template;
-        }
+        // The value of the investment (such as an integer for a stat value).
+        public abstract TValue Value { get; }
     }
-    public abstract class StaticInvestment<TInvestmentTemplate, TInvestmentValue> : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
-        where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
-        where TInvestmentValue : IInvestmentValue
+
+    // An investment with an unchanging value, such as a flag that is provided to an actor.
+    public abstract class StaticInvestment<TValue> : AbstractInvestment<TValue>
     {
-        protected TInvestmentValue _staticValue;
+        // The static value this investment provides.
+        protected TValue _staticValue;
 
-        public override TInvestmentValue Value => _staticValue;
+        public override TValue Value => _staticValue;
 
-        protected StaticInvestment(TInvestmentTemplate template, TInvestmentValue value)
-            :base(template)
+        protected StaticInvestment(TValue value)
         {
             _staticValue = value;
         }
     }
-    public abstract class TieredInvestment<TInvestmentTemplate, TInvestmentValue> : AbstractInvestment<TInvestmentTemplate, TInvestmentValue>
-        where TInvestmentTemplate : IInvestmentTemplate<TInvestmentValue>
-        where TInvestmentValue : IInvestmentValue
+    
+    // An investment which offers different values at different tiers. For example: putting different amounts of points into your Q ability gives different effects.
+    public abstract class TieredInvestment<TValue> : AbstractInvestment<TValue>
     {
-        private readonly List<TInvestmentValue> _valueList;
+        // The list of values, in order, for each tier.
+        private readonly List<TValue> _valueList;
+        
+        // The currently-selected tier.
         private int _tier;
+        
         public int Tier
         {
             get
@@ -47,12 +45,13 @@ namespace KRpgLib.Investments
                 _tier = Math.Max(0, Math.Min(_valueList.Count - 1, value));
             }
         }
-        public override TInvestmentValue Value => _valueList[_tier];
 
-        protected TieredInvestment(TInvestmentTemplate template, IEnumerable<TInvestmentValue> allValues)
-            :base(template)
+        // Return the value at the current tier.
+        public override TValue Value => _valueList[_tier];
+
+        protected TieredInvestment(IEnumerable<TValue> allValues)
         {
-            _valueList = new List<TInvestmentValue>(allValues ?? throw new ArgumentNullException(nameof(allValues)));
+            _valueList = new List<TValue>(allValues ?? throw new ArgumentNullException(nameof(allValues)));
         }
     }
 }

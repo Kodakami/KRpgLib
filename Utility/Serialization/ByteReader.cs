@@ -24,7 +24,7 @@ namespace KRpgLib.Utility.Serialization
         {
             return GetNext_Internal(count, reverseIfBigEndian, true);
         }
-        public byte[] GetNext_Internal(int count, bool reverseIfBigEndian, bool advance)
+        private byte[] GetNext_Internal(int count, bool reverseIfBigEndian, bool advance)
         {
             if (count > 0 && count <= Remaining)
             {

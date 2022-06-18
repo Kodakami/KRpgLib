@@ -28,25 +28,24 @@ namespace KRpgLib.Affixes
         //      (10-12)% more Maximum Mana
         // For this type of functionality, you should make multiple mods and put them all on one Affix.
 
-        private static UniformListSerializer<int> _argSerializerFlyweight;
-
         /// <summary>
         /// The bounds which govern the possible argument values of the mod. Basically the minimum, maximum, and precision values of the roll.
         /// </summary>
         public IReadOnlyList<StatDeltaValueBounds> ArgBounds { get; }
 
-        public StatDeltaModTemplate(StatDeltaValueBounds argBounds)
-        {
-            ArgBounds = new List<StatDeltaValueBounds>() { argBounds ?? throw new ArgumentNullException(nameof(argBounds)) };
-        }
         public StatDeltaModTemplate(IReadOnlyList<StatDeltaValueBounds> argBounds)
+            : base(new ModArgType<IReadOnlyList<int>>(new UniformListSerializer<int>(Int32Serializer.Singleton)))
         {
             ArgBounds = new List<StatDeltaValueBounds>(argBounds ?? throw new ArgumentNullException(nameof(argBounds)));
         }
 
-        public override IReadOnlyList<int> GetNewArg(Random rng)
+        // This ctor casts and passes to the other.
+        public StatDeltaModTemplate(params StatDeltaValueBounds[] argBounds)
+            : this((IReadOnlyList<StatDeltaValueBounds>)argBounds) { }
+
+        protected override IReadOnlyList<int> GetNewArgStrongValue(Random rng)
         {
-            return new List<int>(ArgBounds.Select(ab => GenerateRandomValueWithinBounds(rng, ab)));
+            return ArgBounds.Select(ab => GenerateRandomValueWithinBounds(rng, ab)).ToArray();
         }
         private int GenerateRandomValueWithinBounds(Random rng, StatDeltaValueBounds bounds)
         {
@@ -56,9 +55,9 @@ namespace KRpgLib.Affixes
             return StatUtilities.LegalizeIntValue(raw, bounds.MinRollValue, bounds.MaxRollValue, bounds.RollPrecision);
         }
 
-        public override IModEffect GetModEffect(Mod<IReadOnlyList<int>> modInstance)
+        protected override IModEffect GetModEffect_Internal(Mod modInstance)
         {
-            var modArgValues = modInstance.Arg;
+            var modArgValues = (IReadOnlyList<int>)modInstance.ArgValue;
 
             var deltaList = new List<StatDelta>();
             for (int i = 0; i < ArgBounds.Count; i++)
@@ -72,11 +71,6 @@ namespace KRpgLib.Affixes
             }
 
             return new StatDeltaModEffect(new DeltaCollection(deltaList));
-        }
-
-        public override Serializer<IReadOnlyList<int>> GetArgSerializer()
-        {
-            return _argSerializerFlyweight ?? (_argSerializerFlyweight = new UniformListSerializer<int>(new Int32Serializer()));
         }
     }
 }
