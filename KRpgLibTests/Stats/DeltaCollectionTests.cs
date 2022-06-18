@@ -23,11 +23,21 @@ namespace KRpgLibTests.Stats
             StubDeltaType1 = new DeltaType(deltaTypeFunc, 0);
             StubDeltaType2 = new DeltaType(deltaTypeFunc, 0);
 
+            // Repo
+            var srb = new SimpleStatRepoBuilder();
+            srb.AddStat(StubStat1);
+            srb.AddStat(StubStat2);
+
+            var repo = srb.Build();
+
             // Register
-            var builder = new StatEnvironmentBuilder();
-            builder.RegisterDeltaType(0, StubDeltaType1);
-            builder.RegisterDeltaType(0, StubDeltaType2);
-            builder.Build(true);
+            var seb = new StatEnvironmentBuilder();
+            seb.RegisterDeltaType(0, StubDeltaType1);
+            seb.RegisterDeltaType(0, StubDeltaType2);
+            
+            seb.RegisterStatRepo(repo);
+
+            seb.Build(true);
         }
 
         [TestMethod]

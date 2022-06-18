@@ -11,7 +11,7 @@ namespace KRpgLib.Affixes
         public abstract bool TryDeserialize(ByteReader reader, out object obj);
         public abstract bool TryDeserialize(IReadOnlyList<byte> bytes, int offset, out object obj);
     }
-    public sealed class ModArgType<T> : ModArgType, ISerializer<T>
+    public class ModArgType<T> : ModArgType, ISerializer<T>
     {
         // Strongly-typed serializer.
         private readonly Serializer<T> _serializer;

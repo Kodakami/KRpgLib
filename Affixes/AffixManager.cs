@@ -244,11 +244,12 @@ namespace KRpgLib.Affixes
             // Set this effect collection dirty.
             SetDirty();
         }
-        // Sets the ModEffectCacheHelper dirty and invokes the OnStatsChanged event.
+        // Sets the ModEffectCacheHelper dirty and invokes the OnStatsChanged and OnFlagsChanged events.
         private void SetDirty()
         {
             _effectCacheHelper.SetDirty_FromExternal();
             OnStatsChanged.Invoke();
+            OnFlagsChanged.Invoke();
         }
 
         public virtual DeltaCollection GetDeltaCollection()

@@ -75,4 +75,12 @@ namespace KRpgLib.Utility.Serialization
         protected override BitConverterGetBytesDelegate GetBytesDelegate() => BitConverter.GetBytes;
         protected override BitConverterToValueTypeDelegate ToValueTypeDelegate() => BitConverter.ToUInt32;
     }
+    public sealed class BoolSerializer : PrimitiveSerializer<bool>
+    {
+        public static readonly BoolSerializer Singleton = new BoolSerializer();
+
+        public override int SizeOfValueType() => sizeof(bool);
+        protected override BitConverterGetBytesDelegate GetBytesDelegate() => BitConverter.GetBytes;
+        protected override BitConverterToValueTypeDelegate ToValueTypeDelegate() => BitConverter.ToBoolean;
+    }
 }

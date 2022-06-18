@@ -3,13 +3,15 @@ using KRpgLib.Affixes;
 using KRpgLib.Utility.KomponentObject;
 using System;
 using System.Collections.Generic;
+using KRpgLib.Utility.Serialization;
 
 namespace KRpgLibTests.Affixes
 {
     [TestClass]
     public static class ModTemplateTests
     {
-        private static readonly Random _stubRandom = new Random();
+        private static readonly Random _stubRandom = new();
+        private static readonly FakeModArgType _stubArgType = new();
 
         [TestClass]
         public static class ModTemplateNoArgTests
@@ -24,7 +26,7 @@ namespace KRpgLibTests.Affixes
                 var stubEffectCollection = new ModEffectCollection(new IModEffect[] { resultMod.GetModEffect() });
                 var result = new List<FakeModEffect>(stubEffectCollection.GetModEffects<FakeModEffect>())[0];
 
-                Assert.AreEqual(FakeModTemplateNoArgs.EXPECTED_VALUE, result.Value);
+                Assert.AreEqual(0, result.Value);
             }
         }
         [TestClass]
@@ -33,7 +35,7 @@ namespace KRpgLibTests.Affixes
             [TestMethod]
             public static void Modify_WithValidInput_ReturnsExpectedResult()
             {
-                var mockModTemplate = new FakeModTemplateWithArgs();
+                var mockModTemplate = new FakeModTemplateWithArgs(_stubArgType);
 
                 Mod resultMod = mockModTemplate.CreateNewModInstance(_stubRandom);
 
@@ -49,31 +51,37 @@ namespace KRpgLibTests.Affixes
     {
         public int Value { get; set; } = 0;
     }
-    public sealed class FakeModTemplateNoArgs : ModTemplate
+    public sealed class FakeModTemplateNoArgs : ModTemplate_NoArg
     {
-        public const int EXPECTED_VALUE = 1;
-
-        public override IModEffect GetModEffect(Mod modInstance)
+        protected override IModEffect GetModEffect_Internal(Mod safeModInstance)
         {
-            // Ignore internal arg value.
-
-            return new FakeModEffect() { Value = EXPECTED_VALUE };
+            return new FakeModEffect();
         }
     }
     public sealed class FakeModTemplateWithArgs : ModTemplate<int>
     {
         public const int ASSIGNED_VALUE = 1;
 
-        public override IModEffect GetModEffect(Mod<int> modInstance)
+        public FakeModTemplateWithArgs(ModArgType<int> argType)
+            :base(argType)
+        { }
+
+        protected override IModEffect GetModEffect_Internal(Mod safeModInstance)
         {
-            return new FakeModEffect() { Value = modInstance.Arg };
+            return new FakeModEffect();
         }
 
-        public override int GetNewArg(Random rng)
+        protected override int GetNewArgStrongValue(Random rng)
         {
             // Dodge random for testing.
 
             return ASSIGNED_VALUE;
         }
+    }
+    public sealed class FakeModArgType : ModArgType<int>
+    {
+        public FakeModArgType()
+            :base(Int32Serializer.Singleton)
+        { }
     }
 }

@@ -17,6 +17,7 @@ namespace KRpgLib.Affixes
         public bool HasArg => ArgType != null;
 
         // Only subclasses in Utility can implement.
+        // EDIT: Is that right?
         protected internal ModTemplate(ModArgType argType)
         {
             // Can be null (for no-arg mods).
