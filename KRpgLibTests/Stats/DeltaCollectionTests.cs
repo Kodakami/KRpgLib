@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using KRpgLib.Stats;
-using System;
+using KRpgLib.Utility;
 
 namespace KRpgLibTests.Stats
 {
@@ -24,11 +24,11 @@ namespace KRpgLibTests.Stats
             StubDeltaType2 = new DeltaType(deltaTypeFunc, 0);
 
             // Repo
-            var srb = new SimpleStatRepoBuilder();
-            srb.AddStat(StubStat1);
-            srb.AddStat(StubStat2);
+            var repoBuilder = new SimpleUniqueRepoBuilder<Stat>();
+            repoBuilder.AddObject(StubStat1);
+            repoBuilder.AddObject(StubStat2);
 
-            var repo = srb.Build();
+            var repo = repoBuilder.Build();
 
             // Register
             var seb = new StatEnvironmentBuilder();

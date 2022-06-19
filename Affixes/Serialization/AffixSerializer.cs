@@ -3,7 +3,7 @@ using KRpgLib.Utility.Serialization;
 using System;
 using System.Collections.Generic;
 
-namespace KRpgLib.Affixes
+namespace KRpgLib.Affixes.Serialization
 {
     public sealed class AffixSerializer : Serializer<Affix>
     {

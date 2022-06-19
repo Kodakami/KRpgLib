@@ -6,6 +6,11 @@ namespace KRpgLib.Affixes
 {
     public abstract class ModArgType : ISerializer<object>
     {
+        // Static readonly instances for common mod arg types.
+        public static readonly ModArgType Int = new ModArgType<int>(Int32Serializer.Singleton);
+        public static readonly ModArgType Float = new ModArgType<float>(Float32Serializer.Singleton);
+        public static readonly ModArgType Bool = new ModArgType<bool>(BoolSerializer.Singleton);
+
         public abstract bool TrySerialize(object obj, ByteWriter byteWriter);
         public abstract bool TrySerialize(object obj, out IReadOnlyList<byte> bytes, int capacitySuggestion = 0);
         public abstract bool TryDeserialize(ByteReader reader, out object obj);
