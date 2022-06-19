@@ -77,6 +77,8 @@ namespace KRpgLib.Utility.Serialization
     }
     public sealed class BoolSerializer : PrimitiveSerializer<bool>
     {
+        // A tiny amount of space can be saved by serializing to single-byte bools, but I think this is better for consistency.
+        
         public static readonly BoolSerializer Singleton = new BoolSerializer();
 
         public override int SizeOfValueType() => sizeof(bool);
