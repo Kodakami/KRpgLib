@@ -10,16 +10,17 @@ namespace KRpgLibTests.Stats.Compound.AlgoBuilder
     [TestClass]
     public class ScannerTests
     {
-        [DataRow(null, "NULL")]
-        [DataRow("", "Empty String")]
-        [DataRow(" ", "White Space")]
-        [DataRow("\n", "Newline")]
-        [DataRow("\r", "Carriage Return")]
-        [DataRow("\t", "Tab")]
+        [TestMethod]
+        [DataRow(null, DisplayName = "NULL")]
+        [DataRow("", DisplayName = "Empty String")]
+        [DataRow(" ", DisplayName = "White Space")]
+        [DataRow("\n", DisplayName = "Newline")]
+        [DataRow("\r", DisplayName = "Carriage Return")]
+        [DataRow("\t", DisplayName = "Tab")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
-        private static void Constructor_WithSimpleInvalidScript_ThrowsArgNullEx()
+        public void Constructor_WithSimpleInvalidScript_ThrowsArgNullEx(string script)
         {
-            static void exceptionalAction() => new Scanner("");
+            void exceptionalAction() => new Scanner(script);
 
             Assert.ThrowsException<ArgumentException>(exceptionalAction);
         }

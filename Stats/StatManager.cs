@@ -20,6 +20,12 @@ namespace KRpgLib.Stats
         {
             _statProviders = new StatProviderCollection();
             _cachedSnapshot = new CachedSnapshotHelper(this);
+
+            _statProviders.OnStatsChanged += UpdateCachedSnapshot;
+        }
+        ~StatManager()
+        {
+            _statProviders.OnStatsChanged -= UpdateCachedSnapshot;
         }
 
         /// <summary>
@@ -98,6 +104,11 @@ namespace KRpgLib.Stats
             // Checks done in public accessor methods.
 
             return _statProviders.RemoveProvider(safeProvider);
+        }
+
+        private void UpdateCachedSnapshot()
+        {
+            _cachedSnapshot.SetDirty_FromExternal();
         }
 
         protected class CachedSnapshotHelper : CachedValueController<StatSnapshot, StatManager>
