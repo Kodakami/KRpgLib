@@ -44,6 +44,30 @@ namespace KRpgLibTests.Stats.Compound
             Assert.ThrowsException<ArgumentNullException>(exceptionalAction);
         }
         [TestMethod]
+        public void Division_Evaluate_WithDivisorZero_ThrowsDivByZeroEx()
+        {
+            var stubStatSet = new FakeStatSet().Snapshot;
+            var stubValueExpressionLeft = new Literal(1);
+            var zeroRight = new Literal(0);
+            var mockExpression = new ValueOperation_Binary(CommonInstances.Divide, stubValueExpressionLeft, zeroRight);
+
+            void exceptionalAction() => mockExpression.Evaluate(stubStatSet);
+
+            Assert.ThrowsException<DivideByZeroException>(exceptionalAction);
+        }
+        [TestMethod]
+        public void Modulo_Evaluate_WithDivisorZero_ThrowsDivByZeroEx()
+        {
+            var stubStatSet = new FakeStatSet().Snapshot;
+            var stubValueExpressionLeft = new Literal(1);
+            var zeroRight = new Literal(0);
+            var mockExpression = new ValueOperation_Binary(CommonInstances.Modulo, stubValueExpressionLeft, zeroRight);
+
+            void exceptionalAction() => mockExpression.Evaluate(stubStatSet);
+
+            Assert.ThrowsException<DivideByZeroException>(exceptionalAction);
+        }
+        [TestMethod]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Unit Test")]
         public void MultiaryOperationType_Constructor_WithNullFunc_ThrowsArgNullEx()
         {

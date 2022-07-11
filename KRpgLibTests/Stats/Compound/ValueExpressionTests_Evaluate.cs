@@ -73,7 +73,6 @@ namespace KRpgLibTests.Stats.Compound
         }
         [TestMethod]
         [DataRow(4, 2, 2, DisplayName = "Typical Division: (4 / 2) == 2")]
-        [DataRow(1, 0, 0, DisplayName = "Safe Division by Zero: (1 / 0) == 0")]
         public void Divide_Evaluate_ReturnsCorrectResult(int left, int right, int expected)
         {
             var operationType = CommonInstances.Divide;
@@ -82,7 +81,6 @@ namespace KRpgLibTests.Stats.Compound
         }
         [TestMethod]
         [DataRow(3, 2, 1, DisplayName = "Typical Modulo: (3 % 2) == 1")]
-        [DataRow(1, 0, 0, DisplayName = "Safe Modulo by Zero: (1 % 0) == 0")]
         public void Modulo_Evaluate_ReturnsCorrectResult(int left, int right, int expected)
         {
             var operationType = CommonInstances.Modulo;

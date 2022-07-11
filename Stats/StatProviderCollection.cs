@@ -7,11 +7,13 @@ namespace KRpgLib.Stats
     /// <summary>
     /// A collection of stat providers (static and dynamic) that also maintains a cached delta collection.
     /// </summary>
-    public sealed class StatProviderCollection : IStatProvider
+    public sealed class StatProviderCollection : IDynamicStatProvider
     {
         private readonly List<IStatProvider> _providers;
 
         private readonly DeltaCollectionCacheHelper _deltaCollectionCache;
+
+        public event Action OnStatsChanged;
 
         public StatProviderCollection()
         {
@@ -25,6 +27,9 @@ namespace KRpgLib.Stats
             {
                 _providers.Add(provider);
                 _deltaCollectionCache.SetDirty_FromExternal();
+
+                OnStatsChanged?.Invoke();
+
                 return true;
             }
             return false;
@@ -34,6 +39,10 @@ namespace KRpgLib.Stats
             if (AddProvider((IStatProvider)provider))
             {
                 provider.OnStatsChanged += _deltaCollectionCache.SetDirty_FromExternal;
+                provider.OnStatsChanged += OnStatsChanged;
+
+                // Event invoked by non-dynamic overload.
+
                 return true;
             }
             return false;
@@ -44,6 +53,9 @@ namespace KRpgLib.Stats
             {
                 _providers.Remove(provider);
                 _deltaCollectionCache.SetDirty_FromExternal();
+
+                OnStatsChanged?.Invoke();
+
                 return true;
             }
             return false;
@@ -53,6 +65,10 @@ namespace KRpgLib.Stats
             if (RemoveProvider((IStatProvider)provider))
             {
                 provider.OnStatsChanged -= _deltaCollectionCache.SetDirty_FromExternal;
+                provider.OnStatsChanged -= OnStatsChanged;
+
+                // Event invoked by non-dynamic overload.
+
                 return true;
             }
             return false;

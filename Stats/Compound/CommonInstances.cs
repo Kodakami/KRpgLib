@@ -26,15 +26,14 @@ namespace KRpgLib.Stats.Compound
         /// </summary>
         public static readonly MultiaryOperationType Multiply = new MultiaryOperationType(value => value.Aggregate((total, curr) => total * curr));
         /// <summary>
-        /// left / right [Division by 0 returns 0]
+        /// left / right [Division by 0 throws exception]
         /// </summary>
         public static readonly BinaryOperationType Divide = new BinaryOperationType(
             (l, r) =>
             {
                 if (r == 0)
                 {
-                        // Division By Zero avoidance.
-                        return 0;
+                    throw new System.DivideByZeroException($"A CompoundStatAlgorithm attempted to divide {l} by {r}.");
                 }
                 return l / r;
             });
@@ -53,15 +52,14 @@ namespace KRpgLib.Stats.Compound
         public static readonly MultiaryOperationType Biggest =
             new MultiaryOperationType(values => values.Aggregate((total, curr) => System.Math.Max(total, curr)));
         /// <summary>
-        /// left % right [Modulo by 0 returns 0]
+        /// left % right [Modulo by 0 throws exception]
         /// </summary>
         public static readonly BinaryOperationType Modulo = new BinaryOperationType(
             (l, r) =>
             {
                 if (r == 0)
                 {
-                        // Division By Zero avoidance.
-                        return 0;
+                    throw new System.DivideByZeroException($"A CompoundStatAlgorithm attempted to modulo {l} by {r}.");
                 }
                 return l % r;
             });
